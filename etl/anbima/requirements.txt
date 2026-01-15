@@ -1,0 +1,22 @@
+# Dependencias Python para ETL ANBIMA ESG
+# Instalar com: pip install -r requirements.txt
+
+# HTTP requests
+requests>=2.31.0
+
+# Data manipulation
+pandas>=2.0.0
+
+# SQL Server connection
+pyodbc>=5.0.0
+sqlalchemy>=2.0.0
+
+# Excel support (opcional)
+openpyxl>=3.1.0
+
+# Web scraping (opcional)
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Progress bar (opcional)
+tqdm>=4.66.0

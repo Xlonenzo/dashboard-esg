@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANBIMA ESG - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1976D2;
+            --primary-light: #42A5F5;
+            --secondary: #2E7D32;
+            --secondary-light: #66BB6A;
+            --accent: #FF9800;
+            --danger: #f44336;
+            --success: #4CAF50;
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --border-color: #2a2a4a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image:
+                radial-gradient(ellipse at 20% 80%, rgba(25, 118, 210, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(46, 125, 50, 0.15) 0%, transparent 50%);
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .logo .badge {
+            display: inline-block;
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-top: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            padding: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            color: var(--text-secondary);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        .form-content {
+            display: none;
+        }
+
+        .form-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-group label .required {
+            color: var(--danger);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            opacity: 0.5;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-control {
+            padding-left: 15px;
+        }
+
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a0a0b0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+            padding-left: 15px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .password-toggle:hover {
+            opacity: 1;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .checkbox-group label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(25, 118, 210, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .alert-success {
+            background: rgba(76, 175, 80, 0.15);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            color: #81C784;
+        }
+
+        .alert-error {
+            background: rgba(244, 67, 54, 0.15);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            color: #EF5350;
+        }
+
+        .alert-info {
+            background: rgba(33, 150, 243, 0.15);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            color: #64B5F6;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .footer-text a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        .strength-meter {
+            margin-top: 8px;
+        }
+
+        .strength-meter .bar {
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-meter .fill {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+
+        .strength-meter .text {
+            font-size: 0.7rem;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .strength-weak .fill { width: 33%; background: var(--danger); }
+        .strength-medium .fill { width: 66%; background: var(--accent); }
+        .strength-strong .fill { width: 100%; background: var(--success); }
+        .strength-weak .text { color: var(--danger); }
+        .strength-medium .text { color: var(--accent); }
+        .strength-strong .text { color: var(--success); }
+
+        /* Loading spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 30px 25px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="logo">
+                <h1>ANBIMA ESG</h1>
+                <p>Dashboard de Fundos Sustentaveis</p>
+                <span class="badge">Dados Reais da API Oficial</span>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="showForm('login')">Entrar</div>
+                <div class="tab" onclick="showForm('register')">Criar Conta</div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <!-- Login Form -->
+            <div id="loginForm" class="form-content active">
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <div class="input-wrapper">
+                            <span class="icon">📧</span>
+                            <input type="email" class="form-control" id="loginEmail" placeholder="seu@email.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Senha</label>
+                        <div class="input-wrapper">
+                            <span class="icon">🔒</span>
+                            <input type="password" class="form-control" id="loginPassword" placeholder="Digite sua senha" required>
+                            <span class="password-toggle" onclick="togglePassword('loginPassword', this)">👁️</span>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe">Manter conectado</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="loginBtn">
+                        <span>Entrar</span>
+                    </button>
+                </form>
+
+                <div class="footer-text">
+                    <p>Esqueceu a senha? <a href="#" onclick="showForgotPassword()">Recuperar acesso</a></p>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" class="form-content">
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nome <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="regNome" placeholder="Seu nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Sobrenome <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="regSobrenome" placeholder="Seu sobrenome" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <span class="icon">📧</span>
+                            <input type="email" class="form-control" id="regEmail" placeholder="seu@email.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>CPF <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="regCPF" placeholder="000.000.000-00" required maxlength="14">
+                        </div>
+                        <div class="form-group">
+                            <label>Telefone</label>
+                            <input type="text" class="form-control" id="regTelefone" placeholder="(00) 00000-0000" maxlength="15">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Empresa / Instituicao</label>
+                        <div class="input-wrapper">
+                            <span class="icon">🏢</span>
+                            <input type="text" class="form-control" id="regEmpresa" placeholder="Nome da empresa">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cargo</label>
+                        <select class="form-control" id="regCargo">
+                            <option value="">Selecione seu cargo</option>
+                            <option value="analista">Analista</option>
+                            <option value="gestor">Gestor de Fundos</option>
+                            <option value="diretor">Diretor</option>
+                            <option value="consultor">Consultor</option>
+                            <option value="investidor">Investidor</option>
+                            <option value="estudante">Estudante</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Senha <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <span class="icon">🔒</span>
+                            <input type="password" class="form-control" id="regPassword" placeholder="Minimo 6 caracteres" required minlength="6" oninput="checkPasswordStrength(this.value)">
+                            <span class="password-toggle" onclick="togglePassword('regPassword', this)">👁️</span>
+                        </div>
+                        <div class="strength-meter" id="strengthMeter">
+                            <div class="bar"><div class="fill"></div></div>
+                            <div class="text"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirmar Senha <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <span class="icon">🔒</span>
+                            <input type="password" class="form-control" id="regConfirmPassword" placeholder="Repita a senha" required>
+                            <span class="password-toggle" onclick="togglePassword('regConfirmPassword', this)">👁️</span>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="termsAccept" required>
+                        <label for="termsAccept">Aceito os <a href="#">Termos de Uso</a> e <a href="#">Politica de Privacidade</a></label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="registerBtn">
+                        <span>Criar Conta</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar se ja esta logado
+        window.onload = function() {
+            const session = localStorage.getItem('anbima_session');
+            if (session) {
+                const sessionData = JSON.parse(session);
+                // Verificar se a sessao ainda e valida (24 horas)
+                if (Date.now() - sessionData.timestamp < 24 * 60 * 60 * 1000) {
+                    window.location.href = 'dashboard_anbima_real.html';
+                } else {
+                    localStorage.removeItem('anbima_session');
+                }
+            }
+        };
+
+        // Alternar entre formularios
+        function showForm(form) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-content').forEach(f => f.classList.remove('active'));
+
+            if (form === 'login') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+
+        // Toggle visibilidade da senha
+        function togglePassword(inputId, toggle) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggle.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                toggle.textContent = '👁️';
+            }
+        }
+
+        // Verificar forca da senha
+        function checkPasswordStrength(password) {
+            const meter = document.getElementById('strengthMeter');
+            meter.className = 'strength-meter';
+
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            if (password.length === 0) {
+                meter.querySelector('.text').textContent = '';
+            } else if (strength <= 2) {
+                meter.classList.add('strength-weak');
+                meter.querySelector('.text').textContent = 'Senha fraca';
+            } else if (strength <= 3) {
+                meter.classList.add('strength-medium');
+                meter.querySelector('.text').textContent = 'Senha media';
+            } else {
+                meter.classList.add('strength-strong');
+                meter.querySelector('.text').textContent = 'Senha forte';
+            }
+        }
+
+        // Mostrar alerta
+        function showAlert(type, message) {
+            const container = document.getElementById('alertContainer');
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ';
+            container.innerHTML = `
+                <div class="alert alert-${type}">
+                    <span>${icon}</span>
+                    ${message}
+                </div>
+            `;
+        }
+
+        // Hash simples para senha (em producao usar bcrypt no backend)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password + 'anbima_salt_2024');
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Obter usuarios
+        function getUsers() {
+            const users = localStorage.getItem('anbima_users');
+            return users ? JSON.parse(users) : [];
+        }
+
+        // Salvar usuarios
+        function saveUsers(users) {
+            localStorage.setItem('anbima_users', JSON.stringify(users));
+        }
+
+        // Login
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> Entrando...';
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            // Simular delay de rede
+            await new Promise(r => setTimeout(r, 1000));
+
+            const users = getUsers();
+            const hashedPassword = await hashPassword(password);
+
+            const user = users.find(u => u.email === email && u.password === hashedPassword);
+
+            if (user) {
+                // Criar sessao
+                const session = {
+                    id: user.id,
+                    nome: user.nome,
+                    email: user.email,
+                    perfil: user.perfil || 'usuario',
+                    timestamp: Date.now(),
+                    rememberMe: rememberMe
+                };
+
+                localStorage.setItem('anbima_session', JSON.stringify(session));
+
+                // Atualizar ultimo acesso do usuario
+                user.ultimoAcesso = new Date().toISOString();
+                saveUsers(users);
+
+                showAlert('success', 'Login realizado com sucesso! Redirecionando...');
+
+                setTimeout(() => {
+                    window.location.href = 'dashboard_anbima_real.html';
+                }, 1000);
+            } else {
+                showAlert('error', 'Email ou senha incorretos. Tente novamente.');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Entrar</span>';
+            }
+        }
+
+        // Registro
+        async function handleRegister(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('registerBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> Criando conta...';
+
+            const nome = document.getElementById('regNome').value;
+            const sobrenome = document.getElementById('regSobrenome').value;
+            const email = document.getElementById('regEmail').value;
+            const cpf = document.getElementById('regCPF').value.replace(/\D/g, '');
+            const telefone = document.getElementById('regTelefone').value;
+            const empresa = document.getElementById('regEmpresa').value;
+            const cargo = document.getElementById('regCargo').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            // Validacoes
+            if (password !== confirmPassword) {
+                showAlert('error', 'As senhas nao coincidem!');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Criar Conta</span>';
+                return;
+            }
+
+            if (cpf.length !== 11) {
+                showAlert('error', 'CPF invalido. Digite 11 digitos.');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Criar Conta</span>';
+                return;
+            }
+
+            // Simular delay
+            await new Promise(r => setTimeout(r, 1500));
+
+            const users = getUsers();
+
+            // Verificar email duplicado
+            if (users.find(u => u.email === email)) {
+                showAlert('error', 'Este email ja esta cadastrado. Faca login ou use outro email.');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Criar Conta</span>';
+                return;
+            }
+
+            // Verificar CPF duplicado
+            if (users.find(u => u.cpf === cpf)) {
+                showAlert('error', 'Este CPF ja esta cadastrado.');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Criar Conta</span>';
+                return;
+            }
+
+            const hashedPassword = await hashPassword(password);
+
+            const newUser = {
+                id: 'user_' + Date.now(),
+                nome: nome + ' ' + sobrenome,
+                email: email,
+                cpf: cpf,
+                telefone: telefone,
+                empresa: empresa,
+                cargo: cargo,
+                password: hashedPassword,
+                perfil: 'usuario',
+                dataCadastro: new Date().toISOString(),
+                ativo: true
+            };
+
+            users.push(newUser);
+            saveUsers(users);
+
+            showAlert('success', 'Conta criada com sucesso! Voce ja pode fazer login.');
+
+            // Limpar formulario e ir para login
+            e.target.reset();
+            document.getElementById('strengthMeter').className = 'strength-meter';
+            document.getElementById('strengthMeter').querySelector('.text').textContent = '';
+
+            setTimeout(() => {
+                showForm('login');
+                document.getElementById('loginEmail').value = email;
+                showAlert('info', 'Digite sua senha para entrar.');
+            }, 1500);
+
+            btn.disabled = false;
+            btn.innerHTML = '<span>Criar Conta</span>';
+        }
+
+        // Recuperar senha
+        function showForgotPassword() {
+            const email = prompt('Digite seu email para recuperar a senha:');
+            if (email) {
+                const users = getUsers();
+                const user = users.find(u => u.email === email);
+                if (user) {
+                    alert('Um email de recuperacao foi enviado para ' + email + '\n\n(Em ambiente de producao, um email real seria enviado)');
+                } else {
+                    alert('Email nao encontrado no sistema.');
+                }
+            }
+        }
+
+        // Mascaras
+        document.getElementById('regCPF').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            if (value.length > 9) {
+                value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+            } else if (value.length > 6) {
+                value = value.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
+            } else if (value.length > 3) {
+                value = value.replace(/(\d{3})(\d{0,3})/, '$1.$2');
+            }
+            e.target.value = value;
+        });
+
+        document.getElementById('regTelefone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            if (value.length > 10) {
+                value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            } else if (value.length > 6) {
+                value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+            } else if (value.length > 2) {
+                value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

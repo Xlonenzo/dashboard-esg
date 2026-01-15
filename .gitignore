@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dados sensíveis
+data/
+tsb_data/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup
+*_backup.*
+
+# Arquivos temporários Claude
+tmpclaude-*
+nul
+
+# Arquivos Excel temporários
+~$*
+
+# Arquivos grandes/binários
+*.pbix
+*.pdf
+*.zip
+*.jpeg
+*.jpg
+*.png
+
+# Dados Excel (manter apenas código)
+*.xlsx
+*.csv
+*.json

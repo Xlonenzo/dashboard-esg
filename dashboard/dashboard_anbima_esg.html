@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard ANBIMA ESG - Fundos Sustentaveis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1976D2;
+            --primary-light: #42A5F5;
+            --secondary: #2E7D32;
+            --secondary-light: #66BB6A;
+            --accent: #FF9800;
+            --accent-light: #FFB74D;
+            --danger: #f44336;
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --info: #00BCD4;
+            --purple: #9C27B0;
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --border-color: #2a2a4a;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, #0d0d20 0%, #151530 100%);
+            border-right: 1px solid var(--border-color);
+            padding: 20px 0;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .logo {
+            padding: 10px 25px 30px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-top: 5px;
+        }
+
+        .nav-section {
+            padding: 0 15px;
+            margin-bottom: 10px;
+        }
+
+        .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            padding: 10px 10px 5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(25, 118, 210, 0.3) 0%, rgba(46, 125, 50, 0.3) 100%);
+            color: var(--text-primary);
+            border: 1px solid rgba(25, 118, 210, 0.5);
+        }
+
+        .nav-item .icon {
+            font-size: 1.2rem;
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-item .label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 25px;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-title h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .page-title p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+
+        .kpi-card.green::before { background: var(--secondary); }
+        .kpi-card.orange::before { background: var(--accent); }
+        .kpi-card.purple::before { background: var(--purple); }
+        .kpi-card.info::before { background: var(--info); }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .kpi-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            background: rgba(25, 118, 210, 0.15);
+        }
+
+        .kpi-card.green .kpi-icon { background: rgba(46, 125, 50, 0.15); }
+        .kpi-card.orange .kpi-icon { background: rgba(255, 152, 0, 0.15); }
+        .kpi-card.purple .kpi-icon { background: rgba(156, 39, 176, 0.15); }
+        .kpi-card.info .kpi-icon { background: rgba(0, 188, 212, 0.15); }
+
+        .kpi-change {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .kpi-change.positive {
+            background: rgba(76, 175, 80, 0.15);
+            color: var(--success);
+        }
+
+        .kpi-change.negative {
+            background: rgba(244, 67, 54, 0.15);
+            color: var(--danger);
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .kpi-card.green .kpi-value { color: var(--secondary); }
+        .kpi-card.orange .kpi-value { color: var(--accent); }
+        .kpi-card.purple .kpi-value { color: var(--purple); }
+        .kpi-card.info .kpi-value { color: var(--info); }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .charts-grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .charts-grid-full {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-card.span-2 {
+            grid-column: span 2;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .chart-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .chart-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chart-btn:hover, .chart-btn.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(25, 118, 210, 0.1);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        .chart-container.small {
+            height: 200px;
+        }
+
+        .chart-container.large {
+            height: 350px;
+        }
+
+        /* Table */
+        .table-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: rgba(25, 118, 210, 0.1);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-is { background: rgba(46, 125, 50, 0.2); color: var(--secondary); }
+        .badge-esg { background: rgba(25, 118, 210, 0.2); color: var(--primary); }
+        .badge-ambiental { background: rgba(76, 175, 80, 0.2); color: #4CAF50; }
+        .badge-social { background: rgba(255, 152, 0, 0.2); color: #FF9800; }
+        .badge-governanca { background: rgba(156, 39, 176, 0.2); color: #9C27B0; }
+        .badge-multi { background: rgba(33, 150, 243, 0.2); color: #2196F3; }
+
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-item {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* ODS Grid */
+        .ods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .ods-card {
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .ods-card:hover {
+            transform: scale(1.05);
+        }
+
+        .ods-number {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .ods-name {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+
+        .ods-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 3px 10px;
+            border-radius: 10px;
+        }
+
+        /* Comparison Cards */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .comparison-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .comparison-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .comparison-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Progress Bars */
+        .progress-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .progress-label {
+            font-size: 0.85rem;
+        }
+
+        .progress-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        /* Gauge */
+        .gauge-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .gauge-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .gauge-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .filter-select {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            min-width: 150px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .chart-card.span-2 {
+                grid-column: span 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-content.active {
+            animation: fadeIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>ANBIMA ESG</h1>
+            <span>Dashboard de Fundos Sustentaveis</span>
+        </div>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Principal</div>
+            <div class="nav-item active" data-tab="overview">
+                <span class="icon">&#128200;</span>
+                <span class="label">Visao Geral</span>
+            </div>
+            <div class="nav-item" data-tab="fundos">
+                <span class="icon">&#128176;</span>
+                <span class="label">Fundos ESG</span>
+            </div>
+            <div class="nav-item" data-tab="mercado">
+                <span class="icon">&#128202;</span>
+                <span class="label">Mercado</span>
+            </div>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Analises</div>
+            <div class="nav-item" data-tab="gestoras">
+                <span class="icon">&#127970;</span>
+                <span class="label">Gestoras</span>
+            </div>
+            <div class="nav-item" data-tab="ods">
+                <span class="icon">&#127758;</span>
+                <span class="label">ODS</span>
+            </div>
+            <div class="nav-item" data-tab="comparativo">
+                <span class="icon">&#128203;</span>
+                <span class="label">Comparativo</span>
+            </div>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">Relatorios</div>
+            <div class="nav-item" data-tab="ranking">
+                <span class="icon">&#127942;</span>
+                <span class="label">Rankings</span>
+            </div>
+            <div class="nav-item" data-tab="tendencias">
+                <span class="icon">&#128640;</span>
+                <span class="label">Tendencias</span>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Tab: Overview -->
+        <div id="overview" class="tab-content active">
+            <header class="page-header">
+                <div class="page-title">
+                    <h2>Visao Geral do Mercado ESG</h2>
+                    <p>Dados atualizados em Janeiro 2025 | Fonte: ANBIMA, CVM</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline">&#128197; Periodo</button>
+                    <button class="btn btn-primary">&#128229; Exportar</button>
+                </div>
+            </header>
+
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card green">
+                    <div class="kpi-header">
+                        <div class="kpi-icon">&#128176;</div>
+                        <span class="kpi-change positive">+48.4%</span>
+                    </div>
+                    <div class="kpi-label">Patrimonio Liquido ESG</div>
+                    <div class="kpi-value">R$ 36,8 Bi</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <div class="kpi-icon">&#128200;</div>
+                        <span class="kpi-change positive">+6</span>
+                    </div>
+                    <div class="kpi-label">Fundos IS</div>
+                    <div class="kpi-value">22</div>
+                </div>
+                <div class="kpi-card orange">
+                    <div class="kpi-header">
+                        <div class="kpi-icon">&#128101;</div>
+                        <span class="kpi-change positive">+86%</span>
+                    </div>
+                    <div class="kpi-label">Total Cotistas</div>
+                    <div class="kpi-value">149,8 mil</div>
+                </div>
+                <div class="kpi-card purple">
+                    <div class="kpi-header">
+                        <div class="kpi-icon">&#128178;</div>
+                        <span class="kpi-change positive">Recorde</span>
+                    </div>
+                    <div class="kpi-label">Captacao 2025</div>
+                    <div class="kpi-value">R$ 8,0 Bi</div>
+                </div>
+                <div class="kpi-card info">
+                    <div class="kpi-header">
+                        <div class="kpi-icon">&#127758;</div>
+                        <span class="kpi-change positive">+0.2%</span>
+                    </div>
+                    <div class="kpi-label">% da Industria</div>
+                    <div class="kpi-value">0,97%</div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="charts-grid">
+                <div class="chart-card span-2">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Evolucao do Patrimonio Liquido ESG</div>
+                            <div class="chart-subtitle">Ultimos 13 meses (R$ Bilhoes)</div>
+                        </div>
+                        <div class="chart-actions">
+                            <button class="chart-btn active">Mensal</button>
+                            <button class="chart-btn">Trimestral</button>
+                            <button class="chart-btn">Anual</button>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="chartPLEvolucao"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Distribuicao por Categoria</div>
+                            <div class="chart-subtitle">Patrimonio por tipo de fundo</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartCategoria"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Foco ESG dos Fundos IS</div>
+                            <div class="chart-subtitle">Distribuicao por tema</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartFoco"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 3 -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Captacao Liquida Mensal</div>
+                            <div class="chart-subtitle">R$ Milhoes</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartCaptacao"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Crescimento de Cotistas</div>
+                            <div class="chart-subtitle">Numero de investidores (milhares)</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartCotistas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Fundos -->
+        <div id="fundos" class="tab-content">
+            <header class="page-header">
+                <div class="page-title">
+                    <h2>Fundos ESG</h2>
+                    <p>Analise detalhada dos fundos de investimento sustentavel</p>
+                </div>
+            </header>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <span class="filter-label">Categoria</span>
+                    <select class="filter-select">
+                        <option>Todas</option>
+                        <option>IS - Investimento Sustentavel</option>
+                        <option>ESG Integrado</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Foco ESG</span>
+                    <select class="filter-select">
+                        <option>Todos</option>
+                        <option>Ambiental</option>
+                        <option>Social</option>
+                        <option>Governanca</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Tipo</span>
+                    <select class="filter-select">
+                        <option>Todos</option>
+                        <option>Renda Fixa</option>
+                        <option>Renda Variavel</option>
+                        <option>Multimercado</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-value">70</div>
+                    <div class="stat-label">Total de Fundos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: var(--secondary);">22</div>
+                    <div class="stat-label">Fundos IS</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: var(--accent);">48</div>
+                    <div class="stat-label">ESG Integrado</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: var(--purple);">15.2%</div>
+                    <div class="stat-label">Rent. Media Ano</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Top 10 Fundos por PL</div>
+                            <div class="chart-subtitle">Patrimonio Liquido (R$ Bilhoes)</div>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="chartTopFundos"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Rentabilidade vs Volatilidade</div>
+                            <div class="chart-subtitle">Analise risco-retorno</div>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="chartRiscoRetorno"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-card">
+                <div class="chart-header">
+                    <div class="chart-title">Lista Completa de Fundos ESG</div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Fundo</th>
+                                <th>Gestora</th>
+                                <th>Categoria</th>
+                                <th>Foco</th>
+                                <th>PL (R$ Mi)</th>
+                                <th>Cotistas</th>
+                                <th>Rent. Ano</th>
+                                <th>Sharpe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><strong>XP Debentures Incentivadas IS</strong></td>
+                                <td>XP Asset</td>
+                                <td><span class="badge badge-is">IS</span></td>
+                                <td><span class="badge badge-ambiental">Ambiental</span></td>
+                                <td>6.500</td>
+                                <td>35.000</td>
+                                <td class="trend-up">+11,9%</td>
+                                <td>1.85</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><strong>BTG Pactual Credito Corp IS</strong></td>
+                                <td>BTG Pactual</td>
+                                <td><span class="badge badge-is">IS</span></td>
+                                <td><span class="badge badge-ambiental">Ambiental</span></td>
+                                <td>5.200</td>
+                                <td>12.500</td>
+                                <td class="trend-up">+12,5%</td>
+                                <td>1.72</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><strong>Bradesco FIA ISE IS</strong></td>
+                                <td>Bradesco Asset</td>
+                                <td><span class="badge badge-is">IS</span></td>
+                                <td><span class="badge badge-multi">Multi-tema</span></td>
+                                <td>4.100</td>
+                                <td>22.000</td>
+                                <td class="trend-up">+14,3%</td>
+                                <td>1.45</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td><strong>Itau Transicao Energetica IS</strong></td>
+                                <td>Itau Asset</td>
+                                <td><span class="badge badge-is">IS</span></td>
+                                <td><span class="badge badge-ambiental">Ambiental</span></td>
+                                <td>3.800</td>
+                                <td>8.900</td>
+                                <td class="trend-up">+18,2%</td>
+                                <td>1.92</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td><strong>BTG ESG Corporativo</strong></td>
+                                <td>BTG Pactual</td>
+                                <td><span class="badge badge-esg">ESG Int.</span></td>
+                                <td><span class="badge badge-governanca">Governanca</span></td>
+                                <td>3.100</td>
+                                <td>9.500</td>
+                                <td class="trend-up">+12,8%</td>
+                                <td>1.65</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td><strong>BB Acoes Sustentabilidade IS</strong></td>
+                                <td>BB Asset</td>
+                                <td><span class="badge badge-is">IS</span></td>
+                                <td><span class="badge badge-multi">Multi-tema</span></td>
+                                <td>2.900</td>
+                                <td>15.200</td>
+                                <td class="trend-up">+15,8%</td>
+                                <td>1.38</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td><strong>Itau Governanca Responsavel</strong></td>
+                                <td>Itau Asset</td>
+                                <td><span class="badge badge-esg">ESG Int.</span></td>
+                                <td><span class="badge badge-governanca">Governanca</span></td>
+                                <td>2.700</td>
+                                <td>7.200</td>
+                                <td class="trend-up">+17,3%</td>
+                                <td>1.55</td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td><strong>Verde AM ESG Selection</strong></td>
+                                <td>Verde Asset</td>
+                                <td><span class="badge badge-esg">ESG Int.</span></td>
+                                <td><span class="badge badge-multi">Multi-tema</span></td>
+                                <td>2.200</td>
+                                <td>6.800</td>
+                                <td class="trend-up">+16,1%</td>
+                                <td>1.48</td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td><strong>JGP Impacto Social IS</strong></td>
+                                <td>JGP Asset</td>
+                                <td><span class="badge badge-is">IS</span></td>
+                                <td><span class="badge badge-social">Social</span></td>
+                                <td>1.800</td>
+                                <td>4.500</td>
+                                <td class="trend-up">+13,7%</td>
+                                <td>1.62</td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td><strong>Opportunity ESG FIA</strong></td>
+                                <td>Opportunity</td>
+                                <td><span class="badge badge-esg">ESG Int.</span></td>
+                                <td><span class="badge badge-ambiental">Ambiental</span></td>
+                                <td>1.500</td>
+                                <td>3.200</td>
+                                <td class="trend-up">+19,5%</td>
+                                <td>1.78</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Mercado -->
+        <div id="mercado" class="tab-content">
+            <header class="page-header">
+                <div class="page-title">
+                    <h2>Analise de Mercado</h2>
+                    <p>Indices de referencia e benchmark ESG</p>
+                </div>
+            </header>
+
+            <!-- KPIs de Indices -->
+            <div class="kpi-grid">
+                <div class="kpi-card green">
+                    <div class="kpi-header">
+                        <div class="kpi-icon">&#128200;</div>
+                        <span class="kpi-change positive">+18.5%</span>
+                    </div>
+                    <div class="kpi-label">ISE B3</div>
+                    <div class="kpi-value">4.850</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <div class="kpi-icon">&#127811;</div>
+                        <span class="kpi-change positive">+22.3%</span>
+                    </div>
+                    <div class="kpi-label">ICO2 B3</div>
+                    <div class="kpi-value">3.420</div>
+                </div>
+                <div class="kpi-card orange">
+                    <div class="kpi-header">
+                        <div class="kpi-icon">&#128202;</div>
+                        <span class="kpi-change positive">+15.2%</span>
+                    </div>
+                    <div class="kpi-label">IBOVESPA</div>
+                    <div class="kpi-value">142.500</div>
+                </div>
+                <div class="kpi-card purple">
+                    <div class="kpi-header">
+                        <div class="kpi-icon">&#128181;</div>
+                        <span class="kpi-change positive">+12.8%</span>
+                    </div>
+                    <div class="kpi-label">CDI Ano</div>
+                    <div class="kpi-value">12,65%</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card span-2">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Comparativo de Indices</div>
+                            <div class="chart-subtitle">Performance normalizada (base 100)</div>
+                        </div>
+                        <div class="chart-actions">
+                            <button class="chart-btn">1M</button>
+                            <button class="chart-btn">6M</button>
+                            <button class="chart-btn active">1A</button>
+                            <button class="chart-btn">5A</button>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="chartIndices"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">ISE vs IBOV</div>
+                            <div class="chart-subtitle">Alpha do indice ESG</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartISEvsIBOV"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Volume de Negocios ESG</div>
+                            <div class="chart-subtitle">R$ Bilhoes/mes</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartVolumeESG"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Gestoras -->
+        <div id="gestoras" class="tab-content">
+            <header class="page-header">
+                <div class="page-title">
+                    <h2>Gestoras de Fundos ESG</h2>
+                    <p>Ranking e analise das principais gestoras</p>
+                </div>
+            </header>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Market Share por Gestora</div>
+                            <div class="chart-subtitle">Participacao no PL total ESG</div>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="chartGestorasShare"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Numero de Fundos por Gestora</div>
+                            <div class="chart-subtitle">Quantidade de produtos ESG</div>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="chartGestorasFundos"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestoras Table -->
+            <div class="table-card">
+                <div class="chart-header">
+                    <div class="chart-title">Ranking de Gestoras ESG</div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Gestora</th>
+                                <th>Fundos ESG</th>
+                                <th>PL Total (R$ Bi)</th>
+                                <th>Market Share</th>
+                                <th>Rent. Media</th>
+                                <th>Cotistas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1</strong></td>
+                                <td>BTG Pactual Asset</td>
+                                <td>8</td>
+                                <td>8.3</td>
+                                <td>22.6%</td>
+                                <td class="trend-up">+12.7%</td>
+                                <td>22.000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2</strong></td>
+                                <td>XP Asset Management</td>
+                                <td>6</td>
+                                <td>6.5</td>
+                                <td>17.7%</td>
+                                <td class="trend-up">+11.9%</td>
+                                <td>35.000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3</strong></td>
+                                <td>Itau Asset Management</td>
+                                <td>7</td>
+                                <td>6.5</td>
+                                <td>17.7%</td>
+                                <td class="trend-up">+17.8%</td>
+                                <td>16.100</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4</strong></td>
+                                <td>Bradesco Asset</td>
+                                <td>5</td>
+                                <td>4.1</td>
+                                <td>11.1%</td>
+                                <td class="trend-up">+14.3%</td>
+                                <td>22.000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5</strong></td>
+                                <td>BB Asset Management</td>
+                                <td>4</td>
+                                <td>2.9</td>
+                                <td>7.9%</td>
+                                <td class="trend-up">+15.8%</td>
+                                <td>15.200</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: ODS -->
+        <div id="ods" class="tab-content">
+            <header class="page-header">
+                <div class="page-title">
+                    <h2>Objetivos de Desenvolvimento Sustentavel</h2>
+                    <p>Alinhamento dos fundos com os 17 ODS da ONU</p>
+                </div>
+            </header>
+
+            <!-- ODS Grid -->
+            <div class="ods-grid" style="margin-bottom: 30px;">
+                <div class="ods-card" style="background: #E5243B;">
+                    <div class="ods-number">1</div>
+                    <div class="ods-name">Erradicacao da Pobreza</div>
+                    <div class="ods-value">3 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #DDA63A;">
+                    <div class="ods-number">2</div>
+                    <div class="ods-name">Fome Zero</div>
+                    <div class="ods-value">2 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #4C9F38;">
+                    <div class="ods-number">3</div>
+                    <div class="ods-name">Saude e Bem-Estar</div>
+                    <div class="ods-value">8 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #C5192D;">
+                    <div class="ods-number">4</div>
+                    <div class="ods-name">Educacao</div>
+                    <div class="ods-value">5 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #FF3A21;">
+                    <div class="ods-number">5</div>
+                    <div class="ods-name">Igualdade de Genero</div>
+                    <div class="ods-value">4 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #26BDE2;">
+                    <div class="ods-number">6</div>
+                    <div class="ods-name">Agua e Saneamento</div>
+                    <div class="ods-value">12 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #FCC30B;">
+                    <div class="ods-number">7</div>
+                    <div class="ods-name">Energia Limpa</div>
+                    <div class="ods-value">18 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #A21942;">
+                    <div class="ods-number">8</div>
+                    <div class="ods-name">Trabalho Decente</div>
+                    <div class="ods-value">6 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #FD6925;">
+                    <div class="ods-number">9</div>
+                    <div class="ods-name">Industria e Inovacao</div>
+                    <div class="ods-value">9 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #DD1367;">
+                    <div class="ods-number">10</div>
+                    <div class="ods-name">Reducao das Desigualdades</div>
+                    <div class="ods-value">5 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #FD9D24;">
+                    <div class="ods-number">11</div>
+                    <div class="ods-name">Cidades Sustentaveis</div>
+                    <div class="ods-value">7 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #BF8B2E;">
+                    <div class="ods-number">12</div>
+                    <div class="ods-name">Consumo Responsavel</div>
+                    <div class="ods-value">10 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #3F7E44;">
+                    <div class="ods-number">13</div>
+                    <div class="ods-name">Acao Climatica</div>
+                    <div class="ods-value">22 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #0A97D9;">
+                    <div class="ods-number">14</div>
+                    <div class="ods-name">Vida na Agua</div>
+                    <div class="ods-value">4 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #56C02B;">
+                    <div class="ods-number">15</div>
+                    <div class="ods-name">Vida Terrestre</div>
+                    <div class="ods-value">6 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #00689D;">
+                    <div class="ods-number">16</div>
+                    <div class="ods-name">Paz e Justica</div>
+                    <div class="ods-value">3 fundos</div>
+                </div>
+                <div class="ods-card" style="background: #19486A;">
+                    <div class="ods-number">17</div>
+                    <div class="ods-name">Parcerias</div>
+                    <div class="ods-value">4 fundos</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Patrimonio por ODS</div>
+                            <div class="chart-subtitle">R$ Bilhoes alinhados a cada objetivo</div>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="chartODSPatrimonio"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Radar de Cobertura ODS</div>
+                            <div class="chart-subtitle">Distribuicao dos fundos</div>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="chartODSRadar"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Comparativo -->
+        <div id="comparativo" class="tab-content">
+            <header class="page-header">
+                <div class="page-title">
+                    <h2>Analise Comparativa</h2>
+                    <p>ESG vs Fundos Convencionais</p>
+                </div>
+            </header>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Rentabilidade: ESG vs Convencional</div>
+                            <div class="chart-subtitle">Comparativo por tipo de fundo</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartComparativoRent"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Volatilidade Comparada</div>
+                            <div class="chart-subtitle">Risco por categoria</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartComparativoVol"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3 style="margin-bottom: 20px;">Fundos ESG (IS)</h3>
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Rentabilidade Media</span>
+                            <span class="progress-value" style="color: var(--success);">14.8%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 74%; background: var(--success);"></div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Volatilidade</span>
+                            <span class="progress-value">8.2%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 41%; background: var(--primary);"></div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Sharpe Ratio</span>
+                            <span class="progress-value">1.65</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 82%; background: var(--secondary);"></div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Taxa Admin Media</span>
+                            <span class="progress-value">0.85%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 42%; background: var(--accent);"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comparison-card">
+                    <h3 style="margin-bottom: 20px;">Fundos Convencionais</h3>
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Rentabilidade Media</span>
+                            <span class="progress-value">12.3%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 61%; background: var(--text-secondary);"></div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Volatilidade</span>
+                            <span class="progress-value">10.5%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 52%; background: var(--text-secondary);"></div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Sharpe Ratio</span>
+                            <span class="progress-value">1.22</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 61%; background: var(--text-secondary);"></div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Taxa Admin Media</span>
+                            <span class="progress-value">1.20%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%; background: var(--text-secondary);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Ranking -->
+        <div id="ranking" class="tab-content">
+            <header class="page-header">
+                <div class="page-title">
+                    <h2>Rankings</h2>
+                    <p>Top performers em diferentes categorias</p>
+                </div>
+            </header>
+
+            <div class="charts-grid charts-grid-3">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Top Rentabilidade</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartTopRent"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Top Captacao</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartTopCaptacao"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Top Sharpe Ratio</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartTopSharpe"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card span-2">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Performance Acumulada - Top 5 Fundos</div>
+                            <div class="chart-subtitle">Ultimos 12 meses</div>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="chartPerformanceTop5"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Tendencias -->
+        <div id="tendencias" class="tab-content">
+            <header class="page-header">
+                <div class="page-title">
+                    <h2>Tendencias do Mercado</h2>
+                    <p>Projecoes e analises de tendencias</p>
+                </div>
+            </header>
+
+            <div class="charts-grid">
+                <div class="chart-card span-2">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Projecao de Crescimento do Mercado ESG</div>
+                            <div class="chart-subtitle">Patrimonio Liquido projetado (R$ Bilhoes)</div>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="chartProjecao"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Crescimento por Segmento</div>
+                            <div class="chart-subtitle">Taxa de crescimento anual</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartCrescimentoSegmento"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Novos Fundos por Ano</div>
+                            <div class="chart-subtitle">Lancamentos ESG</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartNovosFundos"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights -->
+            <div class="comparison-grid" style="margin-top: 20px;">
+                <div class="comparison-card">
+                    <h3 style="margin-bottom: 15px; color: var(--secondary);">&#128640; Tendencias de Alta</h3>
+                    <div class="comparison-item">
+                        <span>Energia Renovavel</span>
+                        <span class="trend-up">+45% aa</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Transicao Energetica</span>
+                        <span class="trend-up">+38% aa</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Economia Circular</span>
+                        <span class="trend-up">+32% aa</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Blue Economy</span>
+                        <span class="trend-up">+28% aa</span>
+                    </div>
+                </div>
+                <div class="comparison-card">
+                    <h3 style="margin-bottom: 15px; color: var(--accent);">&#128161; Oportunidades</h3>
+                    <div class="comparison-item">
+                        <span>Credito de Carbono</span>
+                        <span>Alto potencial</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Hidrogen Verde</span>
+                        <span>Emergente</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Biodiversidade</span>
+                        <span>Crescente</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Social Bonds</span>
+                        <span>Subexplorado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Chart.js Global Config
+        Chart.defaults.color = '#a0a0b0';
+        Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+        Chart.defaults.font.family = 'Inter';
+
+        // Tab Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                item.classList.add('active');
+                document.getElementById(item.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ===== OVERVIEW CHARTS =====
+
+        // Chart: Evolucao PL
+        new Chart(document.getElementById('chartPLEvolucao'), {
+            type: 'line',
+            data: {
+                labels: ['Jan/24', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan/25'],
+                datasets: [{
+                    label: 'Fundos IS',
+                    data: [19.5, 20.1, 20.8, 21.5, 22.3, 23.1, 23.8, 24.5, 25.2, 26.0, 26.8, 24.8, 36.8],
+                    borderColor: '#2E7D32',
+                    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3
+                }, {
+                    label: 'ESG Integrado',
+                    data: [8.5, 8.8, 9.1, 9.4, 9.7, 10.0, 10.3, 10.6, 10.9, 11.2, 11.5, 11.8, 12.5],
+                    borderColor: '#1976D2',
+                    backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Categoria
+        new Chart(document.getElementById('chartCategoria'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Renda Fixa IS', 'Renda Variavel IS', 'Multimercado IS', 'ESG Integrado'],
+                datasets: [{
+                    data: [23.8, 8.5, 4.5, 12.5],
+                    backgroundColor: ['#2E7D32', '#4CAF50', '#8BC34A', '#1976D2'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: { legend: { position: 'right' } }
+            }
+        });
+
+        // Chart: Foco ESG
+        new Chart(document.getElementById('chartFoco'), {
+            type: 'polarArea',
+            data: {
+                labels: ['Ambiental', 'Social', 'Governanca', 'Multi-tema'],
+                datasets: [{
+                    data: [72, 12, 8, 8],
+                    backgroundColor: ['rgba(76,175,80,0.8)', 'rgba(255,152,0,0.8)', 'rgba(156,39,176,0.8)', 'rgba(33,150,243,0.8)']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right' } }
+            }
+        });
+
+        // Chart: Captacao
+        new Chart(document.getElementById('chartCaptacao'), {
+            type: 'bar',
+            data: {
+                labels: ['Jan/24', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan/25'],
+                datasets: [{
+                    label: 'Captacao Liquida',
+                    data: [450, 380, 520, 680, 720, 850, 920, 780, 650, 890, 950, 1100, 1800],
+                    backgroundColor: ctx => ctx.raw >= 0 ? 'rgba(76,175,80,0.8)' : 'rgba(244,67,54,0.8)',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Cotistas
+        new Chart(document.getElementById('chartCotistas'), {
+            type: 'line',
+            data: {
+                labels: ['Jan/24', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan/25'],
+                datasets: [{
+                    label: 'Cotistas (mil)',
+                    data: [80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 80.4, 149.8],
+                    borderColor: '#FF9800',
+                    backgroundColor: 'rgba(255,152,0,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // ===== FUNDOS CHARTS =====
+
+        // Chart: Top Fundos
+        new Chart(document.getElementById('chartTopFundos'), {
+            type: 'bar',
+            data: {
+                labels: ['XP Deb. Inc.', 'BTG Credito', 'Bradesco ISE', 'Itau Trans.', 'BTG ESG', 'BB Sust.', 'Itau Gov.', 'Verde ESG', 'JGP Social', 'Opp. ESG'],
+                datasets: [{
+                    label: 'PL (R$ Bi)',
+                    data: [6.5, 5.2, 4.1, 3.8, 3.1, 2.9, 2.7, 2.2, 1.8, 1.5],
+                    backgroundColor: ['#2E7D32', '#2E7D32', '#2E7D32', '#2E7D32', '#1976D2', '#2E7D32', '#1976D2', '#1976D2', '#2E7D32', '#1976D2'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Risco Retorno
+        new Chart(document.getElementById('chartRiscoRetorno'), {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Fundos IS',
+                    data: [
+                        {x: 6, y: 12.5}, {x: 9, y: 18.2}, {x: 8, y: 15.8}, {x: 7, y: 14.3}, {x: 5, y: 11.9}, {x: 10, y: 13.7}
+                    ],
+                    backgroundColor: 'rgba(46,125,50,0.8)',
+                    pointRadius: 10
+                }, {
+                    label: 'ESG Integrado',
+                    data: [
+                        {x: 11, y: 16.1}, {x: 12, y: 19.5}, {x: 7, y: 12.8}, {x: 10, y: 17.3}
+                    ],
+                    backgroundColor: 'rgba(25,118,210,0.8)',
+                    pointRadius: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    x: { title: { display: true, text: 'Volatilidade (%)' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { title: { display: true, text: 'Rentabilidade (%)' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+            }
+        });
+
+        // ===== MERCADO CHARTS =====
+
+        // Chart: Indices
+        new Chart(document.getElementById('chartIndices'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                datasets: [{
+                    label: 'ISE B3',
+                    data: [100, 102, 105, 108, 110, 113, 115, 112, 114, 116, 118, 118.5],
+                    borderColor: '#2E7D32',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'ICO2 B3',
+                    data: [100, 103, 107, 111, 114, 118, 120, 117, 119, 121, 122, 122.3],
+                    borderColor: '#4CAF50',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'IBOVESPA',
+                    data: [100, 101, 103, 106, 108, 110, 112, 109, 111, 113, 114, 115.2],
+                    borderColor: '#FF9800',
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: ISE vs IBOV
+        new Chart(document.getElementById('chartISEvsIBOV'), {
+            type: 'bar',
+            data: {
+                labels: ['2020', '2021', '2022', '2023', '2024'],
+                datasets: [{
+                    label: 'ISE',
+                    data: [12.5, 8.3, -5.2, 15.8, 18.5],
+                    backgroundColor: '#2E7D32',
+                    borderRadius: 6
+                }, {
+                    label: 'IBOV',
+                    data: [2.9, -11.9, 4.7, 22.3, 15.2],
+                    backgroundColor: '#FF9800',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Volume ESG
+        new Chart(document.getElementById('chartVolumeESG'), {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                datasets: [{
+                    label: 'Volume (R$ Bi)',
+                    data: [2.1, 2.3, 2.5, 2.8, 3.1, 3.4, 3.2, 2.9, 3.5, 3.8, 4.1, 4.5],
+                    backgroundColor: 'rgba(33,150,243,0.8)',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // ===== GESTORAS CHARTS =====
+
+        // Chart: Gestoras Share
+        new Chart(document.getElementById('chartGestorasShare'), {
+            type: 'pie',
+            data: {
+                labels: ['BTG Pactual', 'XP Asset', 'Itau Asset', 'Bradesco', 'BB Asset', 'Outros'],
+                datasets: [{
+                    data: [22.6, 17.7, 17.7, 11.1, 7.9, 23],
+                    backgroundColor: ['#1976D2', '#2E7D32', '#FF9800', '#9C27B0', '#00BCD4', '#757575'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right' } }
+            }
+        });
+
+        // Chart: Gestoras Fundos
+        new Chart(document.getElementById('chartGestorasFundos'), {
+            type: 'bar',
+            data: {
+                labels: ['BTG Pactual', 'Itau Asset', 'XP Asset', 'Bradesco', 'BB Asset', 'Verde', 'JGP', 'Opportunity'],
+                datasets: [{
+                    label: 'Quantidade',
+                    data: [8, 7, 6, 5, 4, 3, 2, 2],
+                    backgroundColor: '#1976D2',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+
+        // ===== ODS CHARTS =====
+
+        // Chart: ODS Patrimonio
+        new Chart(document.getElementById('chartODSPatrimonio'), {
+            type: 'bar',
+            data: {
+                labels: ['ODS 7', 'ODS 13', 'ODS 6', 'ODS 12', 'ODS 9', 'ODS 3', 'ODS 11', 'ODS 8'],
+                datasets: [{
+                    label: 'PL (R$ Bi)',
+                    data: [12.5, 10.2, 8.5, 6.3, 5.8, 4.2, 3.5, 2.8],
+                    backgroundColor: ['#FCC30B', '#3F7E44', '#26BDE2', '#BF8B2E', '#FD6925', '#4C9F38', '#FD9D24', '#A21942'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: ODS Radar
+        new Chart(document.getElementById('chartODSRadar'), {
+            type: 'radar',
+            data: {
+                labels: ['ODS 1', 'ODS 3', 'ODS 6', 'ODS 7', 'ODS 9', 'ODS 11', 'ODS 12', 'ODS 13'],
+                datasets: [{
+                    label: 'Fundos Alinhados',
+                    data: [3, 8, 12, 18, 9, 7, 10, 22],
+                    backgroundColor: 'rgba(46,125,50,0.3)',
+                    borderColor: '#2E7D32',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255,255,255,0.1)' },
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        pointLabels: { color: '#a0a0b0' }
+                    }
+                }
+            }
+        });
+
+        // ===== COMPARATIVO CHARTS =====
+
+        // Chart: Comparativo Rentabilidade
+        new Chart(document.getElementById('chartComparativoRent'), {
+            type: 'bar',
+            data: {
+                labels: ['Renda Fixa', 'Renda Variavel', 'Multimercado'],
+                datasets: [{
+                    label: 'ESG',
+                    data: [12.5, 18.2, 14.8],
+                    backgroundColor: '#2E7D32',
+                    borderRadius: 6
+                }, {
+                    label: 'Convencional',
+                    data: [11.2, 15.3, 12.1],
+                    backgroundColor: '#757575',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Comparativo Volatilidade
+        new Chart(document.getElementById('chartComparativoVol'), {
+            type: 'bar',
+            data: {
+                labels: ['Renda Fixa', 'Renda Variavel', 'Multimercado'],
+                datasets: [{
+                    label: 'ESG',
+                    data: [4.2, 12.5, 8.3],
+                    backgroundColor: '#1976D2',
+                    borderRadius: 6
+                }, {
+                    label: 'Convencional',
+                    data: [5.1, 15.2, 10.8],
+                    backgroundColor: '#757575',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // ===== RANKING CHARTS =====
+
+        // Chart: Top Rentabilidade
+        new Chart(document.getElementById('chartTopRent'), {
+            type: 'bar',
+            data: {
+                labels: ['Opp. ESG', 'Itau Trans.', 'Itau Gov.', 'Verde ESG', 'BB Sust.'],
+                datasets: [{
+                    data: [19.5, 18.2, 17.3, 16.1, 15.8],
+                    backgroundColor: ['#FFD700', '#C0C0C0', '#CD7F32', '#4CAF50', '#4CAF50'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Top Captacao
+        new Chart(document.getElementById('chartTopCaptacao'), {
+            type: 'bar',
+            data: {
+                labels: ['XP Deb.', 'Bradesco', 'BB Sust.', 'BTG Cred.', 'Itau Trans.'],
+                datasets: [{
+                    data: [850, 620, 480, 420, 380],
+                    backgroundColor: ['#FFD700', '#C0C0C0', '#CD7F32', '#1976D2', '#1976D2'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Top Sharpe
+        new Chart(document.getElementById('chartTopSharpe'), {
+            type: 'bar',
+            data: {
+                labels: ['Itau Trans.', 'XP Deb.', 'Opp. ESG', 'BTG Cred.', 'BTG ESG'],
+                datasets: [{
+                    data: [1.92, 1.85, 1.78, 1.72, 1.65],
+                    backgroundColor: ['#FFD700', '#C0C0C0', '#CD7F32', '#9C27B0', '#9C27B0'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Performance Top 5
+        new Chart(document.getElementById('chartPerformanceTop5'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                datasets: [{
+                    label: 'Opportunity ESG',
+                    data: [100, 102, 105, 108, 111, 114, 116, 114, 116, 118, 119, 119.5],
+                    borderColor: '#FF9800',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'Itau Transicao',
+                    data: [100, 101, 104, 107, 110, 113, 115, 113, 115, 117, 118, 118.2],
+                    borderColor: '#2E7D32',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'Itau Governanca',
+                    data: [100, 102, 104, 106, 109, 112, 114, 112, 114, 116, 117, 117.3],
+                    borderColor: '#1976D2',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'Verde ESG',
+                    data: [100, 101, 103, 106, 108, 111, 113, 111, 113, 115, 116, 116.1],
+                    borderColor: '#9C27B0',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'BB Sustentabilidade',
+                    data: [100, 101, 103, 105, 108, 110, 112, 110, 112, 114, 115, 115.8],
+                    borderColor: '#00BCD4',
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // ===== TENDENCIAS CHARTS =====
+
+        // Chart: Projecao
+        new Chart(document.getElementById('chartProjecao'), {
+            type: 'line',
+            data: {
+                labels: ['2022', '2023', '2024', '2025', '2026 (P)', '2027 (P)', '2028 (P)', '2029 (P)', '2030 (P)'],
+                datasets: [{
+                    label: 'Patrimonio Realizado',
+                    data: [15, 22, 36.8, 49.3, null, null, null, null, null],
+                    borderColor: '#2E7D32',
+                    backgroundColor: 'rgba(46,125,50,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3
+                }, {
+                    label: 'Projecao',
+                    data: [null, null, null, 49.3, 65, 85, 110, 140, 180],
+                    borderColor: '#2E7D32',
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Crescimento Segmento
+        new Chart(document.getElementById('chartCrescimentoSegmento'), {
+            type: 'bar',
+            data: {
+                labels: ['Energia', 'Climatico', 'Social', 'Governanca', 'Circular'],
+                datasets: [{
+                    label: 'Crescimento Anual (%)',
+                    data: [45, 38, 25, 18, 32],
+                    backgroundColor: ['#FCC30B', '#3F7E44', '#FF9800', '#9C27B0', '#BF8B2E'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Novos Fundos
+        new Chart(document.getElementById('chartNovosFundos'), {
+            type: 'bar',
+            data: {
+                labels: ['2020', '2021', '2022', '2023', '2024', '2025 (Jan)'],
+                datasets: [{
+                    label: 'Novos Fundos ESG',
+                    data: [8, 12, 18, 25, 35, 6],
+                    backgroundColor: '#1976D2',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

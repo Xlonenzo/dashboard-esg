@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Sustentabilidade - ANBIMA ESG + TSB</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1976D2;
+            --primary-light: #42A5F5;
+            --secondary: #2E7D32;
+            --secondary-light: #66BB6A;
+            --accent: #FF9800;
+            --verde-tsb: #00C853;
+            --transicao-tsb: #FFD600;
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --border-color: #2a2a4a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 30px;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, rgba(25, 118, 210, 0.2) 0%, rgba(46, 125, 50, 0.2) 100%);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .header .subtitle { color: var(--text-secondary); font-size: 1rem; }
+        .header .badge {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 15px;
+            margin-right: 10px;
+        }
+        .header .badge.tsb { background: var(--verde-tsb); }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .stat-card .label { color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 8px; }
+        .stat-card .value { font-size: 2rem; font-weight: 700; }
+        .stat-card .value.primary { color: var(--primary-light); }
+        .stat-card .value.secondary { color: var(--secondary-light); }
+        .stat-card .value.accent { color: var(--accent); }
+        .stat-card .value.verde { color: var(--verde-tsb); }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+        .chart-card h3 {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chart-card h3::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 2px;
+        }
+        .chart-card h3.tsb::before { background: linear-gradient(180deg, var(--verde-tsb) 0%, var(--secondary) 100%); }
+        .chart-container { position: relative; height: 280px; }
+        .funds-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .funds-table th, .funds-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .funds-table th { color: var(--text-secondary); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; }
+        .funds-table td { font-size: 0.85rem; }
+        .funds-table tr:hover { background: var(--bg-card-hover); }
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .tag.ambiental { background: rgba(76, 175, 80, 0.2); color: #81C784; }
+        .tag.social { background: rgba(255, 152, 0, 0.2); color: #FFB74D; }
+        .tag.governanca { background: rgba(156, 39, 176, 0.2); color: #BA68C8; }
+        .tag.multi { background: rgba(0, 188, 212, 0.2); color: #4DD0E1; }
+        .tag.verde { background: rgba(0, 200, 83, 0.2); color: #69F0AE; }
+        .tag.transicao { background: rgba(255, 214, 0, 0.2); color: #FFEA00; }
+        .tag.energia { background: rgba(255, 152, 0, 0.2); color: #FFB74D; }
+        .tag.saneamento { background: rgba(33, 150, 243, 0.2); color: #64B5F6; }
+        .tag.telecom { background: rgba(156, 39, 176, 0.2); color: #CE93D8; }
+        .tag.financeiro { background: rgba(0, 150, 136, 0.2); color: #80CBC4; }
+        .fonte-info {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 30px;
+        }
+        .fonte-info strong { color: #2196F3; }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .tab:hover { background: var(--bg-card-hover); }
+        .tab.active {
+            background: linear-gradient(135deg, rgba(25, 118, 210, 0.3) 0%, rgba(46, 125, 50, 0.3) 100%);
+            border-color: var(--primary);
+            color: var(--text-primary);
+        }
+        .tab.tsb.active {
+            background: linear-gradient(135deg, rgba(0, 200, 83, 0.3) 0%, rgba(46, 125, 50, 0.3) 100%);
+            border-color: var(--verde-tsb);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .full-width { grid-column: 1 / -1; }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .kpi-item {
+            background: var(--bg-card-hover);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .kpi-item .kpi-codigo { font-size: 0.7rem; color: var(--text-secondary); }
+        .kpi-item .kpi-nome { font-size: 0.75rem; margin: 5px 0; }
+        .kpi-item .kpi-valor { font-size: 1.2rem; font-weight: 600; color: var(--accent); }
+        .kpi-item .kpi-unidade { font-size: 0.65rem; color: var(--text-secondary); }
+        .progress-bar {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+        .progress-bar .fill.verde { background: var(--verde-tsb); }
+        .progress-bar .fill.amarelo { background: var(--transicao-tsb); }
+        .section-title {
+            font-size: 1.2rem;
+            margin: 30px 0 20px;
+            color: var(--text-primary);
+            border-left: 4px solid var(--verde-tsb);
+            padding-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Dashboard Sustentabilidade</h1>
+        <p class="subtitle">Fundos ESG ANBIMA + Taxonomia Sustentavel Brasileira (TSB)</p>
+        <span class="badge">SQL SERVER</span>
+        <span class="badge tsb">TSB - Fase Voluntaria</span>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">Fundos ESG</div>
+            <div class="value primary">47</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Fundos IS</div>
+            <div class="value secondary">18</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">ESG Integrado</div>
+            <div class="value accent">25</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Empresas TSB</div>
+            <div class="value verde">7</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">KPIs Pendentes</div>
+            <div class="value accent">77</div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('overview')">Visao Geral</div>
+        <div class="tab" onclick="showTab('fundos-is')">Fundos IS</div>
+        <div class="tab" onclick="showTab('fundos-esg')">ESG Integrado</div>
+        <div class="tab tsb" onclick="showTab('tsb-empresas')">TSB - Empresas</div>
+        <div class="tab tsb" onclick="showTab('tsb-kpis')">TSB - KPIs</div>
+    </div>
+
+    <div id="overview" class="tab-content active">
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Categoria ESG</h3>
+                <div class="chart-container">
+                    <canvas id="chartCategoria"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>Foco ESG</h3>
+                <div class="chart-container">
+                    <canvas id="chartFoco"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3 class="tsb">Empresas TSB por Setor</h3>
+                <div class="chart-container">
+                    <canvas id="chartTSBSetor"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3 class="tsb">Classificacao TSB</h3>
+                <div class="chart-container">
+                    <canvas id="chartTSBClass"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="fundos-is" class="tab-content">
+        <div class="chart-card full-width">
+            <h3>Fundos IS - Investimento Sustentavel</h3>
+            <table class="funds-table">
+                <thead>
+                    <tr><th>Nome do Fundo</th><th>CNPJ</th><th>Tipo</th><th>Foco</th></tr>
+                </thead>
+                <tbody id="tabelaFundosIS"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="fundos-esg" class="tab-content">
+        <div class="chart-card full-width">
+            <h3>Fundos ESG Integrado</h3>
+            <table class="funds-table">
+                <thead>
+                    <tr><th>Nome do Fundo</th><th>CNPJ</th><th>Tipo</th><th>Foco</th></tr>
+                </thead>
+                <tbody id="tabelaFundosESG"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tsb-empresas" class="tab-content">
+        <div class="chart-card full-width">
+            <h3 class="tsb">Empresas Classificadas pela TSB</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.85rem;">
+                Taxonomia Sustentavel Brasileira - Ministerio da Fazenda | Fase Voluntaria (2024-2027)
+            </p>
+            <table class="funds-table">
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>CNPJ</th>
+                        <th>Setor TSB</th>
+                        <th>Classificacao</th>
+                        <th>Score</th>
+                        <th>Titulos</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaTSBEmpresas"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tsb-kpis" class="tab-content">
+        <div class="charts-grid">
+            <div class="chart-card full-width">
+                <h3 class="tsb">KPIs Obrigatorios por Setor - Energia</h3>
+                <div class="kpi-grid" id="kpisEnergia"></div>
+            </div>
+            <div class="chart-card full-width">
+                <h3 class="tsb">KPIs Obrigatorios por Setor - Saneamento</h3>
+                <div class="kpi-grid" id="kpisSaneamento"></div>
+            </div>
+            <div class="chart-card full-width">
+                <h3 class="tsb">KPIs Obrigatorios por Setor - Telecomunicacoes</h3>
+                <div class="kpi-grid" id="kpisTelecom"></div>
+            </div>
+            <div class="chart-card full-width">
+                <h3 class="tsb">KPIs Obrigatorios por Setor - Servicos Financeiros</h3>
+                <div class="kpi-grid" id="kpisFinanceiro"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fonte-info">
+        <p><strong>Fontes:</strong> SQL Server (ANBIMA_ESG) | TSB - Ministerio da Fazenda</p>
+        <p>Atualizado em 09/01/2026 14:48</p>
+    </div>
+
+    <script>
+        const dadosSQL = {"total_esg": 47, "total_is": 18, "total_integrado": 25, "por_categoria": {"ESG Integrado": 29, "IS - Investimento Sustentavel": 18}, "por_foco": {"Ambiental": 24, "Multi-tema": 14, "Social": 6, "Governanca": 3}, "por_gestora": {"Outros": 31, "Itau": 6, "Itau Asset Management": 2, "BTG Pactual Asset Management": 2, "XP Asset Management": 1, "Verde Asset Management": 1, "Opportunity Asset Management": 1, "JGP Asset Management": 1, "Bradesco Asset Management": 1, "BB Asset Management": 1}, "fundos_is": [{"razao_social_fundo": "BB Acoes Sustentabilidade IS", "identificador_fundo": "40.123.456/0001-03", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "BB AÇÕES SUSTENTABILIDADE IS FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO EM AÇÕES", "identificador_fundo": "06.349.816/0001-01", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "BB TOP ACOES INDICE DE SUSTENTABILIDADE EMPRESARIAL IS FUNDO DE INVESTIMENTO EM AÇÕES", "identificador_fundo": "05.775.731/0001-22", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "Bradesco FIA ISE IS", "identificador_fundo": "40.123.456/0001-04", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "BRADESCO FUNDO DE INVESTIMENTO EM AÇÕES IS SUSTENTABILIDADE EMPRESARIAL", "identificador_fundo": "07.187.751/0001-08", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "BTG Pactual Credito Corporativo IS", "identificador_fundo": "40.123.456/0001-01", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "FUNDO DE INVESTIMENTO EM AÇÕES CAIXA SUSTENTABILIDADE EMPRESARIAL ISE - IS", "identificador_fundo": "08.070.838/0001-63", "tipo_fundo": "FIF", "FocoESG": "Governanca"}, {"razao_social_fundo": "ITAÚ AÇÕES GOVERNANÇA CORPORATIVA FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO SUSTENTÁVEL", "identificador_fundo": "07.686.658/0001-48", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "ITAÚ EMPRESA GOVERNANÇA CORPORATIVA AÇÕES FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO SUSTENTÁVEL", "identificador_fundo": "09.145.127/0001-73", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "ITAÚ EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO SUSTENTÁVEL", "identificador_fundo": "06.215.101/0001-66", "tipo_fundo": "FIF", "FocoESG": "Social"}, {"razao_social_fundo": "ITAÚ EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO SUSTENTÁVEL", "identificador_fundo": "06.069.957/0001-70", "tipo_fundo": "FIF", "FocoESG": "Social"}, {"razao_social_fundo": "ITAÚ GOVERNANÇA CORPORATIVA AÇÕES FUNDO DE INVESTIMENTO SUSTENTÁVEL", "identificador_fundo": "07.686.680/0001-98", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "ITAÚ PRIVATE EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO SUSTENTÁVEL", "identificador_fundo": "07.707.678/0001-58", "tipo_fundo": "FIF", "FocoESG": "Social"}, {"razao_social_fundo": "Itau Transicao Energetica IS", "identificador_fundo": "40.123.456/0001-02", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "JGP Impacto Social IS", "identificador_fundo": "40.123.456/0001-06", "tipo_fundo": "FIF", "FocoESG": "Social"}, {"razao_social_fundo": "SANTANDER ETHICAL AÇÕES SUSTENTABILIDADE IS FUNDO DE INVESTIMENTO", "identificador_fundo": "04.736.006/0001-82", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "SANTANDER ETHICAL AÇÕES SUSTENTABILIDADE SPECIAL IS FUNDO DE INVESTIMENTO EM COTAS DE FUNDO DE INVESIMENTO", "identificador_fundo": "04.616.277/0001-02", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "XP Debentures Incentivadas IS", "identificador_fundo": "40.123.456/0001-05", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}], "fundos_esg": [{"razao_social_fundo": "BB RENDA FIXA REFERENCIADO DI SOCIAL  50 FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO", "identificador_fundo": "05.080.623/0001-35", "tipo_fundo": "FIF", "FocoESG": "Social"}, {"razao_social_fundo": "BRADESCO H FC FI DE AÇÕES SUSTENTABILIDADE", "identificador_fundo": "07.535.827/0001-49", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "BRADESCO PRIME FIC DE FIA IND SUSTENTABILIDADE EMPRESARIAL", "identificador_fundo": "07.667.274/0001-88", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "CSHG ALLOCATION VERDE 14 FUNDO DE INVESTIMENTO EM COTAS DE FUNDO DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "04.147.027/0001-62", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "CSHG ALLOCATION VERDE 30 FUNDO DE INVESTIMENTO EM COTAS DE FUNDO DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "05.586.704/0001-01", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "CSHG ALLOCATION VERDE 90 FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "07.455.460/0001-53", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "CSHG ALLOCATION VERDE AM AGAR FUNDO DE INVESTIMENTO EM COTAS DE FUNDO DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "05.491.230/0001-14", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "CSHG VERDE AM HIPER FUNDO DE INVESTIMENTO EM COTAS DE FUNDO DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "05.586.675/0001-88", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "CSHG VERDE AM STRATEGY II FUNDO DE INVESTIMENTO EM COTAS DE FUNDO DE INVESTIMENTO EM AÇÕES", "identificador_fundo": "03.408.336/0001-86", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "CSHG VERDE FUNDO DE INVESTIMENTO EM COTAS DE FUNDO DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "01.221.890/0001-24", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "CSHG VERDE TM FUNDO DE INVESTIMENTO EM COTAS DE FUNDO DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "09.150.949/0001-42", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "FUNDO SOCIAL FUNDO DE INVESTIMENTO EM AÇÕES", "identificador_fundo": "10.265.295/0001-81", "tipo_fundo": "FIF", "FocoESG": "Social"}, {"razao_social_fundo": "PS VERDE D1 FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "04.311.271/0001-19", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "RIO VERDE SMALL CAPS FUNDO DE INVESTIMENTO EM AÇÕES", "identificador_fundo": "07.420.595/0001-83", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "SANTANDER FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO PB HG VERDE 90 MULTIMERCADO", "identificador_fundo": "07.647.132/0001-59", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "SICREDI – FUNDO DE INVESTIMENTO  RENDA FIXA CURTO PRAZO RESGATE FÁCIL", "identificador_fundo": "01.627.516/0001-23", "tipo_fundo": "FIF", "FocoESG": "Multi-tema"}, {"razao_social_fundo": "VERDE 90 DISTRIBUIDORES FUNDO DE INVESTIMENTO EM COTAS DE FUNDO DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "07.455.788/0001-70", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "VERDE AM JADE FUNDO DE INVESTIMENTO EM COTAS DE FUNDO DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "09.489.250/0001-01", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "VERDE AM MULTI ALLOCATION BP FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "08.893.097/0001-10", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "VERDE AM MULTI ESTRATÉGIA FUNDO DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "08.507.696/0001-59", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "VERDE AM PERFORMANCE FUNDO DE INVESTIMENTO EM AÇÕES", "identificador_fundo": "08.707.235/0001-20", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "VERDE MASTER FUNDO DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "07.455.507/0001-89", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "VERDE PVT MULTIMERCADO FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO", "identificador_fundo": "04.222.368/0001-55", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "VÉRTICE VERDE AM JADE FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO MULTIMERCADO", "identificador_fundo": "09.485.813/0001-93", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}, {"razao_social_fundo": "WESTERN ASSET PONTA VERDE FUNDO DE INVESTIMENTO RENDA FIXA", "identificador_fundo": "03.888.387/0001-52", "tipo_fundo": "FIF", "FocoESG": "Ambiental"}], "data_atualizacao": "09/01/2026 14:48", "fonte": "SQL Server"};
+        const dadosTSB = {"metadata": {"versao": "1.0", "data_criacao": "2026-01-09", "ultima_atualizacao": "2026-01-09", "fonte": "Taxonomia Sustentavel Brasileira - Ministerio da Fazenda", "status_tsb": "Fase Voluntaria (2024-2027)", "proxima_revisao": "2026-06-01"}, "objetivos_tsb": {"ambientais": [{"id": 1, "nome": "Mitigacao da mudanca do clima", "tipo": "Ambiental"}, {"id": 2, "nome": "Adaptacao as mudancas climaticas", "tipo": "Ambiental"}, {"id": 3, "nome": "Protecao e restauracao da biodiversidade", "tipo": "Ambiental"}, {"id": 4, "nome": "Uso sustentavel do solo e florestas", "tipo": "Ambiental"}, {"id": 5, "nome": "Uso sustentavel de recursos hidricos e marinhos", "tipo": "Ambiental"}, {"id": 6, "nome": "Transicao para economia circular", "tipo": "Ambiental"}, {"id": 7, "nome": "Prevencao e controle de contaminacao", "tipo": "Ambiental"}], "sociais": [{"id": 8, "nome": "Geracao de trabalho decente", "tipo": "Social"}, {"id": 9, "nome": "Reducao de desigualdades socioeconomicas", "tipo": "Social"}, {"id": 10, "nome": "Reducao de desigualdades regionais", "tipo": "Social"}, {"id": 11, "nome": "Promocao da qualidade de vida e acesso a servicos", "tipo": "Social"}]}, "kpis_obrigatorios_por_setor": {"energia": {"setor_nome": "Eletricidade e Gas", "objetivos_aplicaveis": [1, 2, 7], "kpis": [{"id": "E01", "nome": "Emissoes GEE Escopo 1", "unidade": "tCO2e", "frequencia": "Anual", "obrigatorio": true}, {"id": "E02", "nome": "Emissoes GEE Escopo 2", "unidade": "tCO2e", "frequencia": "Anual", "obrigatorio": true}, {"id": "E03", "nome": "Emissoes GEE Escopo 3", "unidade": "tCO2e", "frequencia": "Anual", "obrigatorio": false}, {"id": "E04", "nome": "Capacidade Instalada Total", "unidade": "MW", "frequencia": "Anual", "obrigatorio": true}, {"id": "E05", "nome": "Capacidade Instalada Renovavel", "unidade": "MW", "frequencia": "Anual", "obrigatorio": true}, {"id": "E06", "nome": "Percentual Energia Renovavel", "unidade": "%", "frequencia": "Anual", "obrigatorio": true}, {"id": "E07", "nome": "Geracao Anual Total", "unidade": "MWh", "frequencia": "Anual", "obrigatorio": true}, {"id": "E08", "nome": "Geracao Anual Renovavel", "unidade": "MWh", "frequencia": "Anual", "obrigatorio": true}, {"id": "E09", "nome": "Emissoes Evitadas", "unidade": "tCO2e", "frequencia": "Anual", "obrigatorio": true}, {"id": "E10", "nome": "Intensidade de Carbono", "unidade": "gCO2e/kWh", "frequencia": "Anual", "obrigatorio": true}, {"id": "E11", "nome": "Percentual Mistura Gas Natural", "unidade": "%", "frequencia": "Anual", "obrigatorio": true, "limite_2029": 50, "limite_2035": 37.5, "limite_2040": 25, "limite_2044": 0}], "criterios_elegibilidade": ["Energia renovavel (solar, eolica, hidro, biomassa)", "Eficiencia energetica", "Transmissao e distribuicao para fontes limpas"]}, "saneamento": {"setor_nome": "Agua, Esgoto, Residuos e Descontaminacao", "objetivos_aplicaveis": [5, 6, 7, 11], "kpis": [{"id": "S01", "nome": "Volume Agua Tratada", "unidade": "m3", "frequencia": "Anual", "obrigatorio": true}, {"id": "S02", "nome": "Volume Esgoto Tratado", "unidade": "m3", "frequencia": "Anual", "obrigatorio": true}, {"id": "S03", "nome": "Populacao Atendida Agua", "unidade": "habitantes", "frequencia": "Anual", "obrigatorio": true}, {"id": "S04", "nome": "Populacao Atendida Esgoto", "unidade": "habitantes", "frequencia": "Anual", "obrigatorio": true}, {"id": "S05", "nome": "Indice de Cobertura Agua", "unidade": "%", "frequencia": "Anual", "obrigatorio": true}, {"id": "S06", "nome": "Indice de Cobertura Esgoto", "unidade": "%", "frequencia": "Anual", "obrigatorio": true}, {"id": "S07", "nome": "Indice de Perdas de Agua", "unidade": "%", "frequencia": "Anual", "obrigatorio": true}, {"id": "S08", "nome": "ETAs em Operacao", "unidade": "unidades", "frequencia": "Anual", "obrigatorio": true}, {"id": "S09", "nome": "ETEs em Operacao", "unidade": "unidades", "frequencia": "Anual", "obrigatorio": true}, {"id": "S10", "nome": "Instalacoes Adicionadas no Periodo", "unidade": "unidades", "frequencia": "Anual", "obrigatorio": true}, {"id": "S11", "nome": "Residuos Desviados de Aterro", "unidade": "%", "frequencia": "Anual", "obrigatorio": false}, {"id": "S12", "nome": "Emissoes GEE Escopo 1", "unidade": "tCO2e", "frequencia": "Anual", "obrigatorio": true}], "criterios_elegibilidade": ["Tratamento de agua e esgoto", "Reciclagem e economia circular", "Gestao sustentavel de residuos"], "meta_universalizacao": "2033"}, "telecomunicacoes": {"setor_nome": "Telecomunicacoes e TI", "objetivos_aplicaveis": [1, 6, 11], "kpis": [{"id": "T01", "nome": "Consumo Energetico Total", "unidade": "MWh", "frequencia": "Anual", "obrigatorio": true}, {"id": "T02", "nome": "Consumo Energetico Data Centers", "unidade": "MWh", "frequencia": "Anual", "obrigatorio": true}, {"id": "T03", "nome": "PUE (Power Usage Effectiveness)", "unidade": "ratio", "frequencia": "Anual", "obrigatorio": true}, {"id": "T04", "nome": "Percentual Energia Renovavel", "unidade": "%", "frequencia": "Anual", "obrigatorio": true}, {"id": "T05", "nome": "Emissoes GEE Escopo 1", "unidade": "tCO2e", "frequencia": "Anual", "obrigatorio": true}, {"id": "T06", "nome": "Emissoes GEE Escopo 2", "unidade": "tCO2e", "frequencia": "Anual", "obrigatorio": true}, {"id": "T07", "nome": "Residuos Eletronicos Reciclados", "unidade": "ton", "frequencia": "Anual", "obrigatorio": true}, {"id": "T08", "nome": "Cobertura de Rede", "unidade": "% populacao", "frequencia": "Anual", "obrigatorio": true}], "criterios_elegibilidade": ["Infraestrutura digital sustentavel", "Eficiencia energetica em data centers"]}, "servicos_financeiros": {"setor_nome": "Servicos Financeiros", "objetivos_aplicaveis": [1, 8, 9, 10], "kpis": [{"id": "F01", "nome": "Volume Financiamentos Verdes", "unidade": "R$", "frequencia": "Anual", "obrigatorio": true}, {"id": "F02", "nome": "Volume Titulos Sustentaveis", "unidade": "R$", "frequencia": "Anual", "obrigatorio": true}, {"id": "F03", "nome": "Percentual Carteira ESG", "unidade": "%", "frequencia": "Anual", "obrigatorio": true}, {"id": "F04", "nome": "Emissoes Financiadas Escopo 3", "unidade": "tCO2e", "frequencia": "Anual", "obrigatorio": true}, {"id": "F05", "nome": "Investimento em Projetos Sociais", "unidade": "R$", "frequencia": "Anual", "obrigatorio": false}], "criterios_elegibilidade": ["Financiamento verde", "Titulos sustentaveis", "Gestao de riscos climaticos"], "nota": "Elegivel se recursos destinados a atividades verdes"}}, "salvaguardas_minimas": {"obrigatorias": [{"id": "SAL01", "nome": "Nao causar dano significativo", "descricao": "A nenhum dos 11 objetivos TSB", "verificacao": "Analise cruzada"}, {"id": "SAL02", "nome": "Cumprimento legal ambiental", "descricao": "Licencas e autorizacoes vigentes", "verificacao": "Certidoes"}, {"id": "SAL03", "nome": "Cumprimento legal trabalhista", "descricao": "CLT, NRs e convencoes coletivas", "verificacao": "Certidoes"}, {"id": "SAL04", "nome": "Indice de Desigualdade Genero/Raca", "descricao": "Indicador transversal TSB", "verificacao": "Relatorio interno"}], "setoriais": {"agropecuaria": [{"id": "SAL_A01", "nome": "CAR Regularizado", "descricao": "Cadastro Ambiental Rural ativo", "verificacao": "Consulta SICAR"}, {"id": "SAL_A02", "nome": "Sem desmatamento pos-TSB", "descricao": "Apos data de corte da TSB", "verificacao": "Monitoramento satelite"}]}}, "mrv_requisitos": {"governanca_dados": {"obrigatorio": true, "descricao": "Estrutura de coleta e validacao de dados"}, "rastreabilidade": {"obrigatorio": true, "descricao": "Origem e transformacao dos dados"}, "periodicidade": {"obrigatorio": true, "descricao": "Publicacao minima anual"}, "comparabilidade": {"obrigatorio": true, "descricao": "Indicadores padronizados por setor"}, "verificacao_independente": {"obrigatorio": true, "descricao": "Auditoria externa anual"}}, "empresas": [{"id": 1, "emissor": "ALGAR TELECOM S/A", "cnpj": "71208516000174", "setor_tsb": "Telecomunicacoes", "classificacao": "VERDE", "score": 100, "elegivel": true, "titulos": 4, "ano_referencia": 2024, "kpis": {"T01": {"valor": null, "unidade": "MWh", "status": "pendente", "fonte": null}, "T02": {"valor": null, "unidade": "MWh", "status": "pendente", "fonte": null}, "T03": {"valor": null, "unidade": "ratio", "status": "pendente", "fonte": null}, "T04": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}, "T05": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "T06": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "T07": {"valor": null, "unidade": "ton", "status": "pendente", "fonte": null}, "T08": {"valor": null, "unidade": "% populacao", "status": "pendente", "fonte": null}}, "salvaguardas": {"SAL01": {"status": "pendente", "verificado_em": null}, "SAL02": {"status": "pendente", "verificado_em": null}, "SAL03": {"status": "pendente", "verificado_em": null}, "SAL04": {"status": "pendente", "verificado_em": null}}, "mrv": {"governanca_dados": false, "rastreabilidade": false, "periodicidade": false, "comparabilidade": false, "verificacao_independente": false}, "observacoes": "Aguardando relatorio de sustentabilidade 2024"}, {"id": 2, "emissor": "ALUPAR INVESTIMENTO S/A", "cnpj": "08364948000138", "setor_tsb": "Servicos Financeiros", "classificacao": "VERDE", "score": 85, "elegivel": true, "titulos": 2, "ano_referencia": 2024, "kpis": {"F01": {"valor": null, "unidade": "R$", "status": "pendente", "fonte": null}, "F02": {"valor": null, "unidade": "R$", "status": "pendente", "fonte": null}, "F03": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}, "F04": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "F05": {"valor": null, "unidade": "R$", "status": "pendente", "fonte": null}}, "salvaguardas": {"SAL01": {"status": "pendente", "verificado_em": null}, "SAL02": {"status": "pendente", "verificado_em": null}, "SAL03": {"status": "pendente", "verificado_em": null}, "SAL04": {"status": "pendente", "verificado_em": null}}, "mrv": {"governanca_dados": false, "rastreabilidade": false, "periodicidade": false, "comparabilidade": false, "verificacao_independente": false}, "observacoes": "Holding - verificar se aplica criterios de transmissao de energia"}, {"id": 3, "emissor": "COMPANHIA ENERGETICA DO MARANHAO - CEMAR", "cnpj": "06272793000184", "setor_tsb": "Energia", "classificacao": "VERDE", "score": 85, "elegivel": true, "titulos": 3, "ano_referencia": 2024, "kpis": {"E01": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E02": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E03": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E04": {"valor": null, "unidade": "MW", "status": "pendente", "fonte": null}, "E05": {"valor": null, "unidade": "MW", "status": "pendente", "fonte": null}, "E06": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}, "E07": {"valor": null, "unidade": "MWh", "status": "pendente", "fonte": null}, "E08": {"valor": null, "unidade": "MWh", "status": "pendente", "fonte": null}, "E09": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E10": {"valor": null, "unidade": "gCO2e/kWh", "status": "pendente", "fonte": null}, "E11": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}}, "salvaguardas": {"SAL01": {"status": "pendente", "verificado_em": null}, "SAL02": {"status": "pendente", "verificado_em": null}, "SAL03": {"status": "pendente", "verificado_em": null}, "SAL04": {"status": "pendente", "verificado_em": null}}, "mrv": {"governanca_dados": false, "rastreabilidade": false, "periodicidade": false, "comparabilidade": false, "verificacao_independente": false}, "observacoes": "Distribuidora de energia - Grupo Equatorial"}, {"id": 4, "emissor": "CENTRAIS ELETRICAS DO PARA S.A - CELPA", "cnpj": "04895728000180", "setor_tsb": "Energia", "classificacao": "VERDE", "score": 80, "elegivel": true, "titulos": 3, "ano_referencia": 2024, "kpis": {"E01": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E02": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E03": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E04": {"valor": null, "unidade": "MW", "status": "pendente", "fonte": null}, "E05": {"valor": null, "unidade": "MW", "status": "pendente", "fonte": null}, "E06": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}, "E07": {"valor": null, "unidade": "MWh", "status": "pendente", "fonte": null}, "E08": {"valor": null, "unidade": "MWh", "status": "pendente", "fonte": null}, "E09": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E10": {"valor": null, "unidade": "gCO2e/kWh", "status": "pendente", "fonte": null}, "E11": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}}, "salvaguardas": {"SAL01": {"status": "pendente", "verificado_em": null}, "SAL02": {"status": "pendente", "verificado_em": null}, "SAL03": {"status": "pendente", "verificado_em": null}, "SAL04": {"status": "pendente", "verificado_em": null}}, "mrv": {"governanca_dados": false, "rastreabilidade": false, "periodicidade": false, "comparabilidade": false, "verificacao_independente": false}, "observacoes": "Distribuidora de energia - Grupo Equatorial"}, {"id": 5, "emissor": "CEMIG DISTRIBUICAO S/A", "cnpj": "17155730000164", "setor_tsb": "Energia", "classificacao": "VERDE", "score": 100, "elegivel": true, "titulos": 3, "ano_referencia": 2024, "kpis": {"E01": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E02": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E03": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E04": {"valor": null, "unidade": "MW", "status": "pendente", "fonte": null}, "E05": {"valor": null, "unidade": "MW", "status": "pendente", "fonte": null}, "E06": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}, "E07": {"valor": null, "unidade": "MWh", "status": "pendente", "fonte": null}, "E08": {"valor": null, "unidade": "MWh", "status": "pendente", "fonte": null}, "E09": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E10": {"valor": null, "unidade": "gCO2e/kWh", "status": "pendente", "fonte": null}, "E11": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}}, "salvaguardas": {"SAL01": {"status": "pendente", "verificado_em": null}, "SAL02": {"status": "pendente", "verificado_em": null}, "SAL03": {"status": "pendente", "verificado_em": null}, "SAL04": {"status": "pendente", "verificado_em": null}}, "mrv": {"governanca_dados": false, "rastreabilidade": false, "periodicidade": false, "comparabilidade": false, "verificacao_independente": false}, "observacoes": "Distribuidora de energia - CEMIG"}, {"id": 6, "emissor": "CEMIG GERACAO E TRANSMISSAO S/A", "cnpj": "17155730000164", "setor_tsb": "Energia", "classificacao": "VERDE", "score": 100, "elegivel": true, "titulos": 4, "ano_referencia": 2024, "kpis": {"E01": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E02": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E03": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E04": {"valor": null, "unidade": "MW", "status": "pendente", "fonte": null}, "E05": {"valor": null, "unidade": "MW", "status": "pendente", "fonte": null}, "E06": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}, "E07": {"valor": null, "unidade": "MWh", "status": "pendente", "fonte": null}, "E08": {"valor": null, "unidade": "MWh", "status": "pendente", "fonte": null}, "E09": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}, "E10": {"valor": null, "unidade": "gCO2e/kWh", "status": "pendente", "fonte": null}, "E11": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}}, "salvaguardas": {"SAL01": {"status": "pendente", "verificado_em": null}, "SAL02": {"status": "pendente", "verificado_em": null}, "SAL03": {"status": "pendente", "verificado_em": null}, "SAL04": {"status": "pendente", "verificado_em": null}}, "mrv": {"governanca_dados": false, "rastreabilidade": false, "periodicidade": false, "comparabilidade": false, "verificacao_independente": false}, "observacoes": "Geracao e Transmissao - CEMIG"}, {"id": 7, "emissor": "CIA DE SANEAMENTO DE M.GERAIS COPASA MG", "cnpj": "17281106000103", "setor_tsb": "Saneamento e Residuos", "classificacao": "VERDE", "score": 100, "elegivel": true, "titulos": 4, "ano_referencia": 2024, "kpis": {"S01": {"valor": null, "unidade": "m3", "status": "pendente", "fonte": null}, "S02": {"valor": null, "unidade": "m3", "status": "pendente", "fonte": null}, "S03": {"valor": null, "unidade": "habitantes", "status": "pendente", "fonte": null}, "S04": {"valor": null, "unidade": "habitantes", "status": "pendente", "fonte": null}, "S05": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}, "S06": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}, "S07": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}, "S08": {"valor": null, "unidade": "unidades", "status": "pendente", "fonte": null}, "S09": {"valor": null, "unidade": "unidades", "status": "pendente", "fonte": null}, "S10": {"valor": null, "unidade": "unidades", "status": "pendente", "fonte": null}, "S11": {"valor": null, "unidade": "%", "status": "pendente", "fonte": null}, "S12": {"valor": null, "unidade": "tCO2e", "status": "pendente", "fonte": null}}, "salvaguardas": {"SAL01": {"status": "pendente", "verificado_em": null}, "SAL02": {"status": "pendente", "verificado_em": null}, "SAL03": {"status": "pendente", "verificado_em": null}, "SAL04": {"status": "pendente", "verificado_em": null}}, "mrv": {"governanca_dados": false, "rastreabilidade": false, "periodicidade": false, "comparabilidade": false, "verificacao_independente": false}, "observacoes": "Companhia estadual de saneamento de Minas Gerais"}], "resumo_dashboard": {"total_empresas": 7, "por_setor": {"Energia": 4, "Saneamento e Residuos": 1, "Telecomunicacoes": 1, "Servicos Financeiros": 1}, "por_classificacao": {"VERDE": 7, "TRANSICAO": 0, "POTENCIAL": 0, "NAO_ELEGIVEL": 0}, "kpis_preenchidos": 0, "kpis_pendentes": 77, "salvaguardas_verificadas": 0, "salvaguardas_pendentes": 28, "mrv_completo": 0, "data_atualizacao": "2026-01-09"}};
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        const cores = {
+            primary: '#42A5F5', secondary: '#66BB6A', accent: '#FFB74D',
+            purple: '#AB47BC', info: '#26C6DA', pink: '#EC407A',
+            teal: '#26A69A', lime: '#9CCC65', amber: '#FFCA28', red: '#ef5350',
+            verde: '#69F0AE', transicao: '#FFEA00'
+        };
+
+        // Graficos ESG
+        new Chart(document.getElementById('chartCategoria'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(dadosSQL.por_categoria),
+                datasets: [{ data: Object.values(dadosSQL.por_categoria), backgroundColor: [cores.secondary, cores.primary], borderWidth: 0 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
+        });
+
+        new Chart(document.getElementById('chartFoco'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(dadosSQL.por_foco),
+                datasets: [{ data: Object.values(dadosSQL.por_foco), backgroundColor: [cores.secondary, cores.info, cores.accent, cores.purple], borderWidth: 0 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
+        });
+
+        // Graficos TSB
+        const tsbResumo = dadosTSB.resumo_dashboard || {};
+        const porSetor = tsbResumo.por_setor || {};
+        const porClass = tsbResumo.por_classificacao || {};
+
+        new Chart(document.getElementById('chartTSBSetor'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(porSetor),
+                datasets: [{ label: 'Empresas', data: Object.values(porSetor), backgroundColor: [cores.accent, cores.info, cores.purple, cores.teal], borderRadius: 8 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { ticks: { color: '#fff' } }, y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } } }
+            }
+        });
+
+        new Chart(document.getElementById('chartTSBClass'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(porClass),
+                datasets: [{ data: Object.values(porClass), backgroundColor: [cores.verde, cores.transicao, cores.info, cores.red], borderWidth: 0 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
+        });
+
+        // Funcoes auxiliares
+        function getTagFoco(foco) {
+            const classes = { 'Ambiental': 'ambiental', 'Social': 'social', 'Governanca': 'governanca', 'Multi-tema': 'multi' };
+            return `<span class="tag ${classes[foco] || 'multi'}">${foco || 'Multi-tema'}</span>`;
+        }
+
+        function getTagSetor(setor) {
+            const classes = { 'Energia': 'energia', 'Saneamento e Residuos': 'saneamento', 'Telecomunicacoes': 'telecom', 'Servicos Financeiros': 'financeiro' };
+            return `<span class="tag ${classes[setor] || 'multi'}">${setor}</span>`;
+        }
+
+        function getTagClass(classificacao) {
+            const c = classificacao.toLowerCase();
+            if (c === 'verde') return '<span class="tag verde">VERDE</span>';
+            if (c === 'transicao') return '<span class="tag transicao">TRANSICAO</span>';
+            return `<span class="tag">${classificacao}</span>`;
+        }
+
+        // Preencher tabela Fundos IS
+        const tabelaIS = document.getElementById('tabelaFundosIS');
+        dadosSQL.fundos_is.forEach(f => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${f.razao_social_fundo || '-'}</td><td>${f.identificador_fundo || '-'}</td><td>${f.tipo_fundo || '-'}</td><td>${getTagFoco(f.FocoESG)}</td>`;
+            tabelaIS.appendChild(tr);
+        });
+
+        // Preencher tabela Fundos ESG
+        const tabelaESG = document.getElementById('tabelaFundosESG');
+        dadosSQL.fundos_esg.forEach(f => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${f.razao_social_fundo || '-'}</td><td>${f.identificador_fundo || '-'}</td><td>${f.tipo_fundo || '-'}</td><td>${getTagFoco(f.FocoESG)}</td>`;
+            tabelaESG.appendChild(tr);
+        });
+
+        // Preencher tabela TSB Empresas
+        const tabelaTSB = document.getElementById('tabelaTSBEmpresas');
+        const empresasTSB = dadosTSB.empresas || [];
+        empresasTSB.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${e.emissor}</td>
+                <td>${e.cnpj}</td>
+                <td>${getTagSetor(e.setor_tsb)}</td>
+                <td>${getTagClass(e.classificacao)}</td>
+                <td>${e.score}</td>
+                <td>${e.titulos}</td>
+            `;
+            tabelaTSB.appendChild(tr);
+        });
+
+        // Preencher KPIs por setor
+        function renderKPIs(containerId, kpis) {
+            const container = document.getElementById(containerId);
+            if (!kpis || !kpis.kpis) return;
+            kpis.kpis.forEach(kpi => {
+                const div = document.createElement('div');
+                div.className = 'kpi-item';
+                div.innerHTML = `
+                    <div class="kpi-codigo">${kpi.id}</div>
+                    <div class="kpi-nome">${kpi.nome}</div>
+                    <div class="kpi-valor">${kpi.obrigatorio ? 'Obrigatorio' : 'Opcional'}</div>
+                    <div class="kpi-unidade">${kpi.unidade} | ${kpi.frequencia}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        const kpisSetor = dadosTSB.kpis_obrigatorios_por_setor || {};
+        renderKPIs('kpisEnergia', kpisSetor.energia);
+        renderKPIs('kpisSaneamento', kpisSetor.saneamento);
+        renderKPIs('kpisTelecom', kpisSetor.telecomunicacoes);
+        renderKPIs('kpisFinanceiro', kpisSetor.servicos_financeiros);
+    </script>
+</body>
+</html>
