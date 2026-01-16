@@ -71,6 +71,17 @@
         @keyframes typing { 0%,80%,100%{transform:scale(0.6);opacity:0.5;} 40%{transform:scale(1);opacity:1;} }
         @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
         @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+        /* Indicador de Tooltip com icone de info */
+        .has-tooltip { position:relative;cursor:help; }
+        .has-tooltip::after { content:'ℹ';position:absolute;top:5px;right:5px;width:16px;height:16px;background:rgba(33,150,243,0.2);border:1px solid rgba(33,150,243,0.4);border-radius:50%;font-size:10px;color:#42A5F5;display:flex;align-items:center;justify-content:center;opacity:0.7;transition:all 0.3s; }
+        .has-tooltip:hover::after { opacity:1;background:rgba(33,150,243,0.4); }
+        .stat-card.has-tooltip::after { top:8px;right:8px; }
+        .chart-card.has-tooltip::after { top:15px;right:15px; }
+        th.has-tooltip { position:relative; }
+        th.has-tooltip::after { position:static;display:inline-block;margin-left:5px;width:14px;height:14px;font-size:9px;vertical-align:middle; }
+        /* Icone inline para labels e titulos */
+        .info-icon { display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:rgba(33,150,243,0.2);border:1px solid rgba(33,150,243,0.4);border-radius:50%;font-size:9px;color:#42A5F5;margin-left:5px;cursor:help;opacity:0.7;transition:all 0.3s;vertical-align:middle; }
+        .info-icon:hover { opacity:1;background:rgba(33,150,243,0.4); }
     </style>
 </head>
 <body>
@@ -78,48 +89,48 @@
         <div class="logo"><h1>Radar</h1><span>Títulos e Fundos</span></div>
         <div class="nav-section">
             <div class="nav-section-title">Visao Geral</div>
-            <div class="nav-item active" onclick="showTab('overview',event)"><span class="icon">📊</span> Overview</div>
+            <div class="nav-item active" onclick="showTab('overview',event)" title="Visao geral do portfolio com metricas principais e graficos resumidos"><span class="icon">📊</span> Overview</div>
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Rankings</div>
-            <div class="nav-item" onclick="showTab('ranking',event)"><span class="icon">🏆</span> Top Gestoras</div>
-            <div class="nav-item" onclick="showTab('comparativo',event)"><span class="icon">⚖️</span> Comparativo</div>
+            <div class="nav-item" onclick="showTab('ranking',event)" title="Ranking das principais gestoras por patrimonio e numero de fundos"><span class="icon">🏆</span> Top Gestoras</div>
+            <div class="nav-item" onclick="showTab('comparativo',event)" title="Compare fundos lado a lado: rentabilidade, risco e indicadores"><span class="icon">⚖️</span> Comparativo</div>
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Fundos</div>
-            <div class="nav-item" onclick="showTab('explorar',event)"><span class="icon">🔍</span> Explorar Fundos</div>
-            <div class="nav-item" onclick="showTab('favoritos',event)"><span class="icon">⭐</span> Favoritos</div>
-            <div class="nav-item" onclick="showTab('fundos-is',event)"><span class="icon">🌱</span> Fundos IS</div>
-            <div class="nav-item" onclick="showTab('fundos-esg',event)"><span class="icon">🌍</span> Fundos ESG</div>
+            <div class="nav-item" onclick="showTab('explorar',event)" title="Pesquise e filtre entre 4.253 fundos por nome, CNPJ, categoria ou gestora"><span class="icon">🔍</span> Explorar Fundos</div>
+            <div class="nav-item" onclick="showTab('gestoras',event)" title="Lista de gestoras com seus fundos, classes ANBIMA e distribuicao"><span class="icon">🏛️</span> Gestoras</div>
+            <div class="nav-item" onclick="showTab('favoritos',event)" title="Seus fundos favoritos salvos para acompanhamento rapido"><span class="icon">⭐</span> Favoritos</div>
+            <div class="nav-item" onclick="showTab('fundos-is',event)" title="Fundos classificados como Investimento Sustentavel (IS) pela ANBIMA"><span class="icon">🌱</span> Fundos IS</div>
+            <div class="nav-item" onclick="showTab('fundos-esg',event)" title="Fundos com integracao ESG: Ambiental, Social e Governanca"><span class="icon">🌍</span> Fundos ESG</div>
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Titulos</div>
-            <div class="nav-item" onclick="showTab('debentures',event)"><span class="icon">📜</span> Debentures</div>
-            <div class="nav-item" onclick="showTab('titulos-publicos',event)"><span class="icon">🏛️</span> Titulos Publicos</div>
-            <div class="nav-item" onclick="showTab('cri-cra',event)"><span class="icon">🏠</span> CRI/CRA</div>
+            <div class="nav-item" onclick="showTab('debentures',event)" title="250 debentures com taxas, duration e indexadores (IPCA, DI, Pre)"><span class="icon">📜</span> Debentures</div>
+            <div class="nav-item" onclick="showTab('titulos-publicos',event)" title="Titulos publicos federais: LTN, NTN-B, NTN-F, LFT"><span class="icon">🏛️</span> Titulos Publicos</div>
+            <div class="nav-item" onclick="showTab('cri-cra',event)" title="28 CRI/CRA: Certificados de Recebiveis Imobiliarios e do Agronegocio"><span class="icon">🏠</span> CRI/CRA</div>
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Sustentabilidade</div>
-            <div class="nav-item" onclick="showTab('tsb',event)"><span class="icon">🌿</span> Mapeamento TSB</div>
+            <div class="nav-item" onclick="showTab('tsb',event)" title="Taxonomia Sustentavel Brasileira: 58 empresas classificadas Verde/Transicao, titulos verdes e fundos ESG"><span class="icon">🌿</span> Mapeamento TSB</div>
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Analise de Credito</div>
-            <div class="nav-item" onclick="showTab('risk-scoring',event)"><span class="icon">📊</span> Risk Scoring</div>
-            <div class="nav-item" onclick="showTab('portfolio',event)"><span class="icon">💼</span> Portfolio Analytics</div>
-            <div class="nav-item" onclick="showTab('early-warning',event)"><span class="icon">⚠️</span> Early Warning</div>
+            <div class="nav-item" onclick="showTab('risk-scoring',event)" title="Analise de risco integrada: ESG, Credito, Concentracao, Liquidez e Clima"><span class="icon">📊</span> Risk Scoring</div>
+            <div class="nav-item" onclick="showTab('early-warning',event)" title="Sistema de alertas antecipados para riscos de credito e mercado"><span class="icon">⚠️</span> Early Warning</div>
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Analise de Divida</div>
-            <div class="nav-item" onclick="showTab('debt-analysis',event)"><span class="icon">📈</span> Analise Divida</div>
-            <div class="nav-item" onclick="showTab('vencimentos',event)"><span class="icon">📅</span> Vencimentos</div>
+            <div class="nav-item" onclick="showTab('debt-analysis',event)" title="Analise detalhada da estrutura de divida: custos, prazos e composicao"><span class="icon">📈</span> Analise Divida</div>
+            <div class="nav-item" onclick="showTab('vencimentos',event)" title="Calendario de vencimentos de titulos e fluxo de caixa projetado"><span class="icon">📅</span> Vencimentos</div>
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Empresas</div>
-            <div class="nav-item" onclick="showTab('emissores',event)"><span class="icon">🏢</span> Emissores</div>
+            <div class="nav-item" onclick="showTab('emissores',event)" title="Cadastro de emissores TSB com classificacao, scores e titulos vinculados"><span class="icon">🏢</span> Emissores</div>
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Inteligencia Artificial</div>
-            <div class="nav-item" onclick="showTab('ai-consulta',event)"><span class="icon">🤖</span> Consulta IA</div>
+            <div class="nav-item" onclick="showTab('ai-consulta',event)" title="Consulte dados do portfolio usando linguagem natural com IA"><span class="icon">🤖</span> Consulta IA</div>
         </div>
     </div>
 
@@ -133,27 +144,27 @@
         <!-- TAB: Overview -->
         <div id="overview" class="tab-content active">
             <div class="stats-grid">
-                <div class="stat-card"><div class="label">TODOS os Fundos</div><div class="value text-primary">100,000</div><div class="change positive">Base completa ANBIMA</div></div>
-                <div class="stat-card"><div class="label">Fundos ESG</div><div class="value text-secondary">47</div><div class="change positive">18 IS | 29 Integrado</div></div>
-                <div class="stat-card"><div class="label">Debentures</div><div class="value text-accent">250</div><div class="change">SQL Server</div></div>
-                <div class="stat-card"><div class="label">Titulos Publicos</div><div class="value text-info">47</div><div class="change">5 tipos</div></div>
-                <div class="stat-card"><div class="label">Empresas TSB</div><div class="value text-secondary">7</div><div class="change positive">100% Verde</div></div>
+                <div class="stat-card has-tooltip" title="Total de fundos de investimento registrados na base ANBIMA, incluindo todas as categorias e classes"><div class="label">TODOS os Fundos</div><div class="value text-primary">100,000</div><div class="change positive">Base completa ANBIMA</div></div>
+                <div class="stat-card has-tooltip" title="Fundos com classificacao ESG: 18 sao IS (Investimento Sustentavel) e 29 tem integracao ESG em sua gestao"><div class="label">Fundos ESG</div><div class="value text-secondary">47</div><div class="change positive">18 IS | 29 Integrado</div></div>
+                <div class="stat-card has-tooltip" title="Debentures corporativas disponiveis para analise, com taxas indicativas, duration e indexadores"><div class="label">Debentures</div><div class="value text-accent">250</div><div class="change">SQL Server</div></div>
+                <div class="stat-card has-tooltip" title="Titulos publicos federais: LTN (prefixado), NTN-B (IPCA), NTN-F (prefixado com cupom), LFT (Selic)"><div class="label">Titulos Publicos</div><div class="value text-info">47</div><div class="change">5 tipos</div></div>
+                <div class="stat-card has-tooltip" title="Empresas classificadas pela Taxonomia Sustentavel Brasileira (TSB) com scores de sustentabilidade"><div class="label">Empresas TSB</div><div class="value text-secondary">7</div><div class="change positive">100% Verde</div></div>
             </div>
             <div class="grid-2">
-                <div class="chart-card"><h3>📊 Fundos por Categoria (100,000)</h3><div class="chart-container"><canvas id="chartCategorias"></canvas></div></div>
-                <div class="chart-card"><h3>🏛️ Titulos Publicos por Tipo</h3><div class="chart-container"><canvas id="chartTitulos"></canvas></div></div>
+                <div class="chart-card has-tooltip" title="Distribuicao dos fundos por categoria ANBIMA: Acoes, Renda Fixa, Multimercado, Cambial, etc."><h3>📊 Fundos por Categoria (100,000)</h3><div class="chart-container"><canvas id="chartCategorias"></canvas></div></div>
+                <div class="chart-card has-tooltip" title="Composicao da carteira de titulos publicos por tipo: quantidade e participacao de cada instrumento"><h3>🏛️ Titulos Publicos por Tipo</h3><div class="chart-container"><canvas id="chartTitulos"></canvas></div></div>
             </div>
         </div>
 
         <!-- TAB: Ranking -->
-        <div id="ranking" class="tab-content"><div class="chart-card"><h3>🏆 Top Gestoras</h3><div class="chart-container" style="height:400px;"><canvas id="chartGestoras"></canvas></div></div></div>
+        <div id="ranking" class="tab-content"><div class="chart-card has-tooltip" title="Ranking das maiores gestoras de fundos por patrimonio liquido e numero de fundos sob gestao"><h3>🏆 Top Gestoras</h3><div class="chart-container" style="height:400px;"><canvas id="chartGestoras"></canvas></div></div></div>
 
         <!-- TAB: Comparativo -->
-        <div id="comparativo" class="tab-content"><div class="grid-2"><div class="chart-card"><h3>📊 IS vs ESG Integrado</h3><div class="chart-container"><canvas id="chartComparativo"></canvas></div></div><div class="chart-card"><h3>🎯 Por Foco ESG</h3><div class="chart-container"><canvas id="chartFoco"></canvas></div></div></div></div>
+        <div id="comparativo" class="tab-content"><div class="grid-2"><div class="chart-card has-tooltip" title="Comparacao entre fundos IS (Investimento Sustentavel - selo ANBIMA) e fundos com integracao ESG em sua gestao"><h3>📊 IS vs ESG Integrado</h3><div class="chart-container"><canvas id="chartComparativo"></canvas></div></div><div class="chart-card has-tooltip" title="Distribuicao dos fundos ESG por foco: Ambiental (E), Social (S), Governanca (G) ou Multi-tema"><h3>🎯 Por Foco ESG</h3><div class="chart-container"><canvas id="chartFoco"></canvas></div></div></div></div>
 
         <!-- TAB: Explorar -->
         <div id="explorar" class="tab-content">
-            <div class="chart-card">
+            <div class="chart-card has-tooltip" title="Pesquisa avancada em toda a base de fundos ANBIMA e CVM">
                 <h3>🔍 Explorar Fundos</h3>
                 <p style="color:var(--text-secondary);margin-bottom:20px;">Pesquise entre todos os 100.000 fundos da ANBIMA</p>
 
@@ -164,33 +175,33 @@
                 <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;">
                     <div style="flex:1;min-width:250px;">
                         <input type="text" id="searchFundos" placeholder="Buscar por nome, CNPJ ou gestora..."
-                            style="width:100%;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.9rem;">
+                            style="width:100%;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.9rem;" title="Digite nome, CNPJ ou gestora para pesquisar">
                     </div>
-                    <select id="filtroCategoria" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);min-width:150px;">
+                    <select id="filtroCategoria" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);min-width:150px;" title="Filtrar por categoria ANBIMA">
                         <option value="">Todas Categorias</option>
                     </select>
-                    <select id="filtroTipo" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);min-width:180px;">
+                    <select id="filtroTipo" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);min-width:180px;" title="Filtrar por tipo de fundo: IS, ESG ou Convencional">
                         <option value="">Todos os Tipos</option>
                         <option value="IS - Investimento Sustentavel">IS (Investimento Sustentável)</option>
                         <option value="ESG Integrado">ESG Integrado</option>
                         <option value="Convencional">Convencional</option>
                     </select>
-                    <button onclick="buscarFundosAPI()" style="padding:12px 20px;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;">
+                    <button onclick="buscarFundosAPI()" style="padding:12px 20px;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;" title="Executar busca com os filtros selecionados">
                         🔍 Buscar
                     </button>
                 </div>
 
                 <!-- Estatísticas -->
                 <div id="statsExplorar" style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;">
-                    <div style="background:rgba(25,118,210,0.15);padding:10px 20px;border-radius:8px;border:1px solid rgba(25,118,210,0.3);">
+                    <div style="background:rgba(25,118,210,0.15);padding:10px 20px;border-radius:8px;border:1px solid rgba(25,118,210,0.3);" title="Quantidade de fundos que correspondem aos filtros aplicados">
                         <span style="color:var(--text-secondary);font-size:0.75rem;">TOTAL ENCONTRADOS</span>
                         <div id="totalEncontrados" style="font-size:1.5rem;font-weight:700;color:var(--primary-light);">-</div>
                     </div>
-                    <div style="background:rgba(46,125,50,0.15);padding:10px 20px;border-radius:8px;border:1px solid rgba(46,125,50,0.3);">
+                    <div style="background:rgba(46,125,50,0.15);padding:10px 20px;border-radius:8px;border:1px solid rgba(46,125,50,0.3);" title="Total de fundos na base de dados (ANBIMA + CVM)">
                         <span style="color:var(--text-secondary);font-size:0.75rem;">TOTAL GERAL</span>
                         <div id="totalGeral" style="font-size:1.5rem;font-weight:700;color:var(--secondary-light);">-</div>
                     </div>
-                    <div style="background:rgba(255,152,0,0.15);padding:10px 20px;border-radius:8px;border:1px solid rgba(255,152,0,0.3);">
+                    <div style="background:rgba(255,152,0,0.15);padding:10px 20px;border-radius:8px;border:1px solid rgba(255,152,0,0.3);" title="Pagina atual da listagem (50 fundos por pagina)">
                         <span style="color:var(--text-secondary);font-size:0.75rem;">PÁGINA</span>
                         <div id="paginaAtualStat" style="font-size:1.5rem;font-weight:700;color:var(--accent-light);">-</div>
                     </div>
@@ -203,22 +214,22 @@
                 </div>
 
                 <!-- Tabela de Resultados -->
-                <div id="tabelaContainer" style="overflow-x:auto;max-height:500px;">
+                <div id="tabelaContainer" style="overflow-x:auto;max-height:500px;" title="Resultados da busca de fundos">
                     <table id="tabelaFundos">
                         <thead>
                             <tr>
-                                <th>Nome</th>
-                                <th>CNPJ</th>
-                                <th>Categoria</th>
-                                <th>Tipo ESG</th>
-                                <th>Foco</th>
-                                <th>Ações</th>
+                                <th title="Nome completo do fundo de investimento">Nome</th>
+                                <th title="CNPJ do fundo">CNPJ</th>
+                                <th title="Categoria ANBIMA do fundo">Categoria</th>
+                                <th title="Gestora responsavel pelo fundo">Gestora</th>
+                                <th title="Origem dos dados: ANBIMA ou CVM">Fonte</th>
+                                <th title="Acoes disponiveis: detalhes, favoritar">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="corpoTabelaFundos">
                             <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">
-                                Clique em "Buscar" para carregar os fundos do SQL Server<br>
-                                <small>Conectado ao servidor</small>
+                                Clique em "Buscar" para carregar os fundos<br>
+                                <small>Total: 4.253 fundos (ANBIMA + CVM)</small>
                             </td></tr>
                         </tbody>
                     </table>
@@ -226,60 +237,92 @@
 
                 <!-- Paginação -->
                 <div id="paginacao" style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:20px;">
-                    <button onclick="mudarPaginaAPI(-1)" style="padding:8px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;">← Anterior</button>
+                    <button onclick="mudarPaginaAPI(-1)" style="padding:8px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;" title="Ir para pagina anterior">← Anterior</button>
                     <span id="infoPagina" style="color:var(--text-secondary);">Página 1 de 1</span>
-                    <button onclick="mudarPaginaAPI(1)" style="padding:8px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;">Próxima →</button>
+                    <button onclick="mudarPaginaAPI(1)" style="padding:8px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;" title="Ir para proxima pagina">Próxima →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Gestoras -->
+        <div id="gestoras" class="tab-content">
+            <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+                <div class="stat-card has-tooltip" title="Numero de gestoras distintas na base de dados"><div class="label">Total Gestoras</div><div class="value text-primary" id="statTotalGestoras">-</div></div>
+                <div class="stat-card has-tooltip" title="Total de fundos geridos por todas as gestoras"><div class="label">Total Fundos</div><div class="value text-secondary" id="statTotalFundosGestoras">-</div></div>
+                <div class="stat-card has-tooltip" title="Quantidade de classes ANBIMA distintas nos fundos"><div class="label">Classes ANBIMA</div><div class="value text-accent" id="statTotalClasses">-</div></div>
+            </div>
+            <div class="grid-2">
+                <div class="chart-card has-tooltip" title="Lista de gestoras ordenadas por quantidade de fundos sob gestao">
+                    <h3>🏛️ Gestoras por Quantidade de Fundos</h3>
+                    <div style="margin-bottom:15px;">
+                        <input type="text" id="searchGestora" placeholder="Buscar gestora..." style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);" onkeyup="filtrarGestoras()" title="Digite para filtrar gestoras por nome">
+                    </div>
+                    <div style="overflow-y:auto;max-height:500px;" id="listaGestoras">
+                        <p style="color:var(--text-secondary);text-align:center;padding:40px;">Carregando gestoras...</p>
+                    </div>
+                </div>
+                <div class="chart-card has-tooltip" title="Lista de fundos da gestora selecionada a esquerda">
+                    <h3>📊 Fundos da Gestora Selecionada</h3>
+                    <div id="fundosGestoraSelecionada" style="overflow-y:auto;max-height:500px;">
+                        <p style="color:var(--text-secondary);text-align:center;padding:40px;">Selecione uma gestora para ver seus fundos</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-card has-tooltip" style="margin-top:20px;" title="As 10 classes ANBIMA com maior numero de fundos na base">
+                <h3>📈 Top 10 Classes ANBIMA</h3>
+                <div class="chart-container" style="height:300px;">
+                    <canvas id="chartClassesAnbima"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- TAB: Favoritos -->
-        <div id="favoritos" class="tab-content"><div class="chart-card"><h3>⭐ Favoritos</h3><p style="color:var(--text-secondary);">Selecione fundos para favoritos</p></div></div>
+        <div id="favoritos" class="tab-content"><div class="chart-card has-tooltip" title="Lista de fundos marcados como favoritos para acompanhamento"><h3>⭐ Favoritos</h3><p style="color:var(--text-secondary);">Selecione fundos para favoritos</p></div></div>
 
         <!-- TAB: Fundos IS -->
-        <div id="fundos-is" class="tab-content"><div class="chart-card"><h3>🌱 Fundos IS (18)</h3><div style="overflow-x:auto;max-height:500px;"><table><thead><tr><th>Nome</th><th>CNPJ</th><th>Foco</th></tr></thead><tbody><tr><td>BTG Pactual Credito Corporativo IS</td><td>40.123.456/0001-01</td><td>Ambiental</td></tr><tr><td>Itau Transicao Energetica IS</td><td>40.123.456/0001-02</td><td>Ambiental</td></tr><tr><td>BB Acoes Sustentabilidade IS</td><td>40.123.456/0001-03</td><td>Multi-tema</td></tr><tr><td>Bradesco FIA ISE IS</td><td>40.123.456/0001-04</td><td>Multi-tema</td></tr><tr><td>XP Debentures Incentivadas IS</td><td>40.123.456/0001-05</td><td>Ambiental</td></tr><tr><td>JGP Impacto Social IS</td><td>40.123.456/0001-06</td><td>Social</td></tr><tr><td>SANTANDER ETHICAL AÇÕES SUSTENTABILIDADE SPECIAL I</td><td>04.616.277/0001-02</td><td>Multi-tema</td></tr><tr><td>SANTANDER ETHICAL AÇÕES SUSTENTABILIDADE IS FUNDO </td><td>04.736.006/0001-82</td><td>Multi-tema</td></tr><tr><td>ITAÚ EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO</td><td>06.069.957/0001-70</td><td>Social</td></tr><tr><td>ITAÚ EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO</td><td>06.215.101/0001-66</td><td>Social</td></tr><tr><td>BB TOP ACOES INDICE DE SUSTENTABILIDADE EMPRESARIA</td><td>05.775.731/0001-22</td><td>Multi-tema</td></tr><tr><td>BB AÇÕES SUSTENTABILIDADE IS FUNDO DE INVESTIMENTO</td><td>06.349.816/0001-01</td><td>Multi-tema</td></tr><tr><td>ITAÚ GOVERNANÇA CORPORATIVA AÇÕES FUNDO DE INVESTI</td><td>07.686.680/0001-98</td><td>Multi-tema</td></tr><tr><td>ITAÚ AÇÕES GOVERNANÇA CORPORATIVA FUNDO DE INVESTI</td><td>07.686.658/0001-48</td><td>Multi-tema</td></tr><tr><td>ITAÚ PRIVATE EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVE</td><td>07.707.678/0001-58</td><td>Social</td></tr><tr><td>FUNDO DE INVESTIMENTO EM AÇÕES CAIXA SUSTENTABILID</td><td>08.070.838/0001-63</td><td>Governanca</td></tr><tr><td>BRADESCO FUNDO DE INVESTIMENTO EM AÇÕES IS SUSTENT</td><td>07.187.751/0001-08</td><td>Multi-tema</td></tr><tr><td>ITAÚ EMPRESA GOVERNANÇA CORPORATIVA AÇÕES FUNDO DE</td><td>09.145.127/0001-73</td><td>Multi-tema</td></tr></tbody></table></div></div></div>
+        <div id="fundos-is" class="tab-content"><div class="chart-card has-tooltip" title="Fundos com selo IS - Investimento Sustentavel ANBIMA: atendem criterios rigorosos de sustentabilidade"><h3>🌱 Fundos IS (18)</h3><div style="overflow-x:auto;max-height:500px;"><table><thead><tr><th title="Nome completo do fundo IS">Nome</th><th title="CNPJ do fundo">CNPJ</th><th title="Foco principal: Ambiental, Social, Governanca ou Multi-tema">Foco</th></tr></thead><tbody><tr><td>BTG Pactual Credito Corporativo IS</td><td>40.123.456/0001-01</td><td>Ambiental</td></tr><tr><td>Itau Transicao Energetica IS</td><td>40.123.456/0001-02</td><td>Ambiental</td></tr><tr><td>BB Acoes Sustentabilidade IS</td><td>40.123.456/0001-03</td><td>Multi-tema</td></tr><tr><td>Bradesco FIA ISE IS</td><td>40.123.456/0001-04</td><td>Multi-tema</td></tr><tr><td>XP Debentures Incentivadas IS</td><td>40.123.456/0001-05</td><td>Ambiental</td></tr><tr><td>JGP Impacto Social IS</td><td>40.123.456/0001-06</td><td>Social</td></tr><tr><td>SANTANDER ETHICAL AÇÕES SUSTENTABILIDADE SPECIAL I</td><td>04.616.277/0001-02</td><td>Multi-tema</td></tr><tr><td>SANTANDER ETHICAL AÇÕES SUSTENTABILIDADE IS FUNDO </td><td>04.736.006/0001-82</td><td>Multi-tema</td></tr><tr><td>ITAÚ EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO</td><td>06.069.957/0001-70</td><td>Social</td></tr><tr><td>ITAÚ EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO</td><td>06.215.101/0001-66</td><td>Social</td></tr><tr><td>BB TOP ACOES INDICE DE SUSTENTABILIDADE EMPRESARIA</td><td>05.775.731/0001-22</td><td>Multi-tema</td></tr><tr><td>BB AÇÕES SUSTENTABILIDADE IS FUNDO DE INVESTIMENTO</td><td>06.349.816/0001-01</td><td>Multi-tema</td></tr><tr><td>ITAÚ GOVERNANÇA CORPORATIVA AÇÕES FUNDO DE INVESTI</td><td>07.686.680/0001-98</td><td>Multi-tema</td></tr><tr><td>ITAÚ AÇÕES GOVERNANÇA CORPORATIVA FUNDO DE INVESTI</td><td>07.686.658/0001-48</td><td>Multi-tema</td></tr><tr><td>ITAÚ PRIVATE EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVE</td><td>07.707.678/0001-58</td><td>Social</td></tr><tr><td>FUNDO DE INVESTIMENTO EM AÇÕES CAIXA SUSTENTABILID</td><td>08.070.838/0001-63</td><td>Governanca</td></tr><tr><td>BRADESCO FUNDO DE INVESTIMENTO EM AÇÕES IS SUSTENT</td><td>07.187.751/0001-08</td><td>Multi-tema</td></tr><tr><td>ITAÚ EMPRESA GOVERNANÇA CORPORATIVA AÇÕES FUNDO DE</td><td>09.145.127/0001-73</td><td>Multi-tema</td></tr></tbody></table></div></div></div>
 
         <!-- TAB: Fundos ESG -->
-        <div id="fundos-esg" class="tab-content"><div class="chart-card"><h3>🌍 Fundos ESG (29)</h3><div style="overflow-x:auto;max-height:500px;"><table><thead><tr><th>Nome</th><th>CNPJ</th><th>Foco</th></tr></thead><tbody><tr><td>Verde AM ESG Selection</td><td>40.123.456/0001-07</td><td>Multi-tema</td></tr><tr><td>Opportunity ESG FIA</td><td>40.123.456/0001-08</td><td>Ambiental</td></tr><tr><td>BTG ESG Corporativo</td><td>40.123.456/0001-09</td><td>Governanca</td></tr><tr><td>Itau Governanca Responsavel</td><td>40.123.456/0001-10</td><td>Governanca</td></tr><tr><td>CSHG VERDE FUNDO DE INVESTIMENTO EM COTAS DE FUNDO</td><td>01.221.890/0001-24</td><td>Ambiental</td></tr><tr><td>CSHG VERDE AM STRATEGY II FUNDO DE INVESTIMENTO EM</td><td>03.408.336/0001-86</td><td>Ambiental</td></tr><tr><td>VERDE PVT MULTIMERCADO FUNDO DE INVESTIMENTO EM CO</td><td>04.222.368/0001-55</td><td>Ambiental</td></tr><tr><td>CSHG ALLOCATION VERDE 14 FUNDO DE INVESTIMENTO EM </td><td>04.147.027/0001-62</td><td>Ambiental</td></tr><tr><td>BB RENDA FIXA REFERENCIADO DI SOCIAL  50 FUNDO DE </td><td>05.080.623/0001-35</td><td>Social</td></tr><tr><td>CSHG ALLOCATION VERDE AM AGAR FUNDO DE INVESTIMENT</td><td>05.491.230/0001-14</td><td>Ambiental</td></tr><tr><td>WESTERN ASSET PONTA VERDE FUNDO DE INVESTIMENTO RE</td><td>03.888.387/0001-52</td><td>Ambiental</td></tr><tr><td>CSHG VERDE AM HIPER FUNDO DE INVESTIMENTO EM COTAS</td><td>05.586.675/0001-88</td><td>Ambiental</td></tr><tr><td>SICREDI – FUNDO DE INVESTIMENTO  RENDA FIXA CURTO </td><td>01.627.516/0001-23</td><td>Multi-tema</td></tr><tr><td>CSHG ALLOCATION VERDE 30 FUNDO DE INVESTIMENTO EM </td><td>05.586.704/0001-01</td><td>Ambiental</td></tr><tr><td>BRADESCO PRIME FIC DE FIA IND SUSTENTABILIDADE EMP</td><td>07.667.274/0001-88</td><td>Multi-tema</td></tr><tr><td>BRADESCO H FC FI DE AÇÕES SUSTENTABILIDADE</td><td>07.535.827/0001-49</td><td>Multi-tema</td></tr><tr><td>SANTANDER FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS</td><td>07.647.132/0001-59</td><td>Ambiental</td></tr><tr><td>CSHG ALLOCATION VERDE 90 FUNDO DE INVESTIMENTO EM </td><td>07.455.460/0001-53</td><td>Ambiental</td></tr><tr><td>VERDE 90 DISTRIBUIDORES FUNDO DE INVESTIMENTO EM C</td><td>07.455.788/0001-70</td><td>Ambiental</td></tr><tr><td>VERDE MASTER FUNDO DE INVESTIMENTO MULTIMERCADO</td><td>07.455.507/0001-89</td><td>Ambiental</td></tr><tr><td>PS VERDE D1 FUNDO DE INVESTIMENTO EM COTAS DE FUND</td><td>04.311.271/0001-19</td><td>Ambiental</td></tr><tr><td>VERDE AM MULTI ESTRATÉGIA FUNDO DE INVESTIMENTO MU</td><td>08.507.696/0001-59</td><td>Ambiental</td></tr><tr><td>VERDE AM PERFORMANCE FUNDO DE INVESTIMENTO EM AÇÕE</td><td>08.707.235/0001-20</td><td>Ambiental</td></tr><tr><td>RIO VERDE SMALL CAPS FUNDO DE INVESTIMENTO EM AÇÕE</td><td>07.420.595/0001-83</td><td>Ambiental</td></tr><tr><td>VERDE AM MULTI ALLOCATION BP FUNDO DE INVESTIMENTO</td><td>08.893.097/0001-10</td><td>Ambiental</td></tr><tr><td>CSHG VERDE TM FUNDO DE INVESTIMENTO EM COTAS DE FU</td><td>09.150.949/0001-42</td><td>Ambiental</td></tr><tr><td>VÉRTICE VERDE AM JADE FUNDO DE INVESTIMENTO EM COT</td><td>09.485.813/0001-93</td><td>Ambiental</td></tr><tr><td>VERDE AM JADE FUNDO DE INVESTIMENTO EM COTAS DE FU</td><td>09.489.250/0001-01</td><td>Ambiental</td></tr><tr><td>FUNDO SOCIAL FUNDO DE INVESTIMENTO EM AÇÕES</td><td>10.265.295/0001-81</td><td>Social</td></tr></tbody></table></div></div></div>
+        <div id="fundos-esg" class="tab-content"><div class="chart-card has-tooltip" title="Fundos com integracao ESG: incorporam criterios ambientais, sociais e de governanca na gestao"><h3>🌍 Fundos ESG (29)</h3><div style="overflow-x:auto;max-height:500px;"><table><thead><tr><th title="Nome completo do fundo ESG">Nome</th><th title="CNPJ do fundo">CNPJ</th><th title="Foco principal: Ambiental (E), Social (S), Governanca (G) ou Multi-tema">Foco</th></tr></thead><tbody><tr><td>Verde AM ESG Selection</td><td>40.123.456/0001-07</td><td>Multi-tema</td></tr><tr><td>Opportunity ESG FIA</td><td>40.123.456/0001-08</td><td>Ambiental</td></tr><tr><td>BTG ESG Corporativo</td><td>40.123.456/0001-09</td><td>Governanca</td></tr><tr><td>Itau Governanca Responsavel</td><td>40.123.456/0001-10</td><td>Governanca</td></tr><tr><td>CSHG VERDE FUNDO DE INVESTIMENTO EM COTAS DE FUNDO</td><td>01.221.890/0001-24</td><td>Ambiental</td></tr><tr><td>CSHG VERDE AM STRATEGY II FUNDO DE INVESTIMENTO EM</td><td>03.408.336/0001-86</td><td>Ambiental</td></tr><tr><td>VERDE PVT MULTIMERCADO FUNDO DE INVESTIMENTO EM CO</td><td>04.222.368/0001-55</td><td>Ambiental</td></tr><tr><td>CSHG ALLOCATION VERDE 14 FUNDO DE INVESTIMENTO EM </td><td>04.147.027/0001-62</td><td>Ambiental</td></tr><tr><td>BB RENDA FIXA REFERENCIADO DI SOCIAL  50 FUNDO DE </td><td>05.080.623/0001-35</td><td>Social</td></tr><tr><td>CSHG ALLOCATION VERDE AM AGAR FUNDO DE INVESTIMENT</td><td>05.491.230/0001-14</td><td>Ambiental</td></tr><tr><td>WESTERN ASSET PONTA VERDE FUNDO DE INVESTIMENTO RE</td><td>03.888.387/0001-52</td><td>Ambiental</td></tr><tr><td>CSHG VERDE AM HIPER FUNDO DE INVESTIMENTO EM COTAS</td><td>05.586.675/0001-88</td><td>Ambiental</td></tr><tr><td>SICREDI – FUNDO DE INVESTIMENTO  RENDA FIXA CURTO </td><td>01.627.516/0001-23</td><td>Multi-tema</td></tr><tr><td>CSHG ALLOCATION VERDE 30 FUNDO DE INVESTIMENTO EM </td><td>05.586.704/0001-01</td><td>Ambiental</td></tr><tr><td>BRADESCO PRIME FIC DE FIA IND SUSTENTABILIDADE EMP</td><td>07.667.274/0001-88</td><td>Multi-tema</td></tr><tr><td>BRADESCO H FC FI DE AÇÕES SUSTENTABILIDADE</td><td>07.535.827/0001-49</td><td>Multi-tema</td></tr><tr><td>SANTANDER FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS</td><td>07.647.132/0001-59</td><td>Ambiental</td></tr><tr><td>CSHG ALLOCATION VERDE 90 FUNDO DE INVESTIMENTO EM </td><td>07.455.460/0001-53</td><td>Ambiental</td></tr><tr><td>VERDE 90 DISTRIBUIDORES FUNDO DE INVESTIMENTO EM C</td><td>07.455.788/0001-70</td><td>Ambiental</td></tr><tr><td>VERDE MASTER FUNDO DE INVESTIMENTO MULTIMERCADO</td><td>07.455.507/0001-89</td><td>Ambiental</td></tr><tr><td>PS VERDE D1 FUNDO DE INVESTIMENTO EM COTAS DE FUND</td><td>04.311.271/0001-19</td><td>Ambiental</td></tr><tr><td>VERDE AM MULTI ESTRATÉGIA FUNDO DE INVESTIMENTO MU</td><td>08.507.696/0001-59</td><td>Ambiental</td></tr><tr><td>VERDE AM PERFORMANCE FUNDO DE INVESTIMENTO EM AÇÕE</td><td>08.707.235/0001-20</td><td>Ambiental</td></tr><tr><td>RIO VERDE SMALL CAPS FUNDO DE INVESTIMENTO EM AÇÕE</td><td>07.420.595/0001-83</td><td>Ambiental</td></tr><tr><td>VERDE AM MULTI ALLOCATION BP FUNDO DE INVESTIMENTO</td><td>08.893.097/0001-10</td><td>Ambiental</td></tr><tr><td>CSHG VERDE TM FUNDO DE INVESTIMENTO EM COTAS DE FU</td><td>09.150.949/0001-42</td><td>Ambiental</td></tr><tr><td>VÉRTICE VERDE AM JADE FUNDO DE INVESTIMENTO EM COT</td><td>09.485.813/0001-93</td><td>Ambiental</td></tr><tr><td>VERDE AM JADE FUNDO DE INVESTIMENTO EM COTAS DE FU</td><td>09.489.250/0001-01</td><td>Ambiental</td></tr><tr><td>FUNDO SOCIAL FUNDO DE INVESTIMENTO EM AÇÕES</td><td>10.265.295/0001-81</td><td>Social</td></tr></tbody></table></div></div></div>
 
         <!-- TAB: Debentures -->
         <div id="debentures" class="tab-content">
             <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
-                <div class="stat-card"><div class="label">Total</div><div class="value text-accent">250</div></div>
-                <div class="stat-card"><div class="label">DI Percentual</div><div class="value text-primary">57</div></div>
-                <div class="stat-card"><div class="label">DI Spread</div><div class="value text-info">74</div></div>
-                <div class="stat-card"><div class="label">IPCA Spread</div><div class="value text-secondary">119</div></div>
+                <div class="stat-card has-tooltip" title="Total de debentures na base de dados"><div class="label">Total</div><div class="value text-accent">250</div></div>
+                <div class="stat-card has-tooltip" title="Debentures com remuneracao % do DI (ex: 105% CDI)"><div class="label">DI Percentual</div><div class="value text-primary">57</div></div>
+                <div class="stat-card has-tooltip" title="Debentures com remuneracao DI + spread (ex: CDI + 2%)"><div class="label">DI Spread</div><div class="value text-info">74</div></div>
+                <div class="stat-card has-tooltip" title="Debentures indexadas ao IPCA + spread (ex: IPCA + 6%)"><div class="label">IPCA Spread</div><div class="value text-secondary">119</div></div>
             </div>
-            <div class="chart-card"><h3>📜 Debentures do SQL Server</h3><div style="overflow-x:auto;max-height:500px;"><table><thead><tr><th>Emissor</th><th>Codigo</th><th>Grupo</th><th>Taxa</th><th>Duration</th><th>PU</th></tr></thead><tbody><tr><td>TRANSMISSORA SUL LITORANEA DE ENERGIA S/</td><td>TSLE11</td><td>IPCA SPREAD</td><td>IPCA + 7,5651%</td><td>1777.0</td><td>1155.58</td></tr><tr><td>VALE S/A</td><td>VALE48</td><td>IPCA SPREAD</td><td>IPCA + 6,78%</td><td>1678.0</td><td>1508.18</td></tr><tr><td>CHAPADA DO PIAUÍ I HOLDING S.A.</td><td>CHPA11</td><td>IPCA SPREAD</td><td>IPCA + 9,223%</td><td>1637.0</td><td>14153.28</td></tr><tr><td>ENGIE BRASIL ENERGIA S.A.(*)</td><td>TBLE26</td><td>IPCA SPREAD</td><td>IPCA + 6,2515%</td><td>1593.0</td><td>1165.73</td></tr><tr><td>ODEBRECHT TRANSPORT S/A</td><td>ODTR11</td><td>IPCA SPREAD</td><td>IPCA + 6,7%</td><td>1592.0</td><td>11667.51</td></tr><tr><td>VALE S/A</td><td>VALE38</td><td>IPCA SPREAD</td><td>IPCA + 6,71%</td><td>1453.0</td><td>1495.93</td></tr><tr><td>VENTOS DE SÃO TOMÉ HOLDING S/A</td><td>TOME12</td><td>IPCA SPREAD</td><td>IPCA + 8,8593%</td><td>1444.0</td><td>1249.09</td></tr><tr><td>EXTREMOZ TRANSMISSORA DO NORDESTE ETN S.</td><td>EXTZ11</td><td>IPCA SPREAD</td><td>IPCA + 7,0291%</td><td>1428.0</td><td>1016.01</td></tr><tr><td>ENERGISA S/A</td><td>ENGI28</td><td>IPCA SPREAD</td><td>IPCA + 5,6601%</td><td>1420.0</td><td>1044.57</td></tr><tr><td>COMPANHIA DE TRANSMISSÃO DE ENERGIA ELÉT</td><td>CTEE15</td><td>IPCA SPREAD</td><td>IPCA + 5,0373%</td><td>1363.0</td><td>1066.73</td></tr><tr><td>VENTOS DE SÃO TITO HOLDING S/A</td><td>VNTT11</td><td>IPCA SPREAD</td><td>IPCA + 9,2360%</td><td>1345.0</td><td>1153.64</td></tr><tr><td>PARANAIBA TRANSMISSORA DE ENERGIA S.A.</td><td>PRTE12</td><td>IPCA SPREAD</td><td>IPCA + 6,9045%</td><td>1345.0</td><td>1016.29</td></tr><tr><td>COMPANHIA ENERGÉTICA DO MARANHÃO - CEMAR</td><td>CEMA27</td><td>IPCA SPREAD</td><td>IPCA + 5,5422%</td><td>1321.0</td><td>1057.55</td></tr><tr><td>MRS LOGÍSTICA S/A</td><td>MRSL27</td><td>IPCA SPREAD</td><td>IPCA + 6,4277%</td><td>1312.0</td><td>1336.16</td></tr><tr><td>COMPANHIA DE GAS DE SÃO PAULO - COMGAS</td><td>GASP15</td><td>IPCA SPREAD</td><td>IPCA + 5,8680%</td><td>1291.0</td><td>1139.01</td></tr><tr><td>ENGIE BRASIL ENERGIA S.A.</td><td>TBLE15</td><td>IPCA SPREAD</td><td>IPCA + 6,3%</td><td>1276.0</td><td>1385.85</td></tr><tr><td>AES TIETE S/A (*)</td><td>TIET26</td><td>IPCA SPREAD</td><td>IPCA + 6,7842%</td><td>1268.0</td><td>1.07</td></tr><tr><td>COMPANHIA PIRATININGA DE FORÇA E LUZ</td><td>CPFP18</td><td>IPCA SPREAD</td><td>IPCA + 5,2901%</td><td>1267.0</td><td>1034.17</td></tr><tr><td>RIO GRANDE ENERGIA S/A</td><td>RIGE18</td><td>IPCA SPREAD</td><td>IPCA + 5,3473%</td><td>1266.0</td><td>1045.06</td></tr><tr><td>CENTRAIS ELETRICAS DO PARA S.A - CELPA</td><td>CLPP23</td><td>IPCA SPREAD</td><td>IPCA + 6,8702%</td><td>1258.0</td><td>1174.28</td></tr><tr><td>LOJAS AMERICANAS S/A (*)</td><td>LAMEB1</td><td>IPCA SPREAD</td><td>IPCA + 7,0972%</td><td>1242.0</td><td>11143.90</td></tr><tr><td>ALGAR TELECOM S/A</td><td>ALGA26</td><td>IPCA SPREAD</td><td>IPCA + 6,8734%</td><td>1235.0</td><td>1114.32</td></tr><tr><td>TRANS. ALIANÇA DE ENERGIA ELÉTRICA S/A</td><td>TAEE33</td><td>IPCA SPREAD</td><td>IPCA + 5,1%</td><td>1226.0</td><td>1361.58</td></tr><tr><td>CONCESSIONÁRIA ECOVIAS DOS IMIGRANTES S/</td><td>ECOV22</td><td>IPCA SPREAD</td><td>IPCA + 4,28%</td><td>1222.0</td><td>1303.63</td></tr><tr><td>CEMIG DISTRIBUIÇÃO S/A</td><td>CMDT33</td><td>IPCA SPREAD</td><td>IPCA + 5,1%</td><td>1214.0</td><td>1123.43</td></tr><tr><td>EDP ENERGIAS DO BRASIL S/A</td><td>ENBR34</td><td>IPCA SPREAD</td><td>IPCA + 8,7608%</td><td>1212.0</td><td>1331.15</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU12</td><td>IPCA SPREAD</td><td>IPCA + 6,4%</td><td>1206.0</td><td>1083.05</td></tr><tr><td>NORTE BRASIL TRANSMISSORA DE ENERGIA S/A</td><td>NRTB11</td><td>IPCA SPREAD</td><td>IPCA + 7,15%</td><td>1182.0</td><td>1363.27</td></tr><tr><td>NORTE BRASIL TRANSMISSORA DE ENERGIA S/A</td><td>NRTB21</td><td>IPCA SPREAD</td><td>IPCA + 7,15%</td><td>1182.0</td><td>1618.85</td></tr><tr><td>AES TIETE ENERGIA S/A (*)</td><td>TIET15</td><td>IPCA SPREAD</td><td>IPCA + 6,5365%</td><td>1180.0</td><td>1168.37</td></tr><tr><td>SANTO ANTÔNIO ENERGIA S/A</td><td>STEN23</td><td>IPCA SPREAD</td><td>IPCA + 7,4943%</td><td>1144.0</td><td>12609.01</td></tr><tr><td>CONCESSIONÁRIA AUTO RAPOSO TAVARES S/A (</td><td>CART22</td><td>IPCA SPREAD</td><td>IPCA + 6,05%</td><td>1136.0</td><td>1325.22</td></tr><tr><td>CONCESSIONÁRIA AUTO RAPOSO TAVARES S/A (</td><td>CART12</td><td>IPCA SPREAD</td><td>IPCA + 5,8%</td><td>1130.0</td><td>1250.60</td></tr><tr><td>VALE S/A</td><td>VALE28</td><td>IPCA SPREAD</td><td>IPCA + 6,57%</td><td>1111.0</td><td>1451.89</td></tr><tr><td>ITAUSA - INVESTIMENTOS ITAU S/A (*)</td><td>ITSA12</td><td>DI PERCENTUAL</td><td>106,9% do DI</td><td>1082.0</td><td>105045.83</td></tr><tr><td>VALE S/A</td><td>VALE29</td><td>IPCA SPREAD</td><td>IPCA + 6,6252%</td><td>1069.0</td><td>1227.99</td></tr><tr><td>CONCESSIONÁRIA DO SISTEMA ANHANGUERA-BAN</td><td>ANHB18</td><td>IPCA SPREAD</td><td>IPCA + 5,4705%</td><td>1056.0</td><td>1037.02</td></tr><tr><td>ENERGISA S/A</td><td>ENGI18</td><td>IPCA SPREAD</td><td>IPCA + 5,6%</td><td>1046.0</td><td>1044.02</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU31</td><td>IPCA SPREAD</td><td>IPCA + 7,86%</td><td>1043.0</td><td>1155.99</td></tr><tr><td>TCP TERMINAL DE CONTÊINERES DE PARANAGUÁ</td><td>TCPA31</td><td>IPCA SPREAD</td><td>IPCA + 7,8164%</td><td>1032.0</td><td>1096.36</td></tr><tr><td>CONCESSIONÁRIA RODOVIAS DO TIETE S/A (*)</td><td>RDVT11</td><td>IPCA SPREAD</td><td>IPCA + 8%</td><td>1030.0</td><td>848.39</td></tr><tr><td>CONCESSIONÁRIA ROTA DAS BANDEIRAS S/A (*</td><td>CBAN21</td><td>IPCA SPREAD</td><td>IPCA + 9,57%</td><td>1006.0</td><td>15312.42</td></tr><tr><td>RODOVIAS DAS COLINAS S/A (*)</td><td>RDCO34</td><td>IPCA SPREAD</td><td>IPCA + 5,7%</td><td>988.0</td><td>13069.01</td></tr><tr><td>COMPANHIA DE GAS DE SÃO PAULO - COMGAS</td><td>GASP24</td><td>IPCA SPREAD</td><td>IPCA + 7,4820%</td><td>982.0</td><td>1294.42</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU21</td><td>IPCA SPREAD</td><td>IPCA + 7,86%</td><td>979.0</td><td>1181.93</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU41</td><td>IPCA SPREAD</td><td>IPCA + 7,86%</td><td>973.0</td><td>1291.93</td></tr><tr><td>CIA. DE SANEAMENTO BÁSICO DO ESTADO DE S</td><td>SBESC7</td><td>IPCA SPREAD</td><td>IPCA + 4,75%</td><td>951.0</td><td>13746.43</td></tr><tr><td>MRV ENGENHARIA E PARTICIPAÇÃO S/A</td><td>MRVE39</td><td>IPCA SPREAD</td><td>IPCA + 8,2502%</td><td>931.0</td><td>11067.46</td></tr><tr><td>LOCALIZA RENT A CAR (*)</td><td>LORTA2</td><td>DI PERCENTUAL</td><td>107,25% do DI</td><td>925.0</td><td>1043.62</td></tr><tr><td>COMPANHIA ENERGÉTICA DO MARANHÃO - CEMAR</td><td>CEMA17</td><td>IPCA SPREAD</td><td>IPCA + 5,4795%</td><td>925.0</td><td>1060.24</td></tr></tbody></table></div></div>
+            <div class="chart-card has-tooltip" title="Lista completa de debentures com dados de taxa, duration e preco unitario"><h3>📜 Debentures do SQL Server</h3><div style="overflow-x:auto;max-height:500px;"><table><thead><tr><th title="Empresa emissora da debenture">Emissor</th><th title="Codigo do titulo no mercado">Codigo</th><th title="Tipo de indexador: DI Percentual, DI Spread ou IPCA Spread">Grupo</th><th title="Taxa de remuneracao do titulo">Taxa</th><th title="Duration: prazo medio ponderado em dias">Duration</th><th title="Preco unitario atual do titulo">PU</th></tr></thead><tbody><tr><td>TRANSMISSORA SUL LITORANEA DE ENERGIA S/</td><td>TSLE11</td><td>IPCA SPREAD</td><td>IPCA + 7,5651%</td><td>1777.0</td><td>1155.58</td></tr><tr><td>VALE S/A</td><td>VALE48</td><td>IPCA SPREAD</td><td>IPCA + 6,78%</td><td>1678.0</td><td>1508.18</td></tr><tr><td>CHAPADA DO PIAUÍ I HOLDING S.A.</td><td>CHPA11</td><td>IPCA SPREAD</td><td>IPCA + 9,223%</td><td>1637.0</td><td>14153.28</td></tr><tr><td>ENGIE BRASIL ENERGIA S.A.(*)</td><td>TBLE26</td><td>IPCA SPREAD</td><td>IPCA + 6,2515%</td><td>1593.0</td><td>1165.73</td></tr><tr><td>ODEBRECHT TRANSPORT S/A</td><td>ODTR11</td><td>IPCA SPREAD</td><td>IPCA + 6,7%</td><td>1592.0</td><td>11667.51</td></tr><tr><td>VALE S/A</td><td>VALE38</td><td>IPCA SPREAD</td><td>IPCA + 6,71%</td><td>1453.0</td><td>1495.93</td></tr><tr><td>VENTOS DE SÃO TOMÉ HOLDING S/A</td><td>TOME12</td><td>IPCA SPREAD</td><td>IPCA + 8,8593%</td><td>1444.0</td><td>1249.09</td></tr><tr><td>EXTREMOZ TRANSMISSORA DO NORDESTE ETN S.</td><td>EXTZ11</td><td>IPCA SPREAD</td><td>IPCA + 7,0291%</td><td>1428.0</td><td>1016.01</td></tr><tr><td>ENERGISA S/A</td><td>ENGI28</td><td>IPCA SPREAD</td><td>IPCA + 5,6601%</td><td>1420.0</td><td>1044.57</td></tr><tr><td>COMPANHIA DE TRANSMISSÃO DE ENERGIA ELÉT</td><td>CTEE15</td><td>IPCA SPREAD</td><td>IPCA + 5,0373%</td><td>1363.0</td><td>1066.73</td></tr><tr><td>VENTOS DE SÃO TITO HOLDING S/A</td><td>VNTT11</td><td>IPCA SPREAD</td><td>IPCA + 9,2360%</td><td>1345.0</td><td>1153.64</td></tr><tr><td>PARANAIBA TRANSMISSORA DE ENERGIA S.A.</td><td>PRTE12</td><td>IPCA SPREAD</td><td>IPCA + 6,9045%</td><td>1345.0</td><td>1016.29</td></tr><tr><td>COMPANHIA ENERGÉTICA DO MARANHÃO - CEMAR</td><td>CEMA27</td><td>IPCA SPREAD</td><td>IPCA + 5,5422%</td><td>1321.0</td><td>1057.55</td></tr><tr><td>MRS LOGÍSTICA S/A</td><td>MRSL27</td><td>IPCA SPREAD</td><td>IPCA + 6,4277%</td><td>1312.0</td><td>1336.16</td></tr><tr><td>COMPANHIA DE GAS DE SÃO PAULO - COMGAS</td><td>GASP15</td><td>IPCA SPREAD</td><td>IPCA + 5,8680%</td><td>1291.0</td><td>1139.01</td></tr><tr><td>ENGIE BRASIL ENERGIA S.A.</td><td>TBLE15</td><td>IPCA SPREAD</td><td>IPCA + 6,3%</td><td>1276.0</td><td>1385.85</td></tr><tr><td>AES TIETE S/A (*)</td><td>TIET26</td><td>IPCA SPREAD</td><td>IPCA + 6,7842%</td><td>1268.0</td><td>1.07</td></tr><tr><td>COMPANHIA PIRATININGA DE FORÇA E LUZ</td><td>CPFP18</td><td>IPCA SPREAD</td><td>IPCA + 5,2901%</td><td>1267.0</td><td>1034.17</td></tr><tr><td>RIO GRANDE ENERGIA S/A</td><td>RIGE18</td><td>IPCA SPREAD</td><td>IPCA + 5,3473%</td><td>1266.0</td><td>1045.06</td></tr><tr><td>CENTRAIS ELETRICAS DO PARA S.A - CELPA</td><td>CLPP23</td><td>IPCA SPREAD</td><td>IPCA + 6,8702%</td><td>1258.0</td><td>1174.28</td></tr><tr><td>LOJAS AMERICANAS S/A (*)</td><td>LAMEB1</td><td>IPCA SPREAD</td><td>IPCA + 7,0972%</td><td>1242.0</td><td>11143.90</td></tr><tr><td>ALGAR TELECOM S/A</td><td>ALGA26</td><td>IPCA SPREAD</td><td>IPCA + 6,8734%</td><td>1235.0</td><td>1114.32</td></tr><tr><td>TRANS. ALIANÇA DE ENERGIA ELÉTRICA S/A</td><td>TAEE33</td><td>IPCA SPREAD</td><td>IPCA + 5,1%</td><td>1226.0</td><td>1361.58</td></tr><tr><td>CONCESSIONÁRIA ECOVIAS DOS IMIGRANTES S/</td><td>ECOV22</td><td>IPCA SPREAD</td><td>IPCA + 4,28%</td><td>1222.0</td><td>1303.63</td></tr><tr><td>CEMIG DISTRIBUIÇÃO S/A</td><td>CMDT33</td><td>IPCA SPREAD</td><td>IPCA + 5,1%</td><td>1214.0</td><td>1123.43</td></tr><tr><td>EDP ENERGIAS DO BRASIL S/A</td><td>ENBR34</td><td>IPCA SPREAD</td><td>IPCA + 8,7608%</td><td>1212.0</td><td>1331.15</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU12</td><td>IPCA SPREAD</td><td>IPCA + 6,4%</td><td>1206.0</td><td>1083.05</td></tr><tr><td>NORTE BRASIL TRANSMISSORA DE ENERGIA S/A</td><td>NRTB11</td><td>IPCA SPREAD</td><td>IPCA + 7,15%</td><td>1182.0</td><td>1363.27</td></tr><tr><td>NORTE BRASIL TRANSMISSORA DE ENERGIA S/A</td><td>NRTB21</td><td>IPCA SPREAD</td><td>IPCA + 7,15%</td><td>1182.0</td><td>1618.85</td></tr><tr><td>AES TIETE ENERGIA S/A (*)</td><td>TIET15</td><td>IPCA SPREAD</td><td>IPCA + 6,5365%</td><td>1180.0</td><td>1168.37</td></tr><tr><td>SANTO ANTÔNIO ENERGIA S/A</td><td>STEN23</td><td>IPCA SPREAD</td><td>IPCA + 7,4943%</td><td>1144.0</td><td>12609.01</td></tr><tr><td>CONCESSIONÁRIA AUTO RAPOSO TAVARES S/A (</td><td>CART22</td><td>IPCA SPREAD</td><td>IPCA + 6,05%</td><td>1136.0</td><td>1325.22</td></tr><tr><td>CONCESSIONÁRIA AUTO RAPOSO TAVARES S/A (</td><td>CART12</td><td>IPCA SPREAD</td><td>IPCA + 5,8%</td><td>1130.0</td><td>1250.60</td></tr><tr><td>VALE S/A</td><td>VALE28</td><td>IPCA SPREAD</td><td>IPCA + 6,57%</td><td>1111.0</td><td>1451.89</td></tr><tr><td>ITAUSA - INVESTIMENTOS ITAU S/A (*)</td><td>ITSA12</td><td>DI PERCENTUAL</td><td>106,9% do DI</td><td>1082.0</td><td>105045.83</td></tr><tr><td>VALE S/A</td><td>VALE29</td><td>IPCA SPREAD</td><td>IPCA + 6,6252%</td><td>1069.0</td><td>1227.99</td></tr><tr><td>CONCESSIONÁRIA DO SISTEMA ANHANGUERA-BAN</td><td>ANHB18</td><td>IPCA SPREAD</td><td>IPCA + 5,4705%</td><td>1056.0</td><td>1037.02</td></tr><tr><td>ENERGISA S/A</td><td>ENGI18</td><td>IPCA SPREAD</td><td>IPCA + 5,6%</td><td>1046.0</td><td>1044.02</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU31</td><td>IPCA SPREAD</td><td>IPCA + 7,86%</td><td>1043.0</td><td>1155.99</td></tr><tr><td>TCP TERMINAL DE CONTÊINERES DE PARANAGUÁ</td><td>TCPA31</td><td>IPCA SPREAD</td><td>IPCA + 7,8164%</td><td>1032.0</td><td>1096.36</td></tr><tr><td>CONCESSIONÁRIA RODOVIAS DO TIETE S/A (*)</td><td>RDVT11</td><td>IPCA SPREAD</td><td>IPCA + 8%</td><td>1030.0</td><td>848.39</td></tr><tr><td>CONCESSIONÁRIA ROTA DAS BANDEIRAS S/A (*</td><td>CBAN21</td><td>IPCA SPREAD</td><td>IPCA + 9,57%</td><td>1006.0</td><td>15312.42</td></tr><tr><td>RODOVIAS DAS COLINAS S/A (*)</td><td>RDCO34</td><td>IPCA SPREAD</td><td>IPCA + 5,7%</td><td>988.0</td><td>13069.01</td></tr><tr><td>COMPANHIA DE GAS DE SÃO PAULO - COMGAS</td><td>GASP24</td><td>IPCA SPREAD</td><td>IPCA + 7,4820%</td><td>982.0</td><td>1294.42</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU21</td><td>IPCA SPREAD</td><td>IPCA + 7,86%</td><td>979.0</td><td>1181.93</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU41</td><td>IPCA SPREAD</td><td>IPCA + 7,86%</td><td>973.0</td><td>1291.93</td></tr><tr><td>CIA. DE SANEAMENTO BÁSICO DO ESTADO DE S</td><td>SBESC7</td><td>IPCA SPREAD</td><td>IPCA + 4,75%</td><td>951.0</td><td>13746.43</td></tr><tr><td>MRV ENGENHARIA E PARTICIPAÇÃO S/A</td><td>MRVE39</td><td>IPCA SPREAD</td><td>IPCA + 8,2502%</td><td>931.0</td><td>11067.46</td></tr><tr><td>LOCALIZA RENT A CAR (*)</td><td>LORTA2</td><td>DI PERCENTUAL</td><td>107,25% do DI</td><td>925.0</td><td>1043.62</td></tr><tr><td>COMPANHIA ENERGÉTICA DO MARANHÃO - CEMAR</td><td>CEMA17</td><td>IPCA SPREAD</td><td>IPCA + 5,4795%</td><td>925.0</td><td>1060.24</td></tr></tbody></table></div></div>
         </div>
 
         <!-- TAB: Titulos Publicos -->
         <div id="titulos-publicos" class="tab-content">
             <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);">
-                <div class="stat-card"><div class="label">Total</div><div class="value text-info">47</div></div>
-                <div class="stat-card"><div class="label">LTN</div><div class="value text-primary">13</div></div>
-                <div class="stat-card"><div class="label">NTN-F</div><div class="value text-accent">6</div></div>
-                <div class="stat-card"><div class="label">NTN-B</div><div class="value text-secondary">15</div></div>
-                <div class="stat-card"><div class="label">LFT</div><div class="value text-info">12</div></div>
+                <div class="stat-card has-tooltip" title="Total de titulos publicos federais na base"><div class="label">Total</div><div class="value text-info">47</div></div>
+                <div class="stat-card has-tooltip" title="LTN: Letra do Tesouro Nacional - titulo prefixado sem cupom"><div class="label">LTN</div><div class="value text-primary">13</div></div>
+                <div class="stat-card has-tooltip" title="NTN-F: Nota do Tesouro Nacional serie F - prefixado com cupom semestral"><div class="label">NTN-F</div><div class="value text-accent">6</div></div>
+                <div class="stat-card has-tooltip" title="NTN-B: Nota do Tesouro Nacional serie B - indexado ao IPCA com cupom semestral"><div class="label">NTN-B</div><div class="value text-secondary">15</div></div>
+                <div class="stat-card has-tooltip" title="LFT: Letra Financeira do Tesouro - pos-fixado atrelado a SELIC"><div class="label">LFT</div><div class="value text-info">12</div></div>
             </div>
-            <div class="chart-card"><h3>🏛️ Titulos Publicos</h3><div style="overflow-x:auto;"><table><thead><tr><th>Tipo</th><th>Vencimento</th><th>Taxa Indicativa</th><th>PU</th></tr></thead><tbody><tr><td>LTN</td><td>2024-04-01</td><td>10.97%</td><td>992.59</td></tr><tr><td>LTN</td><td>2024-07-01</td><td>10.41%</td><td>968.67</td></tr><tr><td>NTN-B</td><td>2024-08-15</td><td>7.54%</td><td>4217.56</td></tr><tr><td>LFT</td><td>2024-09-01</td><td>-0.04%</td><td>14543.87</td></tr><tr><td>LTN</td><td>2024-10-01</td><td>10.01%</td><td>945.85</td></tr><tr><td>LTN</td><td>2025-01-01</td><td>9.82%</td><td>924.94</td></tr><tr><td>NTN-F</td><td>2025-01-01</td><td>9.87%</td><td>1017.06</td></tr><tr><td>LFT</td><td>2025-03-01</td><td>-0.02%</td><td>14543.58</td></tr><tr><td>LTN</td><td>2025-04-01</td><td>9.76%</td><td>904.70</td></tr><tr><td>NTN-B</td><td>2025-05-15</td><td>5.96%</td><td>4311.98</td></tr><tr><td>LTN</td><td>2025-07-01</td><td>9.72%</td><td>884.99</td></tr><tr><td>LFT</td><td>2025-09-01</td><td>0.02%</td><td>14538.00</td></tr><tr><td>LTN</td><td>2025-10-01</td><td>9.72%</td><td>863.66</td></tr><tr><td>LTN</td><td>2026-01-01</td><td>9.72%</td><td>843.66</td></tr><tr><td>LFT</td><td>2026-03-01</td><td>0.03%</td><td>14531.96</td></tr><tr><td>LTN</td><td>2026-04-01</td><td>9.79%</td><td>823.87</td></tr><tr><td>LTN</td><td>2026-07-01</td><td>9.84%</td><td>804.54</td></tr><tr><td>NTN-B</td><td>2026-08-15</td><td>5.64%</td><td>4279.49</td></tr><tr><td>LFT</td><td>2026-09-01</td><td>0.05%</td><td>14522.06</td></tr><tr><td>NTN-F</td><td>2027-01-01</td><td>9.94%</td><td>1018.55</td></tr><tr><td>LFT</td><td>2027-03-01</td><td>0.10%</td><td>14496.42</td></tr><tr><td>NTN-B</td><td>2027-05-15</td><td>5.58%</td><td>4361.69</td></tr><tr><td>LTN</td><td>2027-07-01</td><td>10.09%</td><td>727.57</td></tr><tr><td>LFT</td><td>2027-09-01</td><td>0.12%</td><td>14479.38</td></tr><tr><td>LTN</td><td>2028-01-01</td><td>10.24%</td><td>689.13</td></tr><tr><td>LFT</td><td>2028-03-01</td><td>0.13%</td><td>14466.80</td></tr><tr><td>NTN-B</td><td>2028-08-15</td><td>5.59%</td><td>4315.04</td></tr><tr><td>LFT</td><td>2028-09-01</td><td>0.14%</td><td>14450.90</td></tr><tr><td>NTN-F</td><td>2029-01-01</td><td>10.36%</td><td>1005.72</td></tr><tr><td>LFT</td><td>2029-03-01</td><td>0.16%</td><td>14426.81</td></tr><tr><td>NTN-B</td><td>2029-05-15</td><td>5.61%</td><td>4387.77</td></tr><tr><td>LFT</td><td>2029-09-01</td><td>0.17%</td><td>14406.47</td></tr><tr><td>LTN</td><td>2030-01-01</td><td>10.61%</td><td>557.62</td></tr><tr><td>LFT</td><td>2030-03-01</td><td>0.18%</td><td>14385.20</td></tr><tr><td>NTN-B</td><td>2030-08-15</td><td>5.59%</td><td>4344.94</td></tr><tr><td>NTN-C</td><td>2031-01-01</td><td>5.47%</td><td>8376.22</td></tr><tr><td>NTN-F</td><td>2031-01-01</td><td>10.60%</td><td>991.89</td></tr><tr><td>NTN-B</td><td>2032-08-15</td><td>5.68%</td><td>4342.21</td></tr><tr><td>NTN-F</td><td>2033-01-01</td><td>10.65%</td><td>984.22</td></tr><tr><td>NTN-B</td><td>2033-05-15</td><td>5.67%</td><td>4413.42</td></tr><tr><td>NTN-F</td><td>2035-01-01</td><td>10.73%</td><td>975.80</td></tr><tr><td>NTN-B</td><td>2035-05-15</td><td>5.70%</td><td>4421.88</td></tr><tr><td>NTN-B</td><td>2040-08-15</td><td>5.72%</td><td>4380.40</td></tr><tr><td>NTN-B</td><td>2045-05-15</td><td>5.78%</td><td>4437.97</td></tr><tr><td>NTN-B</td><td>2050-08-15</td><td>5.79%</td><td>4381.68</td></tr><tr><td>NTN-B</td><td>2055-05-15</td><td>5.78%</td><td>4460.34</td></tr><tr><td>NTN-B</td><td>2060-08-15</td><td>5.81%</td><td>4385.98</td></tr></tbody></table></div></div>
+            <div class="chart-card has-tooltip" title="Titulos publicos federais com taxas indicativas e precos unitarios"><h3>🏛️ Titulos Publicos</h3><div style="overflow-x:auto;"><table><thead><tr><th title="Tipo do titulo: LTN, NTN-F, NTN-B ou LFT">Tipo</th><th title="Data de vencimento do titulo">Vencimento</th><th title="Taxa indicativa anual do titulo">Taxa Indicativa</th><th title="Preco unitario atual do titulo">PU</th></tr></thead><tbody><tr><td>LTN</td><td>2024-04-01</td><td>10.97%</td><td>992.59</td></tr><tr><td>LTN</td><td>2024-07-01</td><td>10.41%</td><td>968.67</td></tr><tr><td>NTN-B</td><td>2024-08-15</td><td>7.54%</td><td>4217.56</td></tr><tr><td>LFT</td><td>2024-09-01</td><td>-0.04%</td><td>14543.87</td></tr><tr><td>LTN</td><td>2024-10-01</td><td>10.01%</td><td>945.85</td></tr><tr><td>LTN</td><td>2025-01-01</td><td>9.82%</td><td>924.94</td></tr><tr><td>NTN-F</td><td>2025-01-01</td><td>9.87%</td><td>1017.06</td></tr><tr><td>LFT</td><td>2025-03-01</td><td>-0.02%</td><td>14543.58</td></tr><tr><td>LTN</td><td>2025-04-01</td><td>9.76%</td><td>904.70</td></tr><tr><td>NTN-B</td><td>2025-05-15</td><td>5.96%</td><td>4311.98</td></tr><tr><td>LTN</td><td>2025-07-01</td><td>9.72%</td><td>884.99</td></tr><tr><td>LFT</td><td>2025-09-01</td><td>0.02%</td><td>14538.00</td></tr><tr><td>LTN</td><td>2025-10-01</td><td>9.72%</td><td>863.66</td></tr><tr><td>LTN</td><td>2026-01-01</td><td>9.72%</td><td>843.66</td></tr><tr><td>LFT</td><td>2026-03-01</td><td>0.03%</td><td>14531.96</td></tr><tr><td>LTN</td><td>2026-04-01</td><td>9.79%</td><td>823.87</td></tr><tr><td>LTN</td><td>2026-07-01</td><td>9.84%</td><td>804.54</td></tr><tr><td>NTN-B</td><td>2026-08-15</td><td>5.64%</td><td>4279.49</td></tr><tr><td>LFT</td><td>2026-09-01</td><td>0.05%</td><td>14522.06</td></tr><tr><td>NTN-F</td><td>2027-01-01</td><td>9.94%</td><td>1018.55</td></tr><tr><td>LFT</td><td>2027-03-01</td><td>0.10%</td><td>14496.42</td></tr><tr><td>NTN-B</td><td>2027-05-15</td><td>5.58%</td><td>4361.69</td></tr><tr><td>LTN</td><td>2027-07-01</td><td>10.09%</td><td>727.57</td></tr><tr><td>LFT</td><td>2027-09-01</td><td>0.12%</td><td>14479.38</td></tr><tr><td>LTN</td><td>2028-01-01</td><td>10.24%</td><td>689.13</td></tr><tr><td>LFT</td><td>2028-03-01</td><td>0.13%</td><td>14466.80</td></tr><tr><td>NTN-B</td><td>2028-08-15</td><td>5.59%</td><td>4315.04</td></tr><tr><td>LFT</td><td>2028-09-01</td><td>0.14%</td><td>14450.90</td></tr><tr><td>NTN-F</td><td>2029-01-01</td><td>10.36%</td><td>1005.72</td></tr><tr><td>LFT</td><td>2029-03-01</td><td>0.16%</td><td>14426.81</td></tr><tr><td>NTN-B</td><td>2029-05-15</td><td>5.61%</td><td>4387.77</td></tr><tr><td>LFT</td><td>2029-09-01</td><td>0.17%</td><td>14406.47</td></tr><tr><td>LTN</td><td>2030-01-01</td><td>10.61%</td><td>557.62</td></tr><tr><td>LFT</td><td>2030-03-01</td><td>0.18%</td><td>14385.20</td></tr><tr><td>NTN-B</td><td>2030-08-15</td><td>5.59%</td><td>4344.94</td></tr><tr><td>NTN-C</td><td>2031-01-01</td><td>5.47%</td><td>8376.22</td></tr><tr><td>NTN-F</td><td>2031-01-01</td><td>10.60%</td><td>991.89</td></tr><tr><td>NTN-B</td><td>2032-08-15</td><td>5.68%</td><td>4342.21</td></tr><tr><td>NTN-F</td><td>2033-01-01</td><td>10.65%</td><td>984.22</td></tr><tr><td>NTN-B</td><td>2033-05-15</td><td>5.67%</td><td>4413.42</td></tr><tr><td>NTN-F</td><td>2035-01-01</td><td>10.73%</td><td>975.80</td></tr><tr><td>NTN-B</td><td>2035-05-15</td><td>5.70%</td><td>4421.88</td></tr><tr><td>NTN-B</td><td>2040-08-15</td><td>5.72%</td><td>4380.40</td></tr><tr><td>NTN-B</td><td>2045-05-15</td><td>5.78%</td><td>4437.97</td></tr><tr><td>NTN-B</td><td>2050-08-15</td><td>5.79%</td><td>4381.68</td></tr><tr><td>NTN-B</td><td>2055-05-15</td><td>5.78%</td><td>4460.34</td></tr><tr><td>NTN-B</td><td>2060-08-15</td><td>5.81%</td><td>4385.98</td></tr></tbody></table></div></div>
         </div>
 
         <!-- TAB: CRI/CRA -->
         <div id="cri-cra" class="tab-content">
             <div id="cricraStats" class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
-                <div class="stat-card"><div class="label">Total</div><div class="value text-info" id="cricraTotal">-</div></div>
-                <div class="stat-card"><div class="label">CRI</div><div class="value text-primary" id="cricraCountCRI">-</div></div>
-                <div class="stat-card"><div class="label">CRA</div><div class="value text-secondary" id="cricraCountCRA">-</div></div>
+                <div class="stat-card has-tooltip" title="Total de titulos de securitizacao imobiliaria e agroindustrial"><div class="label">Total</div><div class="value text-info" id="cricraTotal">-</div></div>
+                <div class="stat-card has-tooltip" title="CRI: Certificado de Recebiveis Imobiliarios - lastreados em creditos imobiliarios"><div class="label">CRI</div><div class="value text-primary" id="cricraCountCRI">-</div></div>
+                <div class="stat-card has-tooltip" title="CRA: Certificado de Recebiveis do Agronegocio - lastreados em creditos agroindustriais"><div class="label">CRA</div><div class="value text-secondary" id="cricraCountCRA">-</div></div>
             </div>
             <div id="cricraLoading" class="chart-card" style="text-align:center;padding:40px;">
                 <p style="color:var(--text-secondary);">Carregando dados de CRI/CRA...</p>
             </div>
-            <div id="cricraContainer" class="chart-card" style="display:none;">
+            <div id="cricraContainer" class="chart-card has-tooltip" style="display:none;" title="Lista completa de CRIs e CRAs com dados de taxa, PU e duration">
                 <h3>🏠 CRI/CRA do SQL Server</h3>
                 <div style="overflow-x:auto;max-height:500px;">
                     <table>
-                        <thead><tr><th>Tipo</th><th>Código</th><th>Emissor</th><th>Série</th><th>Vencimento</th><th>Taxa Indicativa</th><th>PU</th><th>Duration</th></tr></thead>
+                        <thead><tr><th title="Tipo do titulo: CRI ou CRA">Tipo</th><th title="Codigo do titulo">Código</th><th title="Securitizadora emissora do titulo">Emissor</th><th title="Serie da emissao">Série</th><th title="Data de vencimento do titulo">Vencimento</th><th title="Taxa indicativa de remuneracao">Taxa Indicativa</th><th title="Preco unitario atual">PU</th><th title="Duration: prazo medio ponderado em dias">Duration</th></tr></thead>
                         <tbody id="corpoCRICRA"></tbody>
                     </table>
                 </div>
@@ -288,29 +331,130 @@
 
         <!-- TAB: TSB -->
         <div id="tsb" class="tab-content">
+            <!-- Header -->
             <div class="chart-card" style="background:linear-gradient(135deg,rgba(46,125,50,0.2) 0%,rgba(0,150,136,0.2) 100%);border-color:rgba(46,125,50,0.3);">
                 <div style="display:flex;align-items:center;gap:20px;">
                     <div style="font-size:3rem;">🌿</div>
-                    <div><h2 style="color:#66BB6A;margin:0;">Taxonomia Sustentavel Brasileira (TSB)</h2><p style="color:#a5d6a7;margin-top:8px;">Mapeamento de empresas com classificacao sustentavel</p><span id="tsbBadge" class="badge" style="background:#4CAF50;">Carregando...</span></div>
+                    <div>
+                        <h2 style="color:#66BB6A;margin:0;">Taxonomia Sustentavel Brasileira (TSB)</h2>
+                        <p style="color:#a5d6a7;margin-top:8px;">Mapeamento integrado: Empresas + Titulos + Fundos Sustentaveis</p>
+                        <span id="tsbBadge" class="badge" style="background:#4CAF50;">Carregando...</span>
+                    </div>
                 </div>
             </div>
-            <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
-                <div class="stat-card" style="border-left:4px solid #4CAF50;"><div class="label">Empresas</div><div class="value text-secondary" id="tsbTotalEmpresas">-</div></div>
-                <div class="stat-card" style="border-left:4px solid #66BB6A;"><div class="label">Verde</div><div class="value text-secondary" id="tsbTotalVerde">-</div></div>
-                <div class="stat-card" style="border-left:4px solid #FF9800;"><div class="label">KPIs Definidos</div><div class="value text-accent" id="tsbTotalKPIs">-</div></div>
-                <div class="stat-card" style="border-left:4px solid #00BCD4;"><div class="label">Setores</div><div class="value text-info" id="tsbTotalSetores">-</div></div>
+
+            <!-- Stats Grid Principal -->
+            <div class="stats-grid" style="grid-template-columns:repeat(6,1fr);">
+                <div class="stat-card has-tooltip" style="border-left:4px solid #4CAF50;" title="Total de empresas mapeadas na Taxonomia Sustentavel Brasileira"><div class="label">Empresas TSB</div><div class="value text-secondary" id="tsbTotalEmpresas">-</div></div>
+                <div class="stat-card has-tooltip" style="border-left:4px solid #66BB6A;" title="Empresas com classificacao VERDE: atividades economicas sustentaveis"><div class="label">Verde</div><div class="value" style="color:#66BB6A;" id="tsbTotalVerde">-</div></div>
+                <div class="stat-card has-tooltip" style="border-left:4px solid #FF9800;" title="Empresas em TRANSICAO: em processo de transicao para economia verde"><div class="label">Transicao</div><div class="value text-accent" id="tsbTotalTransicao">-</div></div>
+                <div class="stat-card has-tooltip" style="border-left:4px solid #42A5F5;" title="Total de debentures emitidas por empresas com classificacao TSB"><div class="label">Titulos Verdes</div><div class="value text-primary" id="tsbTotalTitulos">-</div></div>
+                <div class="stat-card has-tooltip" style="border-left:4px solid #9C27B0;" title="Fundos de investimento com mandato ESG, Verde, Social ou Ambiental"><div class="label">Fundos ESG</div><div class="value" style="color:#BA68C8;" id="tsbTotalFundosESG">-</div></div>
+                <div class="stat-card has-tooltip" style="border-left:4px solid #00BCD4;" title="Score medio de sustentabilidade das empresas (0-100)"><div class="label">Score Medio</div><div class="value text-info" id="tsbScoreMedio">-</div></div>
             </div>
-            <div class="grid-2">
-                <div class="chart-card"><h3>📊 Classificacao TSB</h3><div class="chart-container"><canvas id="chartTSBClass"></canvas></div></div>
-                <div class="chart-card"><h3>🏭 Por Setor</h3><div class="chart-container"><canvas id="chartTSBSetor"></canvas></div></div>
+
+            <!-- Sub-navegacao TSB -->
+            <div style="display:flex;gap:10px;margin:20px 0;flex-wrap:wrap;">
+                <button onclick="mostrarSecaoTSB('empresas')" class="tsb-nav-btn active" id="btnTsbEmpresas" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border-color);background:rgba(76,175,80,0.2);color:#66BB6A;cursor:pointer;font-weight:600;" title="Lista de empresas mapeadas na TSB com classificacao e score">🏢 Empresas</button>
+                <button onclick="mostrarSecaoTSB('titulos')" class="tsb-nav-btn" id="btnTsbTitulos" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-secondary);cursor:pointer;" title="Debentures emitidas por empresas Verde e Transicao">📜 Titulos Verdes</button>
+                <button onclick="mostrarSecaoTSB('fundos')" class="tsb-nav-btn" id="btnTsbFundos" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-secondary);cursor:pointer;" title="Fundos com mandato ESG, Verde, Social ou Ambiental">💚 Fundos Sustentaveis</button>
+                <button onclick="mostrarSecaoTSB('integrado')" class="tsb-nav-btn" id="btnTsbIntegrado" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-secondary);cursor:pointer;" title="Visao completa: Empresa -> Titulos emitidos -> Fundos relacionados">🔗 Visao Integrada</button>
             </div>
-            <div class="chart-card">
-                <h3>🏢 Empresas Mapeadas na TSB <span style="font-size:0.8rem;color:#a0a0b0;">(clique para ver KPIs)</span></h3>
-                <div style="overflow-x:auto;">
-                    <table>
-                        <thead><tr><th>Empresa</th><th>CNPJ</th><th>Setor</th><th>Classificacao</th><th>Score</th><th>Titulos</th><th>Acoes</th></tr></thead>
-                        <tbody id="corpoTabelaTSB"></tbody>
-                    </table>
+
+            <!-- Secao: Empresas TSB -->
+            <div id="secaoTsbEmpresas">
+                <div class="grid-2">
+                    <div class="chart-card has-tooltip" title="Distribuicao das empresas por classificacao TSB: Verde (sustentavel) ou Transicao"><h3>📊 Classificacao TSB</h3><div class="chart-container"><canvas id="chartTSBClass"></canvas></div></div>
+                    <div class="chart-card has-tooltip" title="Distribuicao das empresas TSB por setor economico"><h3>🏭 Por Setor</h3><div class="chart-container"><canvas id="chartTSBSetor"></canvas></div></div>
+                </div>
+                <div class="chart-card has-tooltip" title="Tabela completa de empresas mapeadas na Taxonomia Sustentavel Brasileira">
+                    <h3>🏢 Empresas Mapeadas na TSB <span style="font-size:0.8rem;color:#a0a0b0;">(clique para ver investimentos relacionados)</span></h3>
+                    <div style="overflow-x:auto;max-height:400px;">
+                        <table>
+                            <thead><tr><th title="Razao social da empresa">Empresa</th><th title="CNPJ da empresa">CNPJ</th><th title="Setor economico conforme classificacao TSB">Setor</th><th title="VERDE = atividades sustentaveis, TRANSICAO = em processo">Classificacao</th><th title="Score de sustentabilidade (0-100)">Score</th><th title="Quantidade de titulos emitidos pela empresa">Titulos</th><th title="Acoes disponiveis: ver detalhes, investimentos">Acoes</th></tr></thead>
+                            <tbody id="corpoTabelaTSB"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secao: Titulos Verdes -->
+            <div id="secaoTsbTitulos" style="display:none;">
+                <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+                    <div class="stat-card has-tooltip" style="border-left:4px solid #4CAF50;" title="Quantidade de debentures emitidas por empresas classificadas como VERDE"><div class="label">Debentures Verde</div><div class="value" style="color:#66BB6A;" id="tsbDebenturesVerde">-</div></div>
+                    <div class="stat-card has-tooltip" style="border-left:4px solid #FF9800;" title="Quantidade de debentures emitidas por empresas em TRANSICAO"><div class="label">Debentures Transicao</div><div class="value text-accent" id="tsbDebenturesTransicao">-</div></div>
+                    <div class="stat-card has-tooltip" style="border-left:4px solid #4CAF50;" title="Numero de empresas VERDE que possuem debentures emitidas"><div class="label">Empresas Verde</div><div class="value" style="color:#66BB6A;" id="tsbEmpresasVerdeDebt">-</div></div>
+                    <div class="stat-card has-tooltip" style="border-left:4px solid #42A5F5;" title="Score medio de sustentabilidade das empresas VERDE com debentures"><div class="label">Score Medio Verde</div><div class="value text-primary" id="tsbScoreVerdeDebt">-</div></div>
+                </div>
+                <div class="chart-card has-tooltip" title="Listagem de debentures emitidas por empresas com classificacao VERDE na TSB">
+                    <h3 style="color:#66BB6A;">🌱 Debentures de Empresas VERDE</h3>
+                    <p style="color:var(--text-secondary);margin-bottom:15px;">Titulos emitidos por empresas com classificacao sustentavel</p>
+                    <div style="overflow-x:auto;max-height:350px;">
+                        <table>
+                            <thead><tr><th title="Nome da empresa emissora">Empresa</th><th title="Setor economico TSB">Setor</th><th title="Score de sustentabilidade">Score</th><th title="Codigo da debenture">Codigo</th><th title="Grupo de investimento">Grupo</th><th title="Taxa de remuneracao do titulo">Taxa</th><th title="Duration: prazo medio ponderado do titulo em anos">Duration</th></tr></thead>
+                            <tbody id="corpoTitulosVerde"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="chart-card has-tooltip" style="margin-top:20px;" title="Listagem de debentures emitidas por empresas em TRANSICAO para economia verde">
+                    <h3 style="color:#FFB74D;">🔄 Debentures de Empresas em TRANSICAO</h3>
+                    <p style="color:var(--text-secondary);margin-bottom:15px;">Titulos de empresas caminhando para sustentabilidade</p>
+                    <div style="overflow-x:auto;max-height:300px;">
+                        <table>
+                            <thead><tr><th title="Nome da empresa emissora">Empresa</th><th title="Setor economico TSB">Setor</th><th title="Score de sustentabilidade">Score</th><th title="Codigo da debenture">Codigo</th><th title="Grupo de investimento">Grupo</th><th title="Taxa de remuneracao do titulo">Taxa</th><th title="Duration: prazo medio ponderado do titulo em anos">Duration</th></tr></thead>
+                            <tbody id="corpoTitulosTransicao"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secao: Fundos Sustentaveis -->
+            <div id="secaoTsbFundos" style="display:none;">
+                <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+                    <div class="stat-card has-tooltip" style="border-left:4px solid #9C27B0;" title="Total de fundos com mandato ESG, Verde, Social ou Ambiental"><div class="label">Total Fundos ESG</div><div class="value" style="color:#BA68C8;" id="tsbFundosTotal">-</div></div>
+                    <div class="stat-card has-tooltip" style="border-left:4px solid #66BB6A;" title="Numero de gestoras que administram fundos sustentaveis"><div class="label">Gestoras</div><div class="value" style="color:#66BB6A;" id="tsbFundosGestoras">-</div></div>
+                    <div class="stat-card has-tooltip" style="border-left:4px solid #42A5F5;" title="Quantidade de classes ANBIMA distintas nos fundos sustentaveis"><div class="label">Classes ANBIMA</div><div class="value text-primary" id="tsbFundosClasses">-</div></div>
+                </div>
+                <div class="grid-2">
+                    <div class="chart-card has-tooltip" title="Ranking das gestoras com maior numero de fundos sustentaveis">
+                        <h3>🏛️ Top Gestoras ESG</h3>
+                        <div id="listaGestorasESG" style="max-height:300px;overflow-y:auto;"></div>
+                    </div>
+                    <div class="chart-card has-tooltip" title="Distribuicao dos fundos sustentaveis por classe ANBIMA">
+                        <h3>📊 Por Classe ANBIMA</h3>
+                        <div class="chart-container"><canvas id="chartFundosESGClasse"></canvas></div>
+                    </div>
+                </div>
+                <div class="chart-card has-tooltip" style="margin-top:20px;" title="Lista completa de fundos com mandato sustentavel">
+                    <h3>💚 Fundos Sustentaveis <span style="font-size:0.8rem;color:#a0a0b0;">(ESG, Verde, Social, Ambiental)</span></h3>
+                    <div style="margin-bottom:15px;">
+                        <input type="text" id="searchFundoESG" placeholder="Buscar fundo sustentavel..." onkeyup="filtrarFundosESG()" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);" title="Digite para filtrar fundos por nome, gestora ou classe">
+                    </div>
+                    <div style="overflow-x:auto;max-height:400px;">
+                        <table>
+                            <thead><tr><th title="Nome completo do fundo de investimento">Nome do Fundo</th><th title="CNPJ do fundo">CNPJ</th><th title="Gestora responsavel pelo fundo">Gestora</th><th title="Classificacao ANBIMA do fundo">Classe ANBIMA</th><th title="Tipo de investidor: Geral, Qualificado ou Profissional">Publico</th></tr></thead>
+                            <tbody id="corpoFundosESG"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secao: Visao Integrada -->
+            <div id="secaoTsbIntegrado" style="display:none;">
+                <div class="chart-card has-tooltip" title="Visualizacao completa do relacionamento entre empresa, titulos emitidos e fundos que investem">
+                    <h3>🔗 Visao Integrada: Empresa → Titulos → Fundos</h3>
+                    <p style="color:var(--text-secondary);margin-bottom:15px;">Selecione uma empresa para ver titulos emitidos e fundos relacionados</p>
+                    <div style="margin-bottom:20px;">
+                        <select id="selectEmpresaIntegrada" onchange="carregarVisaoIntegrada()" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);font-size:1rem;" title="Selecione uma empresa TSB para ver seus titulos e fundos relacionados">
+                            <option value="">-- Selecione uma empresa TSB --</option>
+                        </select>
+                    </div>
+                    <div id="visaoIntegradaConteudo">
+                        <div style="text-align:center;padding:40px;color:var(--text-secondary);">
+                            <div style="font-size:3rem;margin-bottom:15px;">🏢</div>
+                            <p>Selecione uma empresa acima para ver a visao integrada</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             <h3 style="margin:20px 0 15px;">📈 KPIs Obrigatorios por Setor</h3>
@@ -318,23 +462,269 @@
         </div>
 
         <!-- TAB: Risk Scoring -->
-        <div id="risk-scoring" class="tab-content"><div class="chart-card"><h3>📊 Risk Scoring</h3><div class="chart-container"><canvas id="chartRating"></canvas></div></div></div>
+        <div id="risk-scoring" class="tab-content">
+            <!-- Header -->
+            <div class="chart-card has-tooltip" style="background:linear-gradient(135deg,rgba(244,67,54,0.15) 0%,rgba(255,152,0,0.15) 100%);border-color:rgba(244,67,54,0.3);" title="Painel de analise de risco integrada do portfolio com 5 dimensoes: ESG, Credito, Concentracao, Liquidez e Clima">
+                <div style="display:flex;align-items:center;gap:20px;">
+                    <div style="font-size:3rem;">📊</div>
+                    <div style="flex:1;">
+                        <h2 style="color:#FF9800;margin:0;">Risk Scoring - Analise de Risco do Portfolio</h2>
+                        <p style="color:#FFCC80;margin-top:8px;">Avaliacao integrada: ESG, Credito, Concentracao, Liquidez e Clima</p>
+                    </div>
+                    <div id="riskGlobalBadge" style="text-align:center;padding:15px 25px;border-radius:12px;background:rgba(255,255,255,0.1);" title="Score global de risco: media ponderada das 5 dimensoes. Escala 0-100, quanto MENOR melhor">
+                        <div style="font-size:0.8rem;color:#a0a0b0;">Score Global</div>
+                        <div id="riskScoreGlobal" style="font-size:2.5rem;font-weight:700;color:#FFC107;">-</div>
+                        <div id="riskRatingGlobal" style="font-size:0.9rem;font-weight:600;">Carregando...</div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- TAB: Portfolio -->
-        <div id="portfolio" class="tab-content"><div class="chart-card"><h3>💼 Portfolio Analytics</h3><div class="grid-2" style="margin-top:20px;"><div class="stat-card"><div class="label">VaR 95%</div><div class="value" style="color:#f44336;">-2.3%</div></div><div class="stat-card"><div class="label">Sharpe</div><div class="value text-secondary">1.45</div></div></div></div></div>
+            <!-- Scores Individuais -->
+            <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);">
+                <div class="stat-card has-tooltip" id="cardRiskESG" style="border-top:4px solid #4CAF50;" title="Risco ESG: baseado no score medio TSB das empresas. Alto score TSB = baixo risco ESG. Peso: 25%">
+                    <div class="label">Risco ESG</div>
+                    <div class="value" id="riskESG">-</div>
+                    <div id="riskESGLabel" style="font-size:0.75rem;color:#a0a0b0;">-</div>
+                </div>
+                <div class="stat-card has-tooltip" id="cardRiskCredito" style="border-top:4px solid #F44336;" title="Risco de Credito: baseado no spread medio das debentures. Taxa >6% = alto risco. Peso: 25%">
+                    <div class="label">Risco Credito</div>
+                    <div class="value" id="riskCredito">-</div>
+                    <div id="riskCreditoLabel" style="font-size:0.75rem;color:#a0a0b0;">-</div>
+                </div>
+                <div class="stat-card has-tooltip" id="cardRiskConcentracao" style="border-top:4px solid #2196F3;" title="Risco de Concentracao: baseado no indice HHI. HHI>2500=alta concentracao. Peso: 15%">
+                    <div class="label">Concentracao</div>
+                    <div class="value" id="riskConcentracao">-</div>
+                    <div id="riskConcentracaoLabel" style="font-size:0.75rem;color:#a0a0b0;">-</div>
+                </div>
+                <div class="stat-card has-tooltip" id="cardRiskLiquidez" style="border-top:4px solid #9C27B0;" title="Risco de Liquidez: baseado na duration media. Maior % em longo prazo = maior risco. Peso: 15%">
+                    <div class="label">Risco Liquidez</div>
+                    <div class="value" id="riskLiquidez">-</div>
+                    <div id="riskLiquidezLabel" style="font-size:0.75rem;color:#a0a0b0;">-</div>
+                </div>
+                <div class="stat-card has-tooltip" id="cardRiskClima" style="border-top:4px solid #00BCD4;" title="Risco Climatico: baseado no % de empresas em transicao vs verde. Mais transicao = maior risco. Peso: 20%">
+                    <div class="label">Risco Climatico</div>
+                    <div class="value" id="riskClima">-</div>
+                    <div id="riskClimaLabel" style="font-size:0.75rem;color:#a0a0b0;">-</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <!-- Grafico Radar de Riscos -->
+                <div class="chart-card has-tooltip" title="Grafico radar mostrando o perfil de risco nas 5 dimensoes. Areas maiores indicam maior exposicao ao risco">
+                    <h3>🎯 Perfil de Risco do Portfolio</h3>
+                    <div class="chart-container" style="height:300px;"><canvas id="chartRiskRadar"></canvas></div>
+                </div>
+                <!-- Grafico de Spread por Indexador -->
+                <div class="chart-card has-tooltip" title="Distribuicao das debentures por indexador (IPCA, DI, Pre) com quantidade e taxa media de cada grupo">
+                    <h3>📈 Spread por Indexador</h3>
+                    <div class="chart-container" style="height:300px;"><canvas id="chartSpreadIndexador"></canvas></div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <!-- Concentracao por Setor -->
+                <div class="chart-card has-tooltip" title="Distribuicao do portfolio por setor. HHI (Herfindahl-Hirschman Index): <1500=baixa, 1500-2500=moderada, >2500=alta concentracao">
+                    <h3>🏭 Concentracao por Setor (HHI: <span id="riskHHI" title="Indice Herfindahl-Hirschman: mede concentracao. Soma dos quadrados das participacoes">-</span>)</h3>
+                    <div class="chart-container" style="height:280px;"><canvas id="chartConcentracao"></canvas></div>
+                </div>
+                <!-- Perfil de Liquidez -->
+                <div class="chart-card has-tooltip" title="Distribuicao dos titulos por prazo: Curto (<1 ano), Medio (1-3 anos), Longo (>3 anos). Afeta o risco de liquidez">
+                    <h3>💧 Perfil de Liquidez (Duration)</h3>
+                    <div class="chart-container" style="height:280px;"><canvas id="chartLiquidez"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Metricas Detalhadas -->
+            <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+                <div class="stat-card has-tooltip" title="Numero total de ativos no portfolio: fundos + debentures + CRI/CRA + titulos publicos">
+                    <div class="label">Total Ativos</div>
+                    <div class="value text-primary" id="riskTotalAtivos">-</div>
+                </div>
+                <div class="stat-card has-tooltip" title="Quantidade de debentures corporativas na carteira">
+                    <div class="label">Debentures</div>
+                    <div class="value text-info" id="riskTotalDebentures">-</div>
+                </div>
+                <div class="stat-card has-tooltip" title="Taxa indicativa media das debentures (spread sobre o indexador)">
+                    <div class="label">Taxa Media</div>
+                    <div class="value text-accent" id="riskTaxaMedia">-</div>
+                </div>
+                <div class="stat-card has-tooltip" title="Duration media ponderada da carteira de titulos (em dias)">
+                    <div class="label">Duration Media</div>
+                    <div class="value text-secondary" id="riskDurationMedia">-</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <!-- Empresas com Maior Risco -->
+                <div class="chart-card has-tooltip" title="Empresas com menores scores TSB - maior exposicao a riscos ESG e climaticos">
+                    <h3 style="color:#F44336;">⚠️ Empresas com Maior Risco ESG</h3>
+                    <div style="overflow-x:auto;max-height:300px;">
+                        <table>
+                            <thead><tr><th>Empresa</th><th>Setor</th><th>Classificacao</th><th>Score</th></tr></thead>
+                            <tbody id="corpoEmpresasRisco"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Top Emissores -->
+                <div class="chart-card has-tooltip" title="Maiores emissores de debentures por quantidade de titulos e taxa indicativa media">
+                    <h3 style="color:#2196F3;">🏢 Top Emissores de Debentures</h3>
+                    <div style="overflow-x:auto;max-height:300px;">
+                        <table>
+                            <thead><tr><th title="Nome da empresa emissora">Emissor</th><th title="Quantidade de debentures emitidas">Qtd</th><th title="Taxa indicativa media (spread sobre indexador)">Taxa Media</th></tr></thead>
+                            <tbody id="corpoTopEmissores"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legenda de Ratings -->
+            <div class="chart-card has-tooltip" style="margin-top:20px;" title="Escala de classificacao de risco: A (melhor) a E (pior). Baseado em metodologia interna">
+                <h3>📋 Escala de Rating de Risco</h3>
+                <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:15px;">
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;background:rgba(76,175,80,0.2);border-radius:8px;">
+                        <span style="font-size:1.5rem;font-weight:700;color:#4CAF50;">A</span>
+                        <div><div style="font-weight:600;color:#4CAF50;">Muito Baixo</div><div style="font-size:0.75rem;color:#a0a0b0;">0-20 pontos</div></div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;background:rgba(139,195,74,0.2);border-radius:8px;">
+                        <span style="font-size:1.5rem;font-weight:700;color:#8BC34A;">B</span>
+                        <div><div style="font-weight:600;color:#8BC34A;">Baixo</div><div style="font-size:0.75rem;color:#a0a0b0;">21-40 pontos</div></div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;background:rgba(255,193,7,0.2);border-radius:8px;">
+                        <span style="font-size:1.5rem;font-weight:700;color:#FFC107;">C</span>
+                        <div><div style="font-weight:600;color:#FFC107;">Moderado</div><div style="font-size:0.75rem;color:#a0a0b0;">41-60 pontos</div></div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;background:rgba(255,152,0,0.2);border-radius:8px;">
+                        <span style="font-size:1.5rem;font-weight:700;color:#FF9800;">D</span>
+                        <div><div style="font-weight:600;color:#FF9800;">Alto</div><div style="font-size:0.75rem;color:#a0a0b0;">61-80 pontos</div></div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;background:rgba(244,67,54,0.2);border-radius:8px;">
+                        <span style="font-size:1.5rem;font-weight:700;color:#F44336;">E</span>
+                        <div><div style="font-weight:600;color:#F44336;">Muito Alto</div><div style="font-size:0.75rem;color:#a0a0b0;">81-100 pontos</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- TAB: Early Warning -->
-        <div id="early-warning" class="tab-content"><div class="chart-card"><h3>⚠️ Early Warning</h3><div style="background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);border-radius:8px;padding:15px;"><strong style="color:#66BB6A;">✓ Sem alertas criticos</strong></div></div></div>
+        <div id="early-warning" class="tab-content">
+            <div class="chart-card has-tooltip" style="background:linear-gradient(135deg,rgba(255,152,0,0.15) 0%,rgba(244,67,54,0.15) 100%);border-color:rgba(255,152,0,0.3);margin-bottom:20px;" title="Sistema de alertas antecipados para identificar riscos potenciais no portfolio">
+                <div style="display:flex;align-items:center;gap:20px;">
+                    <div style="font-size:3rem;">⚠️</div>
+                    <div style="flex:1;">
+                        <h2 style="color:#FFB74D;margin:0;">Early Warning - Sistema de Alertas</h2>
+                        <p style="color:#FFCC80;margin-top:8px;">Monitoramento de riscos baseado em dados reais do portfolio</p>
+                    </div>
+                    <div id="ewResumo" style="display:flex;gap:15px;">
+                        <div style="text-align:center;padding:10px 15px;border-radius:8px;background:rgba(244,67,54,0.2);">
+                            <div style="font-size:1.5rem;font-weight:700;color:#F44336;" id="ewCriticos">-</div>
+                            <div style="font-size:0.7rem;color:#EF9A9A;">Críticos</div>
+                        </div>
+                        <div style="text-align:center;padding:10px 15px;border-radius:8px;background:rgba(255,152,0,0.2);">
+                            <div style="font-size:1.5rem;font-weight:700;color:#FF9800;" id="ewMedios">-</div>
+                            <div style="font-size:0.7rem;color:#FFCC80;">Médios</div>
+                        </div>
+                        <div style="text-align:center;padding:10px 15px;border-radius:8px;background:rgba(76,175,80,0.2);">
+                            <div style="font-size:1.5rem;font-weight:700;color:#4CAF50;" id="ewBaixos">-</div>
+                            <div style="font-size:0.7rem;color:#A5D6A7;">Baixos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="ewAlertasContainer" style="display:flex;flex-direction:column;gap:15px;">
+                <div style="text-align:center;padding:40px;color:var(--text-secondary);">
+                    <div style="font-size:2rem;margin-bottom:10px;">⏳</div>
+                    <p>Carregando alertas...</p>
+                </div>
+            </div>
+        </div>
 
         <!-- TAB: Debt Analysis -->
-        <div id="debt-analysis" class="tab-content"><div class="chart-card"><h3>📈 Analise de Divida</h3><div class="grid-2" style="margin-top:20px;"><div class="stat-card"><div class="label">Divida Total</div><div class="value text-primary">R$ 3.35B</div></div><div class="stat-card"><div class="label">Custo Medio</div><div class="value text-accent">CDI + 1.7%</div></div></div></div></div>
+        <div id="debt-analysis" class="tab-content">
+            <div class="chart-card has-tooltip" style="background:linear-gradient(135deg,rgba(33,150,243,0.15) 0%,rgba(156,39,176,0.15) 100%);border-color:rgba(33,150,243,0.3);margin-bottom:20px;" title="Analise da estrutura de divida corporativa">
+                <div style="display:flex;align-items:center;gap:20px;">
+                    <div style="font-size:3rem;">📈</div>
+                    <div style="flex:1;">
+                        <h2 style="color:#42A5F5;margin:0;">Análise de Dívida Corporativa</h2>
+                        <p style="color:#90CAF9;margin-top:8px;">Estrutura, composição e métricas das debêntures</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+                <div class="stat-card has-tooltip" title="Quantidade total de debentures na carteira"><div class="label">Total Debêntures</div><div class="value text-primary" id="debtTotal">-</div></div>
+                <div class="stat-card has-tooltip" title="Soma dos precos unitarios de todas as debentures"><div class="label">Valor Total (PU)</div><div class="value text-accent" id="debtValorTotal">-</div></div>
+                <div class="stat-card has-tooltip" title="Preco unitario medio das debentures"><div class="label">PU Médio</div><div class="value text-info" id="debtPUMedio">-</div></div>
+                <div class="stat-card has-tooltip" title="Duration media ponderada da carteira"><div class="label">Duration Média</div><div class="value text-secondary" id="debtDurationMedia">-</div></div>
+            </div>
+            <div class="grid-2" style="margin-bottom:20px;">
+                <div class="chart-card has-tooltip" title="Distribuicao das debentures por tipo de indexador">
+                    <h3>📊 Por Indexador</h3>
+                    <div class="chart-container" style="height:250px;"><canvas id="chartDebtIndexador"></canvas></div>
+                </div>
+                <div class="chart-card has-tooltip" title="Distribuicao das debentures por faixa de taxa">
+                    <h3>📉 Por Faixa de Taxa</h3>
+                    <div class="chart-container" style="height:250px;"><canvas id="chartDebtTaxa"></canvas></div>
+                </div>
+            </div>
+            <div class="chart-card has-tooltip" title="Maiores emissores de debentures por valor">
+                <h3>🏢 Top 10 Emissores por Valor</h3>
+                <div style="overflow-x:auto;max-height:350px;">
+                    <table>
+                        <thead><tr><th>Emissor</th><th>Qtd Títulos</th><th>Valor Total</th><th>Taxa Média</th></tr></thead>
+                        <tbody id="debtTopEmissores"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         <!-- TAB: Vencimentos -->
-        <div id="vencimentos" class="tab-content"><div class="chart-card"><h3>📅 Vencimentos</h3><div class="chart-container" style="height:350px;"><canvas id="chartVencimentos"></canvas></div></div></div>
+        <div id="vencimentos" class="tab-content">
+            <div class="chart-card has-tooltip" style="background:linear-gradient(135deg,rgba(255,152,0,0.15) 0%,rgba(244,67,54,0.15) 100%);border-color:rgba(255,152,0,0.3);margin-bottom:20px;" title="Calendario de vencimentos dos titulos">
+                <div style="display:flex;align-items:center;gap:20px;">
+                    <div style="font-size:3rem;">📅</div>
+                    <div style="flex:1;">
+                        <h2 style="color:#FFB74D;margin:0;">Calendário de Vencimentos</h2>
+                        <p style="color:#FFCC80;margin-top:8px;">Distribuição temporal dos títulos por duration</p>
+                    </div>
+                    <div style="display:flex;gap:15px;">
+                        <div style="text-align:center;padding:10px 15px;border-radius:8px;background:rgba(76,175,80,0.2);">
+                            <div style="font-size:1.2rem;font-weight:700;color:#66BB6A;" id="vencDurationMin">-</div>
+                            <div style="font-size:0.7rem;color:#A5D6A7;">Mín (dias)</div>
+                        </div>
+                        <div style="text-align:center;padding:10px 15px;border-radius:8px;background:rgba(255,152,0,0.2);">
+                            <div style="font-size:1.2rem;font-weight:700;color:#FFB74D;" id="vencDurationMedia">-</div>
+                            <div style="font-size:0.7rem;color:#FFCC80;">Média (dias)</div>
+                        </div>
+                        <div style="text-align:center;padding:10px 15px;border-radius:8px;background:rgba(244,67,54,0.2);">
+                            <div style="font-size:1.2rem;font-weight:700;color:#EF5350;" id="vencDurationMax">-</div>
+                            <div style="font-size:0.7rem;color:#EF9A9A;">Máx (dias)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-bottom:20px;">
+                <div class="chart-card has-tooltip" title="Quantidade de titulos por faixa de vencimento">
+                    <h3>📊 Distribuição por Prazo</h3>
+                    <div class="chart-container" style="height:280px;"><canvas id="chartVencFaixa"></canvas></div>
+                </div>
+                <div class="chart-card has-tooltip" title="Valor total por faixa de vencimento">
+                    <h3>💰 Valor por Prazo</h3>
+                    <div class="chart-container" style="height:280px;"><canvas id="chartVencValor"></canvas></div>
+                </div>
+            </div>
+            <div class="chart-card has-tooltip" title="Titulos com vencimento mais proximo">
+                <h3 style="color:#FFB74D;">⏰ Próximos Vencimentos (menor duration)</h3>
+                <div style="overflow-x:auto;max-height:400px;">
+                    <table>
+                        <thead><tr><th>Código</th><th>Emissor</th><th>Indexador</th><th>Taxa</th><th>Duration</th><th>PU</th></tr></thead>
+                        <tbody id="vencProximos"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         <!-- TAB: Emissores -->
         <div id="emissores" class="tab-content">
-            <div class="chart-card" style="background:linear-gradient(135deg,rgba(33,150,243,0.15) 0%,rgba(76,175,80,0.15) 100%);border-color:rgba(33,150,243,0.3);margin-bottom:20px;">
+            <div class="chart-card has-tooltip" style="background:linear-gradient(135deg,rgba(33,150,243,0.15) 0%,rgba(76,175,80,0.15) 100%);border-color:rgba(33,150,243,0.3);margin-bottom:20px;" title="Painel de emissores de titulos de divida corporativa">
                 <div style="display:flex;align-items:center;gap:20px;">
                     <div style="font-size:3rem;">🏢</div>
                     <div>
@@ -347,30 +737,30 @@
 
             <!-- Estatisticas -->
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:20px;">
-                <div class="stat-card" style="background:linear-gradient(135deg,rgba(76,175,80,0.2),rgba(76,175,80,0.05));">
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(76,175,80,0.2),rgba(76,175,80,0.05));" title="Total de empresas mapeadas na Taxonomia Sustentavel Brasileira">
                     <div style="font-size:2rem;font-weight:700;color:#66BB6A;" id="statEmissoresTotal">--</div>
                     <div style="color:#a0a0b0;font-size:0.85rem;">Total Empresas TSB</div>
                 </div>
-                <div class="stat-card" style="background:linear-gradient(135deg,rgba(76,175,80,0.2),rgba(76,175,80,0.05));">
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(76,175,80,0.2),rgba(76,175,80,0.05));" title="Empresas com classificacao VERDE: atividades economicas sustentaveis">
                     <div style="font-size:2rem;font-weight:700;color:#4CAF50;" id="statEmissoresVerde">--</div>
                     <div style="color:#a0a0b0;font-size:0.85rem;">Classificacao Verde</div>
                 </div>
-                <div class="stat-card" style="background:linear-gradient(135deg,rgba(255,152,0,0.2),rgba(255,152,0,0.05));">
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(255,152,0,0.2),rgba(255,152,0,0.05));" title="Empresas em TRANSICAO: em processo de transicao para economia verde">
                     <div style="font-size:2rem;font-weight:700;color:#FFB74D;" id="statEmissoresTransicao">--</div>
                     <div style="color:#a0a0b0;font-size:0.85rem;">Em Transicao</div>
                 </div>
-                <div class="stat-card" style="background:linear-gradient(135deg,rgba(33,150,243,0.2),rgba(33,150,243,0.05));">
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(33,150,243,0.2),rgba(33,150,243,0.05));" title="Score medio de sustentabilidade das empresas (0-100)">
                     <div style="font-size:2rem;font-weight:700;color:#42A5F5;" id="statEmissoresScore">--</div>
                     <div style="color:#a0a0b0;font-size:0.85rem;">Score Medio</div>
                 </div>
             </div>
 
             <!-- Filtros e Busca -->
-            <div class="chart-card" style="margin-bottom:20px;">
+            <div class="chart-card has-tooltip" style="margin-bottom:20px;" title="Filtros para busca de emissores">
                 <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:center;">
                     <input type="text" id="searchEmissores" placeholder="Buscar empresa..."
-                        style="flex:1;min-width:200px;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.95rem;">
-                    <select id="filtroSetorEmissores" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        style="flex:1;min-width:200px;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.95rem;" title="Digite nome da empresa para pesquisar">
+                    <select id="filtroSetorEmissores" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);" title="Filtrar por setor economico">
                         <option value="">Todos os Setores</option>
                         <option value="Eletricidade">Eletricidade</option>
                         <option value="Servicos Financeiros">Servicos Financeiros</option>
@@ -380,29 +770,29 @@
                         <option value="Agua e Esgoto">Agua e Esgoto</option>
                         <option value="Bens Industriais">Bens Industriais</option>
                     </select>
-                    <select id="filtroClassEmissores" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                    <select id="filtroClassEmissores" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);" title="Filtrar por classificacao TSB: Verde ou Transicao">
                         <option value="">Todas Classificacoes</option>
                         <option value="VERDE">Verde</option>
                         <option value="TRANSICAO">Transicao</option>
                     </select>
-                    <button onclick="carregarEmissores()" style="padding:12px 20px;background:#2196F3;border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;">Buscar</button>
+                    <button onclick="carregarEmissores()" style="padding:12px 20px;background:#2196F3;border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;" title="Executar busca com os filtros selecionados">Buscar</button>
                 </div>
             </div>
 
             <!-- Tabela de Emissores -->
-            <div class="chart-card">
+            <div class="chart-card has-tooltip" title="Lista de empresas emissoras de titulos de divida">
                 <h3 style="margin-bottom:15px;">📋 Lista de Emissores</h3>
                 <div style="overflow-x:auto;">
                     <table id="tabelaEmissores" style="width:100%;">
                         <thead>
                             <tr>
-                                <th>Empresa</th>
-                                <th>CNPJ</th>
-                                <th>Setor</th>
-                                <th>Classificacao</th>
-                                <th>Score</th>
-                                <th>Titulos</th>
-                                <th>Acoes</th>
+                                <th title="Razao social da empresa">Empresa</th>
+                                <th title="CNPJ da empresa">CNPJ</th>
+                                <th title="Setor economico conforme classificacao TSB">Setor</th>
+                                <th title="VERDE = atividades sustentaveis, TRANSICAO = em processo">Classificacao</th>
+                                <th title="Score de sustentabilidade (0-100)">Score</th>
+                                <th title="Quantidade de titulos emitidos">Titulos</th>
+                                <th title="Acoes disponiveis: ver detalhes, investimentos">Acoes</th>
                             </tr>
                         </thead>
                         <tbody id="corpoTabelaEmissores">
@@ -414,11 +804,11 @@
 
             <!-- Graficos -->
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px;margin-top:20px;">
-                <div class="chart-card">
+                <div class="chart-card has-tooltip" title="Distribuicao dos emissores por setor economico">
                     <h3>📊 Distribuicao por Setor</h3>
                     <div class="chart-container" style="height:300px;"><canvas id="chartEmissoresSetor"></canvas></div>
                 </div>
-                <div class="chart-card">
+                <div class="chart-card has-tooltip" title="Distribuicao dos emissores por classificacao TSB: Verde ou Transicao">
                     <h3>🌿 Classificacao TSB</h3>
                     <div class="chart-container" style="height:300px;"><canvas id="chartEmissoresClass"></canvas></div>
                 </div>
@@ -427,7 +817,7 @@
 
         <!-- TAB: Consulta IA -->
         <div id="ai-consulta" class="tab-content">
-            <div class="chart-card" style="background:linear-gradient(135deg,rgba(156,39,176,0.15) 0%,rgba(25,118,210,0.15) 100%);border-color:rgba(156,39,176,0.3);margin-bottom:20px;">
+            <div class="chart-card has-tooltip" style="background:linear-gradient(135deg,rgba(156,39,176,0.15) 0%,rgba(25,118,210,0.15) 100%);border-color:rgba(156,39,176,0.3);margin-bottom:20px;" title="Assistente de IA para analise de investimentos e geracao de relatorios">
                 <div style="display:flex;align-items:center;gap:20px;">
                     <div style="font-size:3rem;">🤖</div>
                     <div>
@@ -439,24 +829,24 @@
             </div>
 
             <!-- Sugestoes Rapidas -->
-            <div class="chart-card" style="margin-bottom:20px;">
+            <div class="chart-card has-tooltip" style="margin-bottom:20px;" title="Clique em uma sugestao para iniciar uma consulta rapidamente">
                 <h3 style="margin-bottom:15px;">⚡ Sugestoes Rapidas</h3>
                 <div style="display:flex;flex-wrap:wrap;gap:10px;">
-                    <button onclick="usarSugestao('Gere um relatorio dos fundos ESG com melhor performance')" class="ai-suggestion-btn">📊 Relatorio Fundos ESG</button>
-                    <button onclick="usarSugestao('Analise o risco das debentures com maior duration')" class="ai-suggestion-btn">📈 Analise de Risco</button>
-                    <button onclick="usarSugestao('Crie uma view comparando titulos publicos por rentabilidade')" class="ai-suggestion-btn">🏛️ View Titulos Publicos</button>
-                    <button onclick="usarSugestao('Quais empresas TSB tem melhor classificacao?')" class="ai-suggestion-btn">🌿 Ranking TSB</button>
-                    <button onclick="usarSugestao('De dicas de diversificacao para meu portfolio')" class="ai-suggestion-btn">💡 Dicas Portfolio</button>
-                    <button onclick="usarSugestao('Resuma os principais indicadores do mercado')" class="ai-suggestion-btn">📋 Resumo do Mercado</button>
+                    <button onclick="usarSugestao('Gere um relatorio dos fundos ESG com melhor performance')" class="ai-suggestion-btn" title="Gerar relatorio com os melhores fundos ESG">📊 Relatorio Fundos ESG</button>
+                    <button onclick="usarSugestao('Analise o risco das debentures com maior duration')" class="ai-suggestion-btn" title="Analisar risco de debentures de longo prazo">📈 Analise de Risco</button>
+                    <button onclick="usarSugestao('Crie uma view comparando titulos publicos por rentabilidade')" class="ai-suggestion-btn" title="Comparar titulos publicos por rentabilidade">🏛️ View Titulos Publicos</button>
+                    <button onclick="usarSugestao('Quais empresas TSB tem melhor classificacao?')" class="ai-suggestion-btn" title="Ver ranking de empresas na Taxonomia Sustentavel Brasileira">🌿 Ranking TSB</button>
+                    <button onclick="usarSugestao('De dicas de diversificacao para meu portfolio')" class="ai-suggestion-btn" title="Obter sugestoes de diversificacao de carteira">💡 Dicas Portfolio</button>
+                    <button onclick="usarSugestao('Resuma os principais indicadores do mercado')" class="ai-suggestion-btn" title="Ver resumo dos indicadores de mercado">📋 Resumo do Mercado</button>
                 </div>
             </div>
 
             <!-- Area de Chat -->
-            <div class="chart-card">
+            <div class="chart-card has-tooltip" title="Area de conversa com o assistente de IA">
                 <h3 style="margin-bottom:15px;">💬 Consulta</h3>
 
                 <!-- Historico de Mensagens -->
-                <div id="aiChatHistory" style="min-height:300px;max-height:500px;overflow-y:auto;background:var(--bg-dark);border-radius:10px;padding:15px;margin-bottom:15px;border:1px solid var(--border-color);">
+                <div id="aiChatHistory" style="min-height:300px;max-height:500px;overflow-y:auto;background:var(--bg-dark);border-radius:10px;padding:15px;margin-bottom:15px;border:1px solid var(--border-color);" title="Historico da conversa com a IA">
                     <div class="ai-message ai-assistant">
                         <div class="ai-avatar">🤖</div>
                         <div class="ai-content">
@@ -476,8 +866,8 @@
                 <div style="display:flex;gap:10px;">
                     <input type="text" id="aiUserInput" placeholder="Digite sua pergunta ou comando..."
                         style="flex:1;padding:15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);font-size:0.95rem;"
-                        onkeypress="if(event.key==='Enter')enviarMensagemIA()">
-                    <button onclick="enviarMensagemIA()" id="aiSendBtn" style="padding:15px 25px;background:linear-gradient(135deg,#9C27B0 0%,#1976D2 100%);border:none;border-radius:10px;color:white;cursor:pointer;font-weight:600;font-size:0.95rem;display:flex;align-items:center;gap:8px;">
+                        onkeypress="if(event.key==='Enter')enviarMensagemIA()" title="Digite sua pergunta para a IA e pressione Enter ou clique em Enviar">
+                    <button onclick="enviarMensagemIA()" id="aiSendBtn" style="padding:15px 25px;background:linear-gradient(135deg,#9C27B0 0%,#1976D2 100%);border:none;border-radius:10px;color:white;cursor:pointer;font-weight:600;font-size:0.95rem;display:flex;align-items:center;gap:8px;" title="Enviar mensagem para a IA">
                         <span>Enviar</span>
                         <span style="font-size:1.2rem;">➤</span>
                     </button>
@@ -488,7 +878,7 @@
                     <div style="display:flex;flex-wrap:wrap;gap:15px;align-items:center;">
                         <label style="color:var(--text-secondary);font-size:0.85rem;display:flex;align-items:center;gap:8px;">
                             <span>Tipo de resposta:</span>
-                            <select id="aiResponseType" style="padding:8px 12px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);">
+                            <select id="aiResponseType" style="padding:8px 12px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);" title="Escolha o formato da resposta: texto, tabela, grafico ou relatorio completo">
                                 <option value="texto">Texto</option>
                                 <option value="tabela">Tabela</option>
                                 <option value="grafico">Grafico</option>
@@ -497,7 +887,7 @@
                         </label>
                         <label style="color:var(--text-secondary);font-size:0.85rem;display:flex;align-items:center;gap:8px;">
                             <span>Contexto:</span>
-                            <select id="aiContext" style="padding:8px 12px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);">
+                            <select id="aiContext" style="padding:8px 12px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);" title="Escolha o contexto de dados para a consulta">
                                 <option value="todos">Todos os Dados</option>
                                 <option value="fundos">Fundos</option>
                                 <option value="debentures">Debentures</option>
@@ -506,7 +896,7 @@
                                 <option value="cricra">CRI/CRA</option>
                             </select>
                         </label>
-                        <button onclick="limparHistoricoIA()" style="margin-left:auto;padding:8px 15px;background:rgba(244,67,54,0.15);border:1px solid rgba(244,67,54,0.3);border-radius:6px;color:#EF5350;cursor:pointer;font-size:0.85rem;">
+                        <button onclick="limparHistoricoIA()" style="margin-left:auto;padding:8px 15px;background:rgba(244,67,54,0.15);border:1px solid rgba(244,67,54,0.3);border-radius:6px;color:#EF5350;cursor:pointer;font-size:0.85rem;" title="Limpar todo o historico de conversa">
                             🗑️ Limpar Historico
                         </button>
                     </div>
@@ -515,7 +905,7 @@
 
             <!-- Resultados da IA -->
             <div id="aiResultsContainer" style="display:none;margin-top:20px;">
-                <div class="chart-card">
+                <div class="chart-card" title="Resultados gerados pela IA">
                     <h3 id="aiResultsTitle" style="margin-bottom:15px;">📊 Resultado da Analise</h3>
                     <div id="aiResultsContent"></div>
                 </div>
@@ -532,16 +922,151 @@
     </div>
 
     <script>
+        console.log('=== SCRIPT INICIALIZADO ===');
+
         function showTab(tabId, event) {
+            console.log('showTab ORIGINAL chamado - tabId:', tabId);
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             if (event) event.target.closest('.nav-item').classList.add('active');
             inicializarGraficos();
+            // Carregar dados da aba se necessário
+            if (tabId === 'gestoras' && !gestorasCarregado) carregarGestoras();
         }
 
         const cores = ['#42A5F5', '#66BB6A', '#FFB74D', '#AB47BC', '#26C6DA', '#EC407A'];
         let graficos = {};
+        let gestorasCarregado = false;
+        let dadosGestoras = [];
+
+        // ========== GESTORAS ==========
+        async function carregarGestoras() {
+            try {
+                const response = await fetch(`${API_URL}/gestoras`);
+                const data = await response.json();
+
+                if (data.success) {
+                    dadosGestoras = data.data;
+
+                    // Atualizar estatísticas
+                    document.getElementById('statTotalGestoras').textContent = data.stats.total_gestoras.toLocaleString();
+                    document.getElementById('statTotalFundosGestoras').textContent = data.stats.total_fundos.toLocaleString();
+                    document.getElementById('statTotalClasses').textContent = data.stats.top_classes.length;
+
+                    // Renderizar lista de gestoras
+                    renderizarListaGestoras(dadosGestoras);
+
+                    // Criar gráfico de classes ANBIMA
+                    if (data.stats.top_classes && data.stats.top_classes.length > 0) {
+                        criarGraficoClasses(data.stats.top_classes);
+                    }
+
+                    gestorasCarregado = true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar gestoras:', e);
+                document.getElementById('listaGestoras').innerHTML = '<p style="color:#EF5350;text-align:center;padding:40px;">Erro ao carregar gestoras</p>';
+            }
+        }
+
+        function renderizarListaGestoras(gestoras) {
+            const container = document.getElementById('listaGestoras');
+            if (!gestoras || gestoras.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:40px;">Nenhuma gestora encontrada</p>';
+                return;
+            }
+
+            let html = '<table style="width:100%;"><thead><tr><th>Gestora</th><th>Fundos</th><th>Classes</th><th></th></tr></thead><tbody>';
+            gestoras.forEach(g => {
+                html += `<tr style="cursor:pointer;" onclick="verFundosGestora('${encodeURIComponent(g.gestora)}')">
+                    <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${g.gestora}">${g.gestora}</td>
+                    <td><span style="background:rgba(66,165,245,0.2);color:#42A5F5;padding:3px 10px;border-radius:12px;font-weight:600;">${g.qtd_fundos}</span></td>
+                    <td>${g.qtd_classes}</td>
+                    <td><button style="background:#4CAF50;color:white;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:0.75rem;">Ver Fundos</button></td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function filtrarGestoras() {
+            const termo = document.getElementById('searchGestora').value.toLowerCase();
+            const filtradas = dadosGestoras.filter(g => g.gestora.toLowerCase().includes(termo));
+            renderizarListaGestoras(filtradas);
+        }
+
+        async function verFundosGestora(gestoraEncoded) {
+            const gestora = decodeURIComponent(gestoraEncoded);
+            const container = document.getElementById('fundosGestoraSelecionada');
+            container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:40px;">Carregando fundos...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}/gestoras/${gestoraEncoded}/fundos`);
+                const data = await response.json();
+
+                if (data.success) {
+                    let html = `<div style="margin-bottom:15px;padding:15px;background:rgba(66,165,245,0.1);border-radius:8px;">
+                        <h4 style="margin:0 0 10px 0;color:#42A5F5;">${gestora}</h4>
+                        <div style="display:flex;gap:15px;flex-wrap:wrap;">
+                            <span style="background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:8px;font-size:0.85rem;">Total: <strong>${data.total}</strong> fundos</span>
+                        </div>
+                    </div>`;
+
+                    if (data.stats.por_classe && data.stats.por_classe.length > 0) {
+                        html += '<div style="margin-bottom:15px;"><strong style="font-size:0.85rem;color:var(--text-secondary);">Por Classe ANBIMA:</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">';
+                        data.stats.por_classe.forEach(c => {
+                            html += `<span style="background:rgba(102,187,106,0.2);color:#66BB6A;padding:3px 10px;border-radius:12px;font-size:0.75rem;">${c.classeanbima}: ${c.qtd}</span>`;
+                        });
+                        html += '</div></div>';
+                    }
+
+                    html += '<div style="max-height:300px;overflow-y:auto;"><table style="width:100%;font-size:0.85rem;"><thead><tr><th>Nome do Fundo</th><th>CNPJ</th><th>Classe</th></tr></thead><tbody>';
+                    data.fundos.forEach(f => {
+                        html += `<tr>
+                            <td style="max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.nomecompleto}">${f.nomecompleto}</td>
+                            <td style="font-family:monospace;font-size:0.75rem;">${f.cnpj || '-'}</td>
+                            <td style="font-size:0.75rem;">${f.classeanbima || '-'}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                    container.innerHTML = html;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar fundos da gestora:', e);
+                container.innerHTML = '<p style="color:#EF5350;text-align:center;padding:40px;">Erro ao carregar fundos</p>';
+            }
+        }
+
+        function criarGraficoClasses(topClasses) {
+            const ctx = document.getElementById('chartClassesAnbima');
+            if (!ctx) return;
+
+            if (graficos['chartClassesAnbima']) graficos['chartClassesAnbima'].destroy();
+
+            graficos['chartClassesAnbima'] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topClasses.map(c => c.classeanbima ? c.classeanbima.substring(0, 30) : 'N/A'),
+                    datasets: [{
+                        label: 'Fundos',
+                        data: topClasses.map(c => c.qtd),
+                        backgroundColor: '#42A5F5',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { color: '#a0a0b0', font: { size: 10 } } },
+                        x: { ticks: { color: '#a0a0b0' } }
+                    }
+                }
+            });
+        }
 
         function inicializarGraficos() {
             if (!graficos['chartCategorias'] && document.getElementById('chartCategorias')) {
@@ -730,21 +1255,19 @@
                 const nome = escapeHtml(f.nomecomercial || f.razaosocial);
                 const cnpj = escapeHtml(f.cnpj);
                 const categoria = escapeHtml(f.categoria);
-                const foco = escapeHtml(f.focoesg);
-                const tipoESG = f.categoriaesg || 'Convencional';
+                const gestora = escapeHtml(f.gestora);
+                const fonte = f.fonte || 'N/A';
 
-                const tipoClass = tipoESG === 'IS - Investimento Sustentavel' ? 'rgba(76,175,80,0.2);color:#66BB6A' :
-                                  tipoESG === 'ESG Integrado' ? 'rgba(255,152,0,0.2);color:#FFB74D' :
-                                  'rgba(100,100,100,0.2);color:#a0a0b0';
-                const tipoLabel = tipoESG === 'IS - Investimento Sustentavel' ? 'IS' :
-                                  tipoESG === 'ESG Integrado' ? 'ESG' : 'Conv.';
+                const fonteClass = fonte === 'ANBIMA' ? 'rgba(66,165,245,0.2);color:#42A5F5' :
+                                   fonte === 'CVM' ? 'rgba(102,187,106,0.2);color:#66BB6A' :
+                                   'rgba(100,100,100,0.2);color:#a0a0b0';
 
                 html += `<tr>
-                    <td style="max-width:350px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${nome}">${nome}</td>
+                    <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${nome}">${nome}</td>
                     <td style="font-family:monospace;font-size:0.75rem;">${cnpj}</td>
-                    <td>${categoria}</td>
-                    <td><span style="background:${tipoClass};padding:3px 8px;border-radius:10px;font-size:0.75rem;">${tipoLabel}</span></td>
-                    <td>${foco}</td>
+                    <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${categoria}">${categoria}</td>
+                    <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${gestora}">${gestora}</td>
+                    <td><span style="background:${fonteClass};padding:3px 8px;border-radius:10px;font-size:0.75rem;">${fonte}</span></td>
                     <td><button data-cnpj="${cnpj}" data-nome="${nome}" onclick="adicionarFavoritoBtn(this)" style="background:none;border:none;cursor:pointer;font-size:1rem;" title="Adicionar aos favoritos">⭐</button></td>
                 </tr>`;
             }
@@ -851,27 +1374,41 @@
                 const kpiResponse = await fetch(`${API_URL}/tsb/kpis`);
                 const kpiData = await kpiResponse.json();
 
-                if (empData.success && kpiData.success) {
-                    // Atualizar estatísticas
+                // Carregar visão geral para estatísticas integradas
+                const visaoResponse = await fetch(`${API_URL}/tsb/visao-geral`);
+                const visaoData = await visaoResponse.json();
+
+                if (empData.success) {
+                    // Atualizar estatísticas principais
                     document.getElementById('tsbTotalEmpresas').textContent = empData.stats.total;
                     document.getElementById('tsbTotalVerde').textContent = empData.stats.verde;
-                    document.getElementById('tsbTotalKPIs').textContent = kpiData.total;
-                    document.getElementById('tsbTotalSetores').textContent = empData.stats.por_setor.length;
+                    document.getElementById('tsbTotalTransicao').textContent = empData.stats.transicao;
                     document.getElementById('tsbBadge').textContent = `✓ ${empData.stats.total} Empresas Classificadas`;
 
-                    // Renderizar tabela
+                    // Estatísticas integradas
+                    if (visaoData.success && visaoData.stats) {
+                        document.getElementById('tsbTotalTitulos').textContent = visaoData.stats.total_debentures_tsb || 0;
+                        document.getElementById('tsbTotalFundosESG').textContent = visaoData.stats.total_fundos_esg || 0;
+                        document.getElementById('tsbScoreMedio').textContent = visaoData.stats.score_medio ? visaoData.stats.score_medio.toFixed(1) : '-';
+                    }
+
+                    // Renderizar tabela com botões expandidos
                     const corpo = document.getElementById('corpoTabelaTSB');
                     let html = '';
                     empData.data.forEach(emp => {
                         const classColor = emp.classificacao === 'VERDE' ? '#4CAF50' : '#FF9800';
-                        html += `<tr>
+                        const nomeEscapado = emp.emissor.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        html += `<tr style="cursor:pointer;" onclick="verInvestimentosEmpresa(${emp.empresaid})">
                             <td style="max-width:300px;">${emp.emissor}</td>
                             <td style="font-family:monospace;font-size:0.8rem;">${emp.cnpj}</td>
                             <td>${emp.setortsb}</td>
                             <td><span style="background:${classColor};color:white;padding:3px 10px;border-radius:12px;">${emp.classificacao}</span></td>
                             <td><strong>${emp.score}</strong></td>
                             <td>${emp.titulos}</td>
-                            <td><button onclick="verKPIsEmpresa(${emp.empresaid}, '${emp.emissor.replace(/'/g, "\\'")}')" style="background:#4CAF50;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">Ver KPIs</button></td>
+                            <td>
+                                <button onclick="event.stopPropagation();verKPIsEmpresa(${emp.empresaid}, '${nomeEscapado}')" style="background:#4CAF50;color:white;border:none;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:0.75rem;margin-right:5px;">KPIs</button>
+                                <button onclick="event.stopPropagation();verInvestimentosEmpresa(${emp.empresaid})" style="background:#2196F3;color:white;border:none;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:0.75rem;">Invest.</button>
+                            </td>
                         </tr>`;
                     });
                     corpo.innerHTML = html;
@@ -887,6 +1424,17 @@
             }
         }
 
+        function verInvestimentosEmpresa(empresaId) {
+            // Mudar para seção integrada e carregar dados
+            mostrarSecaoTSB('integrado');
+            const select = document.getElementById('selectEmpresaIntegrada');
+            // Carregar opções se necessário
+            carregarSelectEmpresas().then(() => {
+                select.value = empresaId;
+                carregarVisaoIntegrada();
+            });
+        }
+
         function atualizarGraficosTSB(stats) {
             // Atualizar gráfico de classificação
             if (graficos['chartTSBClass']) {
@@ -894,13 +1442,42 @@
                 graficos['chartTSBClass'].update();
             }
 
-            // Atualizar gráfico por setor
-            if (graficos['chartTSBSetor'] && stats.por_setor) {
-                const labels = stats.por_setor.map(s => s.setortsb);
-                const data = stats.por_setor.map(s => s.qtd);
-                graficos['chartTSBSetor'].data.labels = labels;
-                graficos['chartTSBSetor'].data.datasets[0].data = data;
-                graficos['chartTSBSetor'].update();
+            // Criar/Atualizar gráfico por setor
+            if (stats.por_setor && stats.por_setor.length > 0) {
+                const ctx = document.getElementById('chartTSBSetor');
+                if (ctx) {
+                    const labels = stats.por_setor.map(s => s.setortsb ? s.setortsb.substring(0, 25) : 'N/A');
+                    const data = stats.por_setor.map(s => s.qtd);
+
+                    if (graficos['chartTSBSetor']) {
+                        graficos['chartTSBSetor'].data.labels = labels;
+                        graficos['chartTSBSetor'].data.datasets[0].data = data;
+                        graficos['chartTSBSetor'].update();
+                    } else {
+                        graficos['chartTSBSetor'] = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Empresas',
+                                    data: data,
+                                    backgroundColor: '#66BB6A',
+                                    borderRadius: 4
+                                }]
+                            },
+                            options: {
+                                indexAxis: 'y',
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    y: { ticks: { color: '#a0a0b0', font: { size: 10 } } },
+                                    x: { ticks: { color: '#a0a0b0' } }
+                                }
+                            }
+                        });
+                    }
+                }
             }
         }
 
@@ -983,9 +1560,858 @@
             if (e.target === this) fecharModalKPIs();
         });
 
-        // Inicializar quando abrir a aba Explorar, CRI/CRA ou TSB
+        // ========== TSB - SEÇÕES AVANÇADAS ==========
+        let titulosVerdesCarregados = false;
+        let fundosSustentaveisCarregados = false;
+        let dadosFundosESG = [];
+
+        function mostrarSecaoTSB(secao) {
+            // Esconder todas as seções
+            ['empresas', 'titulos', 'fundos', 'integrado'].forEach(s => {
+                const el = document.getElementById(`secaoTsb${s.charAt(0).toUpperCase() + s.slice(1)}`);
+                if (el) el.style.display = 'none';
+
+                const btn = document.getElementById(`btnTsb${s.charAt(0).toUpperCase() + s.slice(1)}`);
+                if (btn) {
+                    btn.style.background = 'var(--card-bg)';
+                    btn.style.color = 'var(--text-secondary)';
+                }
+            });
+
+            // Mostrar seção selecionada
+            const secaoId = `secaoTsb${secao.charAt(0).toUpperCase() + secao.slice(1)}`;
+            const secaoEl = document.getElementById(secaoId);
+            if (secaoEl) secaoEl.style.display = 'block';
+
+            // Ativar botão
+            const btnId = `btnTsb${secao.charAt(0).toUpperCase() + secao.slice(1)}`;
+            const btnEl = document.getElementById(btnId);
+            if (btnEl) {
+                btnEl.style.background = 'rgba(76,175,80,0.2)';
+                btnEl.style.color = '#66BB6A';
+            }
+
+            // Carregar dados específicos
+            if (secao === 'titulos' && !titulosVerdesCarregados) {
+                carregarTitulosVerdes();
+            } else if (secao === 'fundos' && !fundosSustentaveisCarregados) {
+                carregarFundosSustentaveis();
+            } else if (secao === 'integrado') {
+                carregarSelectEmpresas();
+            }
+        }
+
+        async function carregarTitulosVerdes() {
+            try {
+                const response = await fetch(`${API_URL}/tsb/titulos-verdes`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Atualizar estatísticas usando a estrutura correta do endpoint
+                    document.getElementById('tsbDebenturesVerde').textContent = data.stats.total_verde || 0;
+                    document.getElementById('tsbDebenturesTransicao').textContent = data.stats.total_transicao || 0;
+                    document.getElementById('tsbEmpresasVerdeDebt').textContent = data.stats.empresas_verde || 0;
+                    document.getElementById('tsbScoreVerdeDebt').textContent = data.stats.score_medio_verde ? parseFloat(data.stats.score_medio_verde).toFixed(1) : '-';
+
+                    // Renderizar tabela de títulos VERDE
+                    const corpoVerde = document.getElementById('corpoTitulosVerde');
+                    if (data.titulos_verde && data.titulos_verde.length > 0) {
+                        let html = '';
+                        data.titulos_verde.forEach(t => {
+                            const taxa = t.taxaindicativa != null ? parseFloat(t.taxaindicativa).toFixed(2) + '%' : '-';
+                            const duration = t.duration != null ? Math.round(parseFloat(t.duration)) : '-';
+                            html += `<tr>
+                                <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${t.emissor}">${t.emissor}</td>
+                                <td>${t.setortsb || '-'}</td>
+                                <td><strong style="color:#66BB6A;">${t.score}</strong></td>
+                                <td style="font-family:monospace;">${t.codigoativo || '-'}</td>
+                                <td>${t.grupo || '-'}</td>
+                                <td>${taxa}</td>
+                                <td>${duration}</td>
+                            </tr>`;
+                        });
+                        corpoVerde.innerHTML = html;
+                    } else {
+                        corpoVerde.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);">Nenhum título verde encontrado</td></tr>';
+                    }
+
+                    // Renderizar tabela de títulos TRANSIÇÃO
+                    const corpoTransicao = document.getElementById('corpoTitulosTransicao');
+                    if (data.titulos_transicao && data.titulos_transicao.length > 0) {
+                        let html = '';
+                        data.titulos_transicao.forEach(t => {
+                            const taxa = t.taxaindicativa != null ? parseFloat(t.taxaindicativa).toFixed(2) + '%' : '-';
+                            const duration = t.duration != null ? Math.round(parseFloat(t.duration)) : '-';
+                            html += `<tr>
+                                <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${t.emissor}">${t.emissor}</td>
+                                <td>${t.setortsb || '-'}</td>
+                                <td><strong style="color:#FFB74D;">${t.score}</strong></td>
+                                <td style="font-family:monospace;">${t.codigoativo || '-'}</td>
+                                <td>${t.grupo || '-'}</td>
+                                <td>${taxa}</td>
+                                <td>${duration}</td>
+                            </tr>`;
+                        });
+                        corpoTransicao.innerHTML = html;
+                    } else {
+                        corpoTransicao.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);">Nenhum título em transição encontrado</td></tr>';
+                    }
+
+                    titulosVerdesCarregados = true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar títulos verdes:', e);
+                document.getElementById('corpoTitulosVerde').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#EF5350;">Erro ao carregar dados</td></tr>';
+            }
+        }
+
+        async function carregarFundosSustentaveis() {
+            try {
+                const response = await fetch(`${API_URL}/tsb/fundos-sustentaveis`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Atualizar estatísticas usando estrutura correta do endpoint
+                    document.getElementById('tsbFundosTotal').textContent = data.total || 0;
+                    document.getElementById('tsbFundosGestoras').textContent = data.stats.total_gestoras || 0;
+                    document.getElementById('tsbFundosClasses').textContent = data.stats.por_classe ? data.stats.por_classe.length : 0;
+
+                    // Renderizar lista de gestoras ESG (usa por_gestora ao invés de top_gestoras)
+                    const listaGestoras = document.getElementById('listaGestorasESG');
+                    const gestoras = data.stats.por_gestora || data.stats.top_gestoras;
+                    if (gestoras && gestoras.length > 0) {
+                        let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+                        gestoras.slice(0, 10).forEach((g, idx) => {
+                            const bgColor = idx === 0 ? 'rgba(76,175,80,0.2)' : 'rgba(255,255,255,0.05)';
+                            html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:${bgColor};border-radius:8px;">
+                                <span style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${g.gestora}">${g.gestora}</span>
+                                <span style="background:rgba(156,39,176,0.2);color:#BA68C8;padding:3px 10px;border-radius:12px;font-weight:600;font-size:0.85rem;">${g.qtd}</span>
+                            </div>`;
+                        });
+                        html += '</div>';
+                        listaGestoras.innerHTML = html;
+                    }
+
+                    // Criar gráfico de classes
+                    if (data.stats.por_classe && data.stats.por_classe.length > 0) {
+                        const ctx = document.getElementById('chartFundosESGClasse');
+                        if (ctx) {
+                            if (graficos['chartFundosESGClasse']) graficos['chartFundosESGClasse'].destroy();
+                            // Filtrar classes válidas e truncar nomes longos
+                            const classesValidas = data.stats.por_classe.filter(c => c.classeanbima && c.classeanbima !== 'nan').slice(0, 6);
+                            graficos['chartFundosESGClasse'] = new Chart(ctx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: classesValidas.map(c => c.classeanbima.length > 25 ? c.classeanbima.substring(0, 25) + '...' : c.classeanbima),
+                                    datasets: [{
+                                        data: classesValidas.map(c => c.qtd),
+                                        backgroundColor: ['#9C27B0', '#BA68C8', '#CE93D8', '#E1BEE7', '#F3E5F5', '#7B1FA2'],
+                                        borderWidth: 0
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { position: 'right', labels: { color: '#fff', font: { size: 9 } } }
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    // Salvar dados para filtro e renderizar tabela
+                    dadosFundosESG = data.fundos || [];
+                    renderizarTabelaFundosESG(dadosFundosESG);
+
+                    fundosSustentaveisCarregados = true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar fundos sustentáveis:', e);
+                document.getElementById('corpoFundosESG').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#EF5350;">Erro ao carregar dados</td></tr>';
+            }
+        }
+
+        function renderizarTabelaFundosESG(fundos) {
+            const corpo = document.getElementById('corpoFundosESG');
+            if (!fundos || fundos.length === 0) {
+                corpo.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);">Nenhum fundo encontrado</td></tr>';
+                return;
+            }
+
+            let html = '';
+            fundos.slice(0, 100).forEach(f => {
+                const publicoIcon = f.publicoalvo === 'Investidor Qualificado' ? '🎯' : '👤';
+                html += `<tr>
+                    <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.nomecompleto}">${f.nomecompleto}</td>
+                    <td style="font-family:monospace;font-size:0.75rem;">${f.cnpj || '-'}</td>
+                    <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.gestora || ''}">${f.gestora || '-'}</td>
+                    <td style="font-size:0.8rem;">${f.classeanbima || '-'}</td>
+                    <td style="font-size:0.85rem;">${publicoIcon} ${f.publicoalvo || '-'}</td>
+                </tr>`;
+            });
+            corpo.innerHTML = html;
+        }
+
+        function filtrarFundosESG() {
+            const termo = document.getElementById('searchFundoESG').value.toLowerCase();
+            const filtrados = dadosFundosESG.filter(f =>
+                (f.nomecompleto && f.nomecompleto.toLowerCase().includes(termo)) ||
+                (f.gestora && f.gestora.toLowerCase().includes(termo)) ||
+                (f.cnpj && f.cnpj.includes(termo))
+            );
+            renderizarTabelaFundosESG(filtrados);
+        }
+
+        async function carregarSelectEmpresas() {
+            const select = document.getElementById('selectEmpresaIntegrada');
+            if (select.options.length > 1) return; // Já carregado
+
+            try {
+                const response = await fetch(`${API_URL}/tsb/empresas`);
+                const data = await response.json();
+
+                if (data.success) {
+                    data.data.forEach(emp => {
+                        const opt = document.createElement('option');
+                        opt.value = emp.empresaid;
+                        opt.textContent = `${emp.emissor} (${emp.classificacao})`;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                console.error('Erro ao carregar empresas:', e);
+            }
+        }
+
+        async function carregarVisaoIntegrada() {
+            const select = document.getElementById('selectEmpresaIntegrada');
+            const empresaId = select.value;
+            const conteudo = document.getElementById('visaoIntegradaConteudo');
+
+            if (!empresaId) {
+                conteudo.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-secondary);">
+                    <div style="font-size:3rem;margin-bottom:15px;">🏢</div>
+                    <p>Selecione uma empresa acima para ver a visão integrada</p>
+                </div>`;
+                return;
+            }
+
+            conteudo.innerHTML = '<div style="text-align:center;padding:40px;"><p style="color:var(--text-secondary);">Carregando dados...</p></div>';
+
+            try {
+                const response = await fetch(`${API_URL}/tsb/empresa/${empresaId}/investimentos`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const emp = data.empresa;
+                    const classColor = emp.classificacao === 'VERDE' ? '#4CAF50' : '#FF9800';
+                    const stats = data.stats || {};
+
+                    let html = `
+                        <div style="background:linear-gradient(135deg,rgba(76,175,80,0.1) 0%,rgba(0,150,136,0.1) 100%);border-radius:12px;padding:20px;margin-bottom:20px;">
+                            <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
+                                <div style="font-size:2.5rem;">🏢</div>
+                                <div>
+                                    <h3 style="margin:0;color:#66BB6A;">${emp.emissor}</h3>
+                                    <p style="margin:5px 0 0;color:var(--text-secondary);">${emp.setortsb}</p>
+                                </div>
+                                <span style="margin-left:auto;background:${classColor};color:white;padding:8px 16px;border-radius:20px;font-weight:600;">${emp.classificacao}</span>
+                            </div>
+                            <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                                <span style="background:rgba(255,255,255,0.1);padding:8px 15px;border-radius:8px;">CNPJ: <strong>${emp.cnpj}</strong></span>
+                                <span style="background:rgba(255,255,255,0.1);padding:8px 15px;border-radius:8px;">Score: <strong style="color:#66BB6A;">${emp.score}</strong></span>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:20px;">
+                            <div class="stat-card" style="border-left:4px solid #42A5F5;">
+                                <div class="label">Debêntures</div>
+                                <div class="value text-primary">${stats.total_debentures || 0}</div>
+                            </div>
+                            <div class="stat-card" style="border-left:4px solid #00BCD4;">
+                                <div class="label">CRI/CRA</div>
+                                <div class="value text-info">${stats.total_cricra || 0}</div>
+                            </div>
+                            <div class="stat-card" style="border-left:4px solid #9C27B0;">
+                                <div class="label">Fundos Relacionados</div>
+                                <div class="value" style="color:#BA68C8;">${stats.total_fundos || 0}</div>
+                            </div>
+                        </div>`;
+
+                    // Seção de Debêntures
+                    html += `<div class="chart-card" style="margin-bottom:15px;">
+                        <h4 style="color:#42A5F5;margin:0 0 15px;">📜 Debêntures Emitidas</h4>`;
+
+                    if (data.debentures && data.debentures.length > 0) {
+                        html += `<div style="overflow-x:auto;"><table style="width:100%;font-size:0.85rem;">
+                            <thead><tr><th>Código</th><th>Grupo</th><th>Taxa</th><th>Duration</th></tr></thead><tbody>`;
+                        data.debentures.forEach(d => {
+                            const taxa = d.taxaindicativa != null ? parseFloat(d.taxaindicativa).toFixed(2) + '%' : '-';
+                            const duration = d.duration != null ? Math.round(parseFloat(d.duration)) : '-';
+                            html += `<tr>
+                                <td style="font-family:monospace;">${d.codigoativo || '-'}</td>
+                                <td>${d.grupo || '-'}</td>
+                                <td>${taxa}</td>
+                                <td>${duration}</td>
+                            </tr>`;
+                        });
+                        html += '</tbody></table></div>';
+                    } else {
+                        html += '<p style="color:var(--text-secondary);text-align:center;padding:20px;">Nenhuma debênture encontrada para esta empresa</p>';
+                    }
+                    html += '</div>';
+
+                    // Seção de CRI/CRA
+                    if (data.cricra && data.cricra.length > 0) {
+                        html += `<div class="chart-card" style="margin-bottom:15px;">
+                            <h4 style="color:#00BCD4;margin:0 0 15px;">🏠 CRI/CRA</h4>
+                            <div style="overflow-x:auto;"><table style="width:100%;font-size:0.85rem;">
+                            <thead><tr><th>Tipo</th><th>Código</th><th>Taxa</th><th>Duration</th></tr></thead><tbody>`;
+                        data.cricra.forEach(c => {
+                            const taxa = c.taxaindicativa != null ? parseFloat(c.taxaindicativa).toFixed(2) + '%' : '-';
+                            const duration = c.duration != null ? Math.round(parseFloat(c.duration)) : '-';
+                            html += `<tr>
+                                <td>${c.tipocontrato || '-'}</td>
+                                <td style="font-family:monospace;">${c.codigoativo || '-'}</td>
+                                <td>${taxa}</td>
+                                <td>${duration}</td>
+                            </tr>`;
+                        });
+                        html += '</tbody></table></div></div>';
+                    }
+
+                    // Seção de Fundos Relacionados
+                    html += `<div class="chart-card">
+                        <h4 style="color:#BA68C8;margin:0 0 15px;">💚 Fundos Sustentáveis do Setor (${emp.setortsb})</h4>`;
+
+                    if (data.fundos_relacionados && data.fundos_relacionados.length > 0) {
+                        html += `<div style="overflow-x:auto;max-height:250px;"><table style="width:100%;font-size:0.85rem;">
+                            <thead><tr><th>Fundo</th><th>Gestora</th><th>Classe</th></tr></thead><tbody>`;
+                        data.fundos_relacionados.forEach(f => {
+                            html += `<tr>
+                                <td style="max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.nomecompleto}">${f.nomecompleto}</td>
+                                <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.gestora || '-'}</td>
+                                <td style="font-size:0.8rem;">${f.classeanbima || '-'}</td>
+                            </tr>`;
+                        });
+                        html += '</tbody></table></div>';
+                    } else {
+                        html += '<p style="color:var(--text-secondary);text-align:center;padding:20px;">Nenhum fundo ESG relacionado ao setor encontrado</p>';
+                    }
+                    html += '</div>';
+
+                    // Botão para ver KPIs
+                    html += `<div style="margin-top:20px;text-align:center;">
+                        <button onclick="verKPIsEmpresa(${emp.empresaid}, '${emp.emissor.replace(/'/g, "\\'")}')" style="background:linear-gradient(135deg,#4CAF50,#2E7D32);color:white;border:none;padding:12px 30px;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600;">
+                            📊 Ver KPIs Obrigatórios
+                        </button>
+                    </div>`;
+
+                    conteudo.innerHTML = html;
+                } else {
+                    conteudo.innerHTML = '<div style="text-align:center;padding:40px;color:#EF5350;">Empresa não encontrada</div>';
+                }
+            } catch (e) {
+                console.error('Erro ao carregar visão integrada:', e);
+                conteudo.innerHTML = '<div style="text-align:center;padding:40px;color:#EF5350;">Erro de conexão</div>';
+            }
+        }
+
+        // ========== RISK SCORING ==========
+        let riskScoringCarregado = false;
+
+        async function carregarRiskScoring() {
+            if (riskScoringCarregado) return;
+            try {
+                const response = await fetch(`${API_URL}/risk-scoring`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Score Global
+                    document.getElementById('riskScoreGlobal').textContent = data.resumo.risk_score_global.toFixed(1);
+                    document.getElementById('riskScoreGlobal').style.color = data.resumo.rating.color;
+                    document.getElementById('riskRatingGlobal').textContent = `${data.resumo.rating.grade} - ${data.resumo.rating.label}`;
+                    document.getElementById('riskRatingGlobal').style.color = data.resumo.rating.color;
+
+                    // Scores individuais
+                    const updateScore = (id, score) => {
+                        document.getElementById(id).textContent = score.valor.toFixed(1);
+                        document.getElementById(id).style.color = score.rating.color;
+                        document.getElementById(id + 'Label').textContent = `${score.rating.grade} - ${score.rating.label}`;
+                        document.getElementById(id + 'Label').style.color = score.rating.color;
+                    };
+                    updateScore('riskESG', data.scores.esg);
+                    updateScore('riskCredito', data.scores.credito);
+                    updateScore('riskConcentracao', data.scores.concentracao);
+                    updateScore('riskLiquidez', data.scores.liquidez);
+                    updateScore('riskClima', data.scores.clima);
+
+                    // Métricas
+                    document.getElementById('riskTotalAtivos').textContent = data.resumo.total_ativos.toLocaleString();
+                    document.getElementById('riskTotalDebentures').textContent = data.credito.total_debentures;
+                    document.getElementById('riskTaxaMedia').textContent = data.credito.taxa_media.toFixed(2) + '%';
+                    document.getElementById('riskDurationMedia').textContent = data.credito.duration_media + ' dias';
+                    document.getElementById('riskHHI').textContent = data.concentracao.hhi.toFixed(0);
+
+                    // Gráfico Radar
+                    const ctxRadar = document.getElementById('chartRiskRadar');
+                    if (ctxRadar) {
+                        if (graficos['chartRiskRadar']) graficos['chartRiskRadar'].destroy();
+                        graficos['chartRiskRadar'] = new Chart(ctxRadar, {
+                            type: 'radar',
+                            data: {
+                                labels: ['ESG', 'Crédito', 'Concentração', 'Liquidez', 'Clima'],
+                                datasets: [{
+                                    label: 'Risco',
+                                    data: [data.scores.esg.valor, data.scores.credito.valor, data.scores.concentracao.valor, data.scores.liquidez.valor, data.scores.clima.valor],
+                                    fill: true,
+                                    backgroundColor: 'rgba(255, 152, 0, 0.2)',
+                                    borderColor: '#FF9800',
+                                    pointBackgroundColor: '#FF9800',
+                                    pointBorderColor: '#fff'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    r: {
+                                        beginAtZero: true,
+                                        max: 100,
+                                        ticks: { color: '#a0a0b0', stepSize: 20 },
+                                        grid: { color: 'rgba(255,255,255,0.1)' },
+                                        pointLabels: { color: '#fff', font: { size: 11 } }
+                                    }
+                                },
+                                plugins: { legend: { display: false } }
+                            }
+                        });
+                    }
+
+                    // Gráfico Spread por Indexador
+                    const ctxSpread = document.getElementById('chartSpreadIndexador');
+                    if (ctxSpread && data.indexadores && data.indexadores.length > 0) {
+                        if (graficos['chartSpreadIndexador']) graficos['chartSpreadIndexador'].destroy();
+                        graficos['chartSpreadIndexador'] = new Chart(ctxSpread, {
+                            type: 'bar',
+                            data: {
+                                labels: data.indexadores.map(i => i.grupo || 'N/A'),
+                                datasets: [{
+                                    label: 'Quantidade',
+                                    data: data.indexadores.map(i => i.qtd),
+                                    backgroundColor: '#42A5F5',
+                                    borderRadius: 4
+                                }, {
+                                    label: 'Taxa Média (%)',
+                                    data: data.indexadores.map(i => i.taxa_media ? parseFloat(i.taxa_media).toFixed(2) : 0),
+                                    backgroundColor: '#FF9800',
+                                    borderRadius: 4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { position: 'top', labels: { color: '#fff' } } },
+                                scales: {
+                                    y: { ticks: { color: '#a0a0b0' } },
+                                    x: { ticks: { color: '#a0a0b0' } }
+                                }
+                            }
+                        });
+                    }
+
+                    // Gráfico Concentração por Setor
+                    const ctxConc = document.getElementById('chartConcentracao');
+                    if (ctxConc && data.concentracao.por_setor && data.concentracao.por_setor.length > 0) {
+                        if (graficos['chartConcentracao']) graficos['chartConcentracao'].destroy();
+                        graficos['chartConcentracao'] = new Chart(ctxConc, {
+                            type: 'doughnut',
+                            data: {
+                                labels: data.concentracao.por_setor.slice(0, 8).map(s => s.setortsb ? s.setortsb.substring(0, 15) : 'N/A'),
+                                datasets: [{
+                                    data: data.concentracao.por_setor.slice(0, 8).map(s => s.qtd),
+                                    backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#00BCD4', '#F44336', '#8BC34A', '#FF5722'],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { position: 'right', labels: { color: '#fff', font: { size: 10 } } } }
+                            }
+                        });
+                    }
+
+                    // Gráfico Liquidez (Duration)
+                    const ctxLiq = document.getElementById('chartLiquidez');
+                    if (ctxLiq) {
+                        if (graficos['chartLiquidez']) graficos['chartLiquidez'].destroy();
+                        graficos['chartLiquidez'] = new Chart(ctxLiq, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Curto Prazo (<1 ano)', 'Médio Prazo (1-3 anos)', 'Longo Prazo (>3 anos)'],
+                                datasets: [{
+                                    data: [data.liquidez.curto_prazo, data.liquidez.medio_prazo, data.liquidez.longo_prazo],
+                                    backgroundColor: ['#4CAF50', '#FFC107', '#F44336'],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { position: 'right', labels: { color: '#fff' } } }
+                            }
+                        });
+                    }
+
+                    // Tabela Empresas Maior Risco
+                    const corpoRisco = document.getElementById('corpoEmpresasRisco');
+                    if (corpoRisco && data.alertas.empresas_maior_risco) {
+                        let html = '';
+                        data.alertas.empresas_maior_risco.forEach(e => {
+                            const classColor = e.classificacao === 'VERDE' ? '#4CAF50' : '#FF9800';
+                            html += `<tr>
+                                <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${e.emissor}">${e.emissor}</td>
+                                <td style="font-size:0.8rem;">${e.setortsb || '-'}</td>
+                                <td><span style="background:${classColor};color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">${e.classificacao}</span></td>
+                                <td style="font-weight:600;color:#F44336;">${e.score}</td>
+                            </tr>`;
+                        });
+                        corpoRisco.innerHTML = html;
+                    }
+
+                    // Tabela Top Emissores
+                    const corpoEmissores = document.getElementById('corpoTopEmissores');
+                    if (corpoEmissores && data.alertas.top_emissores) {
+                        let html = '';
+                        data.alertas.top_emissores.forEach(e => {
+                            const taxa = e.taxa_media ? parseFloat(e.taxa_media).toFixed(2) + '%' : '-';
+                            html += `<tr>
+                                <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${e.emissor}">${e.emissor}</td>
+                                <td style="font-weight:600;color:#42A5F5;">${e.qtd}</td>
+                                <td>${taxa}</td>
+                            </tr>`;
+                        });
+                        corpoEmissores.innerHTML = html;
+                    }
+
+                    riskScoringCarregado = true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar Risk Scoring:', e);
+                document.getElementById('riskRatingGlobal').textContent = 'Erro ao carregar';
+                document.getElementById('riskRatingGlobal').style.color = '#F44336';
+            }
+        }
+
+        // ========== EARLY WARNING ==========
+        let earlyWarningCarregado = false;
+
+        async function carregarEarlyWarning() {
+            if (earlyWarningCarregado) return;
+            try {
+                const response = await fetch(`${API_URL}/early-warning`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Atualizar resumo
+                    document.getElementById('ewCriticos').textContent = data.resumo.criticos;
+                    document.getElementById('ewMedios').textContent = data.resumo.medios;
+                    document.getElementById('ewBaixos').textContent = data.resumo.baixos;
+
+                    // Renderizar alertas
+                    const container = document.getElementById('ewAlertasContainer');
+                    if (data.alertas.length === 0) {
+                        container.innerHTML = `
+                            <div class="chart-card" style="text-align:center;padding:40px;background:rgba(76,175,80,0.1);border-color:rgba(76,175,80,0.3);">
+                                <div style="font-size:3rem;margin-bottom:15px;">✅</div>
+                                <h3 style="color:#66BB6A;margin:0;">Nenhum Alerta Ativo</h3>
+                                <p style="color:#A5D6A7;margin-top:10px;">O portfolio está dentro dos parâmetros normais de risco</p>
+                            </div>`;
+                    } else {
+                        container.innerHTML = data.alertas.map(alerta => {
+                            const corSeveridade = {
+                                'alta': { bg: 'rgba(244,67,54,0.15)', border: 'rgba(244,67,54,0.4)', text: '#F44336', badge: '#F44336' },
+                                'media': { bg: 'rgba(255,152,0,0.15)', border: 'rgba(255,152,0,0.4)', text: '#FF9800', badge: '#FF9800' },
+                                'baixa': { bg: 'rgba(76,175,80,0.15)', border: 'rgba(76,175,80,0.4)', text: '#4CAF50', badge: '#4CAF50' }
+                            }[alerta.severidade] || { bg: 'rgba(255,255,255,0.05)', border: 'var(--border-color)', text: 'var(--text-primary)', badge: '#666' };
+
+                            return `
+                                <div class="chart-card" style="background:${corSeveridade.bg};border-color:${corSeveridade.border};">
+                                    <div style="display:flex;align-items:flex-start;gap:15px;">
+                                        <div style="font-size:2rem;">${alerta.icone}</div>
+                                        <div style="flex:1;">
+                                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                                                <h3 style="color:${corSeveridade.text};margin:0;">${alerta.titulo}</h3>
+                                                <span style="padding:3px 8px;border-radius:4px;font-size:0.7rem;font-weight:600;background:${corSeveridade.badge};color:white;text-transform:uppercase;">${alerta.severidade}</span>
+                                            </div>
+                                            <p style="color:var(--text-secondary);margin:0 0 10px 0;">${alerta.descricao}</p>
+                                            ${alerta.detalhes && alerta.detalhes.length > 0 ? `
+                                                <div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:10px;margin-top:10px;">
+                                                    <div style="font-size:0.75rem;color:#a0a0b0;margin-bottom:5px;">Detalhes:</div>
+                                                    <ul style="margin:0;padding-left:20px;font-size:0.85rem;color:var(--text-secondary);">
+                                                        ${alerta.detalhes.map(d => `<li>${d}</li>`).join('')}
+                                                    </ul>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>`;
+                        }).join('');
+                    }
+
+                    earlyWarningCarregado = true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar Early Warning:', e);
+                document.getElementById('ewAlertasContainer').innerHTML = `
+                    <div class="chart-card" style="text-align:center;padding:40px;">
+                        <div style="font-size:2rem;margin-bottom:10px;">❌</div>
+                        <p style="color:#F44336;">Erro ao carregar alertas</p>
+                    </div>`;
+            }
+        }
+
+        // ========== DEBT ANALYSIS ==========
+        let debtAnalysisCarregado = false;
+
+        async function carregarDebtAnalysis() {
+            console.log('=== carregarDebtAnalysis INICIADO ===');
+            if (debtAnalysisCarregado) {
+                console.log('Debt Analysis já carregado, pulando...');
+                return;
+            }
+            try {
+                console.log('Fazendo fetch para:', API_URL + '/debt-analysis');
+                const response = await fetch(`${API_URL}/debt-analysis`);
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Dados JSON recebidos:', JSON.stringify(data).substring(0, 500));
+
+                if (data.success) {
+                    console.log('=== Dados SUCCESS - Processando ===');
+
+                    // Resumo (converter strings para números)
+                    const valorTotal = parseFloat(data.resumo.valor_total) || 0;
+                    const puMedio = parseFloat(data.resumo.pu_medio) || 0;
+                    console.log('Valores parseados - valorTotal:', valorTotal, 'puMedio:', puMedio);
+
+                    // Verificar elementos existem
+                    const elDebtTotal = document.getElementById('debtTotal');
+                    const elDebtValorTotal = document.getElementById('debtValorTotal');
+                    const elDebtPUMedio = document.getElementById('debtPUMedio');
+                    const elDebtDurationMedia = document.getElementById('debtDurationMedia');
+
+                    console.log('Elementos encontrados:', {
+                        debtTotal: !!elDebtTotal,
+                        debtValorTotal: !!elDebtValorTotal,
+                        debtPUMedio: !!elDebtPUMedio,
+                        debtDurationMedia: !!elDebtDurationMedia
+                    });
+
+                    if (elDebtTotal) elDebtTotal.textContent = data.resumo.total_debentures;
+                    if (elDebtValorTotal) elDebtValorTotal.textContent = 'R$ ' + (valorTotal / 1000).toFixed(1) + 'K';
+                    if (elDebtPUMedio) elDebtPUMedio.textContent = 'R$ ' + puMedio.toFixed(2);
+
+                    // Duration média (calcular média de todos os indexadores)
+                    const duracoes = Object.values(data.duration_por_indexador || {});
+                    const duracaoMedia = duracoes.length > 0 ? duracoes.reduce((a, b) => a + b, 0) / duracoes.length : 0;
+                    console.log('Duracoes:', duracoes, 'Media:', duracaoMedia);
+                    if (elDebtDurationMedia) elDebtDurationMedia.textContent = Math.round(duracaoMedia) + ' dias';
+
+                    // Gráfico por indexador
+                    const ctxIndexador = document.getElementById('chartDebtIndexador');
+                    console.log('Canvas chartDebtIndexador:', ctxIndexador ? 'encontrado' : 'NAO encontrado');
+                    console.log('por_indexador length:', data.por_indexador ? data.por_indexador.length : 'undefined');
+                    if (ctxIndexador && data.por_indexador && data.por_indexador.length > 0) {
+                        try {
+                            if (graficos['chartDebtIndexador']) graficos['chartDebtIndexador'].destroy();
+                            graficos['chartDebtIndexador'] = new Chart(ctxIndexador, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: data.por_indexador.map(i => i.grupo || 'N/A'),
+                                    datasets: [{
+                                        data: data.por_indexador.map(i => i.qtd),
+                                        backgroundColor: ['#42A5F5', '#66BB6A', '#FF9800', '#9C27B0', '#00BCD4']
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { position: 'right', labels: { color: '#fff', font: { size: 11 } } }
+                                    }
+                                }
+                            });
+                            console.log('Grafico chartDebtIndexador criado com sucesso');
+                        } catch (chartErr) {
+                            console.error('Erro ao criar chartDebtIndexador:', chartErr);
+                        }
+                    }
+
+                    // Gráfico por faixa de taxa
+                    const ctxTaxa = document.getElementById('chartDebtTaxa');
+                    console.log('Canvas chartDebtTaxa:', ctxTaxa ? 'encontrado' : 'NAO encontrado');
+                    console.log('por_faixa_taxa length:', data.por_faixa_taxa ? data.por_faixa_taxa.length : 'undefined');
+                    if (ctxTaxa && data.por_faixa_taxa && data.por_faixa_taxa.length > 0) {
+                        try {
+                            if (graficos['chartDebtTaxa']) graficos['chartDebtTaxa'].destroy();
+                            graficos['chartDebtTaxa'] = new Chart(ctxTaxa, {
+                                type: 'bar',
+                                data: {
+                                    labels: data.por_faixa_taxa.map(f => f.faixa),
+                                    datasets: [{
+                                        label: 'Quantidade',
+                                        data: data.por_faixa_taxa.map(f => f.qtd),
+                                        backgroundColor: ['#4CAF50', '#8BC34A', '#FF9800', '#F44336']
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: false } },
+                                    scales: {
+                                        x: { ticks: { color: '#a0a0b0' }, grid: { display: false } },
+                                        y: { ticks: { color: '#a0a0b0' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                                    }
+                                }
+                            });
+                            console.log('Grafico chartDebtTaxa criado com sucesso');
+                        } catch (chartErr) {
+                            console.error('Erro ao criar chartDebtTaxa:', chartErr);
+                        }
+                    }
+
+                    // Tabela top emissores
+                    const tbody = document.getElementById('debtTopEmissores');
+                    console.log('Tbody debtTopEmissores:', tbody ? 'encontrado' : 'NAO encontrado');
+                    console.log('top_emissores length:', data.top_emissores ? data.top_emissores.length : 'undefined');
+                    if (tbody && data.top_emissores && data.top_emissores.length > 0) {
+                        tbody.innerHTML = data.top_emissores.map(e => {
+                            const valorTotal = parseFloat(e.valor_total) || 0;
+                            const taxaMedia = parseFloat(e.taxa_media) || 0;
+                            return `
+                            <tr>
+                                <td title="${e.emissor}">${e.emissor.substring(0, 35)}${e.emissor.length > 35 ? '...' : ''}</td>
+                                <td style="text-align:center;">${e.qtd_titulos}</td>
+                                <td style="text-align:right;">R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                                <td style="text-align:right;color:#FF9800;">${taxaMedia > 0 ? taxaMedia.toFixed(2) + '%' : '-'}</td>
+                            </tr>`;
+                        }).join('');
+                        console.log('Tabela top emissores preenchida');
+                    }
+
+                    debtAnalysisCarregado = true;
+                    console.log('=== DEBT ANALYSIS CARREGADO COM SUCESSO ===');
+                } else {
+                    console.log('API retornou success: false');
+                }
+            } catch (e) {
+                console.error('=== ERRO ao carregar Debt Analysis ===', e);
+                console.error('Stack:', e.stack);
+            }
+        }
+
+        // Função de teste global para debug
+        window.testarDebtAnalysis = function() {
+            console.log('Teste manual: resetando flag e carregando...');
+            debtAnalysisCarregado = false;
+            carregarDebtAnalysis();
+        };
+
+        // ========== VENCIMENTOS ==========
+        let vencimentosCarregado = false;
+
+        async function carregarVencimentos() {
+            if (vencimentosCarregado) return;
+            try {
+                const response = await fetch(`${API_URL}/vencimentos`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Duration stats
+                    document.getElementById('vencDurationMin').textContent = data.duration_stats.minima;
+                    document.getElementById('vencDurationMedia').textContent = data.duration_stats.media;
+                    document.getElementById('vencDurationMax').textContent = data.duration_stats.maxima;
+
+                    // Gráfico por faixa (quantidade)
+                    const ctxFaixa = document.getElementById('chartVencFaixa');
+                    if (ctxFaixa && data.por_faixa.length > 0) {
+                        if (graficos['chartVencFaixa']) graficos['chartVencFaixa'].destroy();
+                        graficos['chartVencFaixa'] = new Chart(ctxFaixa, {
+                            type: 'bar',
+                            data: {
+                                labels: data.por_faixa.map(f => f.faixa),
+                                datasets: [{
+                                    label: 'Quantidade',
+                                    data: data.por_faixa.map(f => f.qtd),
+                                    backgroundColor: ['#4CAF50', '#8BC34A', '#FFEB3B', '#FF9800', '#F44336']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: { ticks: { color: '#a0a0b0' }, grid: { display: false } },
+                                    y: { ticks: { color: '#a0a0b0' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                                }
+                            }
+                        });
+                    }
+
+                    // Gráfico por faixa (valor)
+                    const ctxValor = document.getElementById('chartVencValor');
+                    if (ctxValor && data.por_faixa.length > 0) {
+                        if (graficos['chartVencValor']) graficos['chartVencValor'].destroy();
+                        graficos['chartVencValor'] = new Chart(ctxValor, {
+                            type: 'doughnut',
+                            data: {
+                                labels: data.por_faixa.map(f => f.faixa),
+                                datasets: [{
+                                    data: data.por_faixa.map(f => parseFloat(f.valor) || 0),
+                                    backgroundColor: ['#4CAF50', '#8BC34A', '#FFEB3B', '#FF9800', '#F44336']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { position: 'right', labels: { color: '#fff', font: { size: 10 } } }
+                                }
+                            }
+                        });
+                    }
+
+                    // Tabela próximos vencimentos
+                    const tbody = document.getElementById('vencProximos');
+                    tbody.innerHTML = data.proximos_vencimentos.map(v => {
+                        const duration = parseFloat(v.duration) || 0;
+                        const pu = parseFloat(v.pu) || 0;
+                        const corDuration = duration < 365 ? '#F44336' : duration < 730 ? '#FF9800' : '#4CAF50';
+                        return `
+                        <tr>
+                            <td style="font-weight:600;color:#42A5F5;">${v.codigoativo}</td>
+                            <td title="${v.emissor}">${v.emissor.substring(0, 30)}${v.emissor.length > 30 ? '...' : ''}</td>
+                            <td>${v.grupo || '-'}</td>
+                            <td style="color:#FF9800;">${v.taxaindicativa || '-'}</td>
+                            <td style="text-align:center;font-weight:600;color:${corDuration};">${Math.round(duration)} dias</td>
+                            <td style="text-align:right;">R$ ${pu.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        </tr>`;
+                    }).join('');
+
+                    vencimentosCarregado = true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar Vencimentos:', e);
+            }
+        }
+
+        // Inicializar quando abrir a aba Explorar, CRI/CRA, TSB ou Risk Scoring
         const originalShowTabAPI = showTab;
         showTab = function(tabId, event) {
+            console.log('showTab chamado (override API) - tabId:', tabId);
             originalShowTabAPI(tabId, event);
             if (tabId === 'explorar') {
                 verificarAPI();
@@ -993,6 +2419,15 @@
                 carregarCRICRA();
             } else if (tabId === 'tsb') {
                 carregarTSB();
+            } else if (tabId === 'risk-scoring') {
+                carregarRiskScoring();
+            } else if (tabId === 'early-warning') {
+                carregarEarlyWarning();
+            } else if (tabId === 'debt-analysis') {
+                console.log('Chamando carregarDebtAnalysis()...');
+                carregarDebtAnalysis();
+            } else if (tabId === 'vencimentos') {
+                carregarVencimentos();
             }
         };
 
