@@ -1185,6 +1185,9 @@
                 if (statsData.success) {
                     document.getElementById('totalGeral').textContent = statsData.data.total.toLocaleString();
                 }
+
+                // Carregar fundos automaticamente
+                buscarFundosAPI();
             } catch (e) {
                 console.error('Erro ao carregar categorias:', e);
             }
