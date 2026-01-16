@@ -2607,10 +2607,10 @@
         let ordenacaoAtual = { campo: 'nome', direcao: 'asc' };
 
         function inicializarExplorar() {
-            // Preencher select de gestoras
-            const gestoras = [...new Set(baseFundos.map(f => f.gestora))].sort();
+            // Preencher select de gestoras (apenas se ainda não preenchido)
             const selectGestora = document.getElementById('filtroGestora');
-            if (selectGestora) {
+            if (selectGestora && selectGestora.options.length <= 1) {
+                const gestoras = [...new Set(baseFundos.map(f => f.gestora))].sort();
                 gestoras.forEach(g => {
                     const opt = document.createElement('option');
                     opt.value = g;
@@ -2618,7 +2618,7 @@
                     selectGestora.appendChild(opt);
                 });
             }
-            filtrarFundos();
+            // Não filtrar/renderizar automaticamente - deixar a API carregar os dados
         }
 
         function filtrarFundos() {
@@ -2703,9 +2703,13 @@
         }
 
         function atualizarEstatisticas() {
+            // Não atualizar se a API ainda não carregou (evitar mostrar dados locais)
+            if (totalFundosAPI > 0) return;
             document.getElementById('totalEncontrados').textContent = fundosFiltrados.length.toLocaleString('pt-BR');
-            document.getElementById('totalIS').textContent = fundosFiltrados.filter(f => f.tipo === 'IS').length;
-            document.getElementById('totalESG').textContent = fundosFiltrados.filter(f => f.tipo === 'ESG').length;
+            const totalIS = document.getElementById('totalIS');
+            const totalESG = document.getElementById('totalESG');
+            if (totalIS) totalIS.textContent = fundosFiltrados.filter(f => f.tipo === 'IS').length;
+            if (totalESG) totalESG.textContent = fundosFiltrados.filter(f => f.tipo === 'ESG').length;
         }
 
         function adicionarFavorito(cnpj) {
