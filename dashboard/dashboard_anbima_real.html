@@ -647,8 +647,8 @@
                         select.innerHTML = '<option value="">Todas Categorias</option>';
                         data.data.forEach(cat => {
                             const opt = document.createElement('option');
-                            opt.value = cat.Categoria;
-                            opt.textContent = `${cat.Categoria} (${cat.Qtd.toLocaleString()})`;
+                            opt.value = cat.categoria;
+                            opt.textContent = `${cat.categoria} (${cat.qtd.toLocaleString()})`;
                             select.appendChild(opt);
                         });
                     }
@@ -727,11 +727,11 @@
             let html = '';
             for (let i = 0; i < fundos.length; i++) {
                 const f = fundos[i];
-                const nome = escapeHtml(f.NomeComercial || f.RazaoSocial);
-                const cnpj = escapeHtml(f.CNPJ);
-                const categoria = escapeHtml(f.Categoria);
-                const foco = escapeHtml(f.FocoESG);
-                const tipoESG = f.CategoriaESG || 'Convencional';
+                const nome = escapeHtml(f.nomecomercial || f.razaosocial);
+                const cnpj = escapeHtml(f.cnpj);
+                const categoria = escapeHtml(f.categoria);
+                const foco = escapeHtml(f.focoesg);
+                const tipoESG = f.categoriaesg || 'Convencional';
 
                 const tipoClass = tipoESG === 'IS - Investimento Sustentavel' ? 'rgba(76,175,80,0.2);color:#66BB6A' :
                                   tipoESG === 'ESG Integrado' ? 'rgba(255,152,0,0.2);color:#FFB74D' :
@@ -809,16 +809,16 @@
 
                     let html = '';
                     data.data.forEach(item => {
-                        const tipoClass = item.TipoContrato === 'CRI' ? 'rgba(66,165,245,0.2);color:#42A5F5' : 'rgba(102,187,106,0.2);color:#66BB6A';
-                        const taxa = item.TaxaIndicativa != null ? parseFloat(item.TaxaIndicativa).toFixed(2) + '%' : '-';
-                        const pu = item.PU != null ? 'R$ ' + parseFloat(item.PU).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '-';
-                        const duration = item.Duration != null ? Math.round(parseFloat(item.Duration)) : '-';
+                        const tipoClass = item.tipocontrato === 'CRI' ? 'rgba(66,165,245,0.2);color:#42A5F5' : 'rgba(102,187,106,0.2);color:#66BB6A';
+                        const taxa = item.taxaindicativa != null ? parseFloat(item.taxaindicativa).toFixed(2) + '%' : '-';
+                        const pu = item.pu != null ? 'R$ ' + parseFloat(item.pu).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '-';
+                        const duration = item.duration != null ? Math.round(parseFloat(item.duration)) : '-';
                         html += `<tr>
-                            <td><span style="background:${tipoClass};padding:3px 8px;border-radius:10px;font-size:0.75rem;">${item.TipoContrato || '-'}</span></td>
-                            <td style="font-family:monospace;">${escapeHtml(item.CodigoAtivo)}</td>
-                            <td style="max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(item.Emissor)}">${escapeHtml(item.Emissor)}</td>
-                            <td>${escapeHtml(item.Serie)}</td>
-                            <td>${item.DataVencimento ? item.DataVencimento.substring(0,10) : '-'}</td>
+                            <td><span style="background:${tipoClass};padding:3px 8px;border-radius:10px;font-size:0.75rem;">${item.tipocontrato || '-'}</span></td>
+                            <td style="font-family:monospace;">${escapeHtml(item.codigoativo)}</td>
+                            <td style="max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(item.emissor)}">${escapeHtml(item.emissor)}</td>
+                            <td>${escapeHtml(item.serie)}</td>
+                            <td>${item.datavencimento ? item.datavencimento.substring(0,10) : '-'}</td>
                             <td>${taxa}</td>
                             <td>${pu}</td>
                             <td>${duration}</td>
@@ -863,15 +863,15 @@
                     const corpo = document.getElementById('corpoTabelaTSB');
                     let html = '';
                     empData.data.forEach(emp => {
-                        const classColor = emp.Classificacao === 'VERDE' ? '#4CAF50' : '#FF9800';
+                        const classColor = emp.classificacao === 'VERDE' ? '#4CAF50' : '#FF9800';
                         html += `<tr>
-                            <td style="max-width:300px;">${emp.Emissor}</td>
-                            <td style="font-family:monospace;font-size:0.8rem;">${emp.CNPJ}</td>
-                            <td>${emp.SetorTSB}</td>
-                            <td><span style="background:${classColor};color:white;padding:3px 10px;border-radius:12px;">${emp.Classificacao}</span></td>
-                            <td><strong>${emp.Score}</strong></td>
-                            <td>${emp.Titulos}</td>
-                            <td><button onclick="verKPIsEmpresa(${emp.EmpresaID}, '${emp.Emissor.replace(/'/g, "\\'")}')" style="background:#4CAF50;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">Ver KPIs</button></td>
+                            <td style="max-width:300px;">${emp.emissor}</td>
+                            <td style="font-family:monospace;font-size:0.8rem;">${emp.cnpj}</td>
+                            <td>${emp.setortsb}</td>
+                            <td><span style="background:${classColor};color:white;padding:3px 10px;border-radius:12px;">${emp.classificacao}</span></td>
+                            <td><strong>${emp.score}</strong></td>
+                            <td>${emp.titulos}</td>
+                            <td><button onclick="verKPIsEmpresa(${emp.empresaid}, '${emp.emissor.replace(/'/g, "\\'")}')" style="background:#4CAF50;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">Ver KPIs</button></td>
                         </tr>`;
                     });
                     corpo.innerHTML = html;
@@ -896,8 +896,8 @@
 
             // Atualizar gráfico por setor
             if (graficos['chartTSBSetor'] && stats.por_setor) {
-                const labels = stats.por_setor.map(s => s.SetorTSB);
-                const data = stats.por_setor.map(s => s.Qtd);
+                const labels = stats.por_setor.map(s => s.setortsb);
+                const data = stats.por_setor.map(s => s.qtd);
                 graficos['chartTSBSetor'].data.labels = labels;
                 graficos['chartTSBSetor'].data.datasets[0].data = data;
                 graficos['chartTSBSetor'].update();
@@ -916,16 +916,16 @@
 
                 if (data.success) {
                     const emp = data.empresa;
-                    const classColor = emp.Classificacao === 'VERDE' ? '#4CAF50' : '#FF9800';
+                    const classColor = emp.classificacao === 'VERDE' ? '#4CAF50' : '#FF9800';
 
                     let html = `
                         <div style="margin-bottom:20px;">
-                            <h2 style="color:#66BB6A;margin:0 0 10px 0;">🏢 ${emp.Emissor}</h2>
+                            <h2 style="color:#66BB6A;margin:0 0 10px 0;">🏢 ${emp.emissor}</h2>
                             <div style="display:flex;gap:15px;flex-wrap:wrap;">
-                                <span style="background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:8px;">CNPJ: ${emp.CNPJ}</span>
-                                <span style="background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:8px;">Setor: ${emp.SetorTSB}</span>
-                                <span style="background:${classColor};color:white;padding:5px 12px;border-radius:8px;">${emp.Classificacao}</span>
-                                <span style="background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:8px;">Score: <strong>${emp.Score}</strong></span>
+                                <span style="background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:8px;">CNPJ: ${emp.cnpj}</span>
+                                <span style="background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:8px;">Setor: ${emp.setortsb}</span>
+                                <span style="background:${classColor};color:white;padding:5px 12px;border-radius:8px;">${emp.classificacao}</span>
+                                <span style="background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:8px;">Score: <strong>${emp.score}</strong></span>
                             </div>
                         </div>
                         <h3 style="margin:20px 0 15px;">📊 KPIs Obrigatórios do Setor</h3>
@@ -939,26 +939,26 @@
                     `;
 
                     data.kpis.forEach(kpi => {
-                        const obrigColor = kpi.Obrigatorio ? '#FF9800' : '#4CAF50';
-                        const obrigText = kpi.Obrigatorio ? 'Obrigatório' : 'Opcional';
-                        const statusColor = kpi.Status === 'Verificado' ? '#4CAF50' :
-                                           kpi.Status === 'Estimado' ? '#2196F3' : '#666';
-                        const valorText = kpi.Valor !== null && kpi.Valor !== '' ? kpi.Valor : '-';
-                        const hasValue = kpi.Valor !== null && kpi.Valor !== '';
+                        const obrigColor = kpi.obrigatorio ? '#FF9800' : '#4CAF50';
+                        const obrigText = kpi.obrigatorio ? 'Obrigatório' : 'Opcional';
+                        const statusColor = kpi.status === 'Verificado' ? '#4CAF50' :
+                                           kpi.status === 'Estimado' ? '#2196F3' : '#666';
+                        const valorText = kpi.valor !== null && kpi.valor !== '' ? kpi.valor : '-';
+                        const hasValue = kpi.valor !== null && kpi.valor !== '';
                         const borderColor = hasValue ? '#4CAF50' : obrigColor;
 
                         html += `
                             <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:15px;border-left:3px solid ${borderColor};">
-                                <div style="font-size:0.75rem;color:#a0a0b0;">${kpi.CodigoKPI}</div>
-                                <div style="font-size:0.9rem;margin:8px 0;font-weight:500;">${kpi.NomeKPI}</div>
-                                <div style="font-size:0.75rem;color:#888;">Unidade: ${kpi.Unidade || '-'}</div>
+                                <div style="font-size:0.75rem;color:#a0a0b0;">${kpi.codigokpi}</div>
+                                <div style="font-size:0.9rem;margin:8px 0;font-weight:500;">${kpi.nomekpi}</div>
+                                <div style="font-size:0.75rem;color:#888;">Unidade: ${kpi.unidade || '-'}</div>
                                 <div style="background:${hasValue ? 'rgba(76,175,80,0.15)' : 'rgba(100,100,100,0.1)'};padding:8px;border-radius:6px;margin:10px 0;text-align:center;">
                                     <span style="font-size:1.1rem;font-weight:600;color:${hasValue ? '#66BB6A' : '#666'};">${valorText}</span>
-                                    <span style="font-size:0.7rem;color:#888;margin-left:5px;">${kpi.Unidade || ''}</span>
+                                    <span style="font-size:0.7rem;color:#888;margin-left:5px;">${kpi.unidade || ''}</span>
                                 </div>
                                 <div style="display:flex;justify-content:space-between;margin-top:10px;">
                                     <span style="font-size:0.75rem;color:${obrigColor};">${obrigText}</span>
-                                    <span style="font-size:0.75rem;color:${statusColor};font-weight:500;">${kpi.Status}</span>
+                                    <span style="font-size:0.75rem;color:${statusColor};font-weight:500;">${kpi.status}</span>
                                 </div>
                             </div>
                         `;
@@ -1264,8 +1264,8 @@
 
                     // Filtrar localmente
                     let filtrados = dadosEmissores;
-                    if (setor) filtrados = filtrados.filter(e => e.Setor === setor);
-                    if (classif) filtrados = filtrados.filter(e => e.Classificacao === classif);
+                    if (setor) filtrados = filtrados.filter(e => e.setor === setor);
+                    if (classif) filtrados = filtrados.filter(e => e.classificacao === classif);
 
                     renderizarTabelaEmissores(filtrados);
                 }
@@ -1287,18 +1287,18 @@
 
             let html = '';
             emissores.forEach(e => {
-                const classColor = e.Classificacao === 'VERDE' ? '#4CAF50' : '#FF9800';
-                const scoreColor = e.Score >= 85 ? '#4CAF50' : e.Score >= 70 ? '#FF9800' : '#EF5350';
+                const classColor = e.classificacao === 'VERDE' ? '#4CAF50' : '#FF9800';
+                const scoreColor = e.score >= 85 ? '#4CAF50' : e.score >= 70 ? '#FF9800' : '#EF5350';
 
                 html += `<tr>
-                    <td style="font-weight:600;">${e.RazaoSocial || e.Emissor || '-'}</td>
-                    <td style="font-family:monospace;font-size:0.8rem;">${e.CNPJ || '-'}</td>
-                    <td>${e.Setor || e.SetorTSB || '-'}</td>
-                    <td><span style="background:${classColor};color:white;padding:3px 10px;border-radius:12px;font-size:0.8rem;">${e.Classificacao || '-'}</span></td>
-                    <td style="font-weight:700;color:${scoreColor};">${e.Score || '-'}</td>
-                    <td style="font-size:0.85rem;">${e.Titulos || '-'}</td>
+                    <td style="font-weight:600;">${e.razaosocial || e.emissor || '-'}</td>
+                    <td style="font-family:monospace;font-size:0.8rem;">${e.cnpj || '-'}</td>
+                    <td>${e.setor || e.setortsb || '-'}</td>
+                    <td><span style="background:${classColor};color:white;padding:3px 10px;border-radius:12px;font-size:0.8rem;">${e.classificacao || '-'}</span></td>
+                    <td style="font-weight:700;color:${scoreColor};">${e.score || '-'}</td>
+                    <td style="font-size:0.85rem;">${e.titulos || '-'}</td>
                     <td>
-                        <button onclick="verDetalhesEmissor('${e.CNPJ}')" style="background:#2196F3;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">Detalhes</button>
+                        <button onclick="verDetalhesEmissor('${e.cnpj}')" style="background:#2196F3;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">Detalhes</button>
                     </td>
                 </tr>`;
             });
@@ -1314,10 +1314,10 @@
                     graficos['chartEmissoresSetor'] = new Chart(ctxSetor, {
                         type: 'bar',
                         data: {
-                            labels: stats.por_setor.map(s => s.SetorTSB),
+                            labels: stats.por_setor.map(s => s.setortsb),
                             datasets: [{
                                 label: 'Empresas',
-                                data: stats.por_setor.map(s => s.Qtd),
+                                data: stats.por_setor.map(s => s.qtd),
                                 backgroundColor: ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#26A69A', '#EF5350', '#78909C']
                             }]
                         },
@@ -1353,23 +1353,23 @@
 
                 if (data.success) {
                     const emp = data.empresa;
-                    let html = `<h2 style="color:#42A5F5;margin-bottom:15px;">🏢 ${emp.RazaoSocial || emp.Emissor}</h2>
+                    let html = `<h2 style="color:#42A5F5;margin-bottom:15px;">🏢 ${emp.razaosocial || emp.emissor}</h2>
                         <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
-                            <span style="background:rgba(255,255,255,0.1);padding:8px 15px;border-radius:8px;">CNPJ: ${emp.CNPJ}</span>
-                            <span style="background:rgba(255,255,255,0.1);padding:8px 15px;border-radius:8px;">Setor: ${emp.Setor || emp.SetorTSB}</span>
-                            ${emp.Classificacao ? `<span style="background:${emp.Classificacao === 'VERDE' ? '#4CAF50' : '#FF9800'};color:white;padding:8px 15px;border-radius:8px;">${emp.Classificacao}</span>` : ''}
-                            ${emp.Score ? `<span style="background:rgba(255,255,255,0.1);padding:8px 15px;border-radius:8px;">Score: <strong>${emp.Score}</strong></span>` : ''}
+                            <span style="background:rgba(255,255,255,0.1);padding:8px 15px;border-radius:8px;">CNPJ: ${emp.cnpj}</span>
+                            <span style="background:rgba(255,255,255,0.1);padding:8px 15px;border-radius:8px;">Setor: ${emp.setor || emp.setortsb}</span>
+                            ${emp.classificacao ? `<span style="background:${emp.classificacao === 'VERDE' ? '#4CAF50' : '#FF9800'};color:white;padding:8px 15px;border-radius:8px;">${emp.classificacao}</span>` : ''}
+                            ${emp.score ? `<span style="background:rgba(255,255,255,0.1);padding:8px 15px;border-radius:8px;">Score: <strong>${emp.score}</strong></span>` : ''}
                         </div>`;
 
                     if (data.kpis && data.kpis.length > 0) {
                         html += `<h3 style="margin:20px 0 10px;">📊 KPIs TSB</h3>
                             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">`;
                         data.kpis.forEach(k => {
-                            const statusColor = k.Status === 'Verificado' ? '#4CAF50' : '#2196F3';
+                            const statusColor = k.status === 'Verificado' ? '#4CAF50' : '#2196F3';
                             html += `<div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;border-left:3px solid ${statusColor};">
-                                <div style="font-size:0.75rem;color:#888;">${k.CodigoKPI}</div>
-                                <div style="font-size:1.1rem;font-weight:600;color:#66BB6A;">${k.Valor || '-'} ${k.Unidade || ''}</div>
-                                <div style="font-size:0.7rem;color:${statusColor};">${k.Status}</div>
+                                <div style="font-size:0.75rem;color:#888;">${k.codigokpi}</div>
+                                <div style="font-size:1.1rem;font-weight:600;color:#66BB6A;">${k.valor || '-'} ${k.unidade || ''}</div>
+                                <div style="font-size:0.7rem;color:${statusColor};">${k.status}</div>
                             </div>`;
                         });
                         html += '</div>';
@@ -1380,11 +1380,11 @@
                             <div style="max-height:200px;overflow-y:auto;">`;
                         const grouped = {};
                         data.governanca.forEach(g => {
-                            if (!grouped[g.Capitulo]) grouped[g.Capitulo] = [];
-                            grouped[g.Capitulo].push(g);
+                            if (!grouped[g.capitulo]) grouped[g.capitulo] = [];
+                            grouped[g.capitulo].push(g);
                         });
                         for (const cap in grouped) {
-                            const adotadas = grouped[cap].filter(g => g.PraticaAdotada === 'Sim').length;
+                            const adotadas = grouped[cap].filter(g => g.praticaadotada === 'Sim').length;
                             const total = grouped[cap].length;
                             const pct = Math.round((adotadas / total) * 100);
                             const barColor = pct >= 80 ? '#4CAF50' : pct >= 50 ? '#FF9800' : '#EF5350';
