@@ -1,6 +1,6 @@
 """
 Configuracoes do ETL - Modelagem ESG Banco Votorantim
-Suporta conexao LOCAL e AZURE
+Suporta conexao LOCAL e CLOUD (PostgreSQL)
 """
 import os
 from pathlib import Path
@@ -17,103 +17,75 @@ EDUCACAO_DIR = DATA_DIR / "Educação"
 INCLUSAO_DIR = DATA_DIR / "Inclusão Digital"
 
 # =============================================================================
-# MODO DE CONEXAO: "local" ou "azure"
+# MODO DE CONEXAO: "local" ou "cloud"
 # =============================================================================
-# Altere para "azure" quando for usar o Azure SQL Server
 CONNECTION_MODE = os.getenv("DB_MODE", "local")
 
 # =============================================================================
-# CONFIGURACAO LOCAL (SQL Server / SQL Server Express / LocalDB)
+# CONFIGURACAO LOCAL (PostgreSQL)
 # =============================================================================
 LOCAL_CONFIG = {
-    # Opcoes de servidor local:
-    # - "localhost" ou "." para SQL Server padrao
-    # - "localhost\\SQLEXPRESS" para SQL Server Express
-    # - "(localdb)\\MSSQLLocalDB" para LocalDB
-    "server": os.getenv("LOCAL_SQL_SERVER", "localhost"),
-    "database": os.getenv("LOCAL_SQL_DATABASE", "ESG_BV"),
-    # Autenticacao Windows (deixe vazio para usar)
-    "username": os.getenv("LOCAL_SQL_USER", ""),
-    "password": os.getenv("LOCAL_SQL_PASSWORD", ""),
-    # Driver - tente 18, senao 17
-    "driver": "{ODBC Driver 18 for SQL Server}",
-    # Para conexao local, geralmente precisa confiar no certificado
-    "encrypt": "yes",
-    "trust_server_certificate": "yes",
+    "host": os.getenv("PG_HOST", "localhost"),
+    "port": os.getenv("PG_PORT", "5432"),
+    "database": os.getenv("PG_DATABASE", "esg_bv"),
+    "username": os.getenv("PG_USER", "postgres"),
+    "password": os.getenv("PG_PASSWORD", ""),
 }
 
 # =============================================================================
-# CONFIGURACAO AZURE SQL
+# CONFIGURACAO CLOUD (PostgreSQL - ex: Render, Railway, Supabase, Neon)
 # =============================================================================
-AZURE_CONFIG = {
-    "server": os.getenv("AZURE_SQL_SERVER", "seu-servidor.database.windows.net"),
-    "database": os.getenv("AZURE_SQL_DATABASE", "ESG_BV"),
-    "username": os.getenv("AZURE_SQL_USER", "seu_usuario"),
-    "password": os.getenv("AZURE_SQL_PASSWORD", "sua_senha"),
-    "driver": "{ODBC Driver 18 for SQL Server}",
-    "encrypt": "yes",
-    "trust_server_certificate": "no",
+CLOUD_CONFIG = {
+    "host": os.getenv("CLOUD_PG_HOST", ""),
+    "port": os.getenv("CLOUD_PG_PORT", "5432"),
+    "database": os.getenv("CLOUD_PG_DATABASE", "esg_bv"),
+    "username": os.getenv("CLOUD_PG_USER", ""),
+    "password": os.getenv("CLOUD_PG_PASSWORD", ""),
+    "sslmode": os.getenv("CLOUD_PG_SSLMODE", "require"),
 }
 
 # =============================================================================
 # SELECAO AUTOMATICA DE CONFIGURACAO
 # =============================================================================
-DB_CONFIG = LOCAL_CONFIG if CONNECTION_MODE == "local" else AZURE_CONFIG
+DB_CONFIG = LOCAL_CONFIG if CONNECTION_MODE == "local" else CLOUD_CONFIG
 
 # =============================================================================
 # FUNCOES DE CONEXAO
 # =============================================================================
 
 def get_connection_string():
-    """Retorna a string de conexao para SQLAlchemy."""
+    """Retorna a string de conexao para SQLAlchemy (PostgreSQL)."""
     config = DB_CONFIG
 
-    # Conexao local com Windows Authentication
-    if CONNECTION_MODE == "local" and not config["username"]:
-        # Remove chaves {} do driver para SQLAlchemy
-        driver_name = config['driver'].replace('{', '').replace('}', '').replace(' ', '+')
-        return (
-            f"mssql+pyodbc://@{config['server']}/{config['database']}"
-            f"?driver={driver_name}"
-            f"&Trusted_Connection=yes"
-            f"&TrustServerCertificate={config['trust_server_certificate']}"
-        )
-
-    # Conexao com usuario/senha (local ou Azure)
-    driver_name = config['driver'].replace('{', '').replace('}', '').replace(' ', '+')
-    return (
-        f"mssql+pyodbc://{config['username']}:{config['password']}"
-        f"@{config['server']}/{config['database']}"
-        f"?driver={driver_name}"
-        f"&Encrypt={config['encrypt']}"
-        f"&TrustServerCertificate={config['trust_server_certificate']}"
+    base_url = (
+        f"postgresql+psycopg2://{config['username']}:{config['password']}"
+        f"@{config['host']}:{config['port']}/{config['database']}"
     )
 
+    # Adiciona SSL para conexao cloud
+    if CONNECTION_MODE == "cloud" and config.get("sslmode"):
+        base_url += f"?sslmode={config['sslmode']}"
 
-def get_pyodbc_connection_string():
-    """Retorna a string de conexao para pyodbc."""
+    return base_url
+
+
+def get_psycopg2_connection_params():
+    """Retorna os parametros de conexao para psycopg2."""
     config = DB_CONFIG
 
-    # Conexao local com Windows Authentication
-    if CONNECTION_MODE == "local" and not config["username"]:
-        return (
-            f"DRIVER={config['driver']};"
-            f"SERVER={config['server']};"
-            f"DATABASE={config['database']};"
-            f"Trusted_Connection=yes;"
-            f"TrustServerCertificate={config['trust_server_certificate']};"
-        )
+    params = {
+        "host": config['host'],
+        "port": config['port'],
+        "dbname": config['database'],
+        "user": config['username'],
+        "password": config['password'],
+    }
 
-    # Conexao com usuario/senha
-    return (
-        f"DRIVER={config['driver']};"
-        f"SERVER={config['server']};"
-        f"DATABASE={config['database']};"
-        f"UID={config['username']};"
-        f"PWD={config['password']};"
-        f"Encrypt={config['encrypt']};"
-        f"TrustServerCertificate={config['trust_server_certificate']};"
-    )
+    # Adiciona SSL para conexao cloud
+    if CONNECTION_MODE == "cloud" and config.get("sslmode"):
+        params["sslmode"] = config['sslmode']
+
+    return params
 
 # =============================================================================
 # MAPEAMENTO DE ARQUIVOS EXCEL

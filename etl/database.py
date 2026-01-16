@@ -1,31 +1,31 @@
 """
-Modulo de conexao com o banco de dados Azure SQL Server
+Modulo de conexao com o banco de dados PostgreSQL
 """
-import pyodbc
+import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine, text
 from contextlib import contextmanager
-from config import get_connection_string, get_pyodbc_connection_string
+from config import get_connection_string, get_psycopg2_connection_params
 
 
 class DatabaseConnection:
-    """Classe para gerenciar conexoes com o Azure SQL Server."""
+    """Classe para gerenciar conexoes com PostgreSQL."""
 
     def __init__(self):
         self.connection_string = get_connection_string()
-        self.pyodbc_string = get_pyodbc_connection_string()
+        self.conn_params = get_psycopg2_connection_params()
         self.engine = None
 
     def get_engine(self):
         """Retorna uma engine SQLAlchemy."""
         if self.engine is None:
-            self.engine = create_engine(self.connection_string, fast_executemany=True)
+            self.engine = create_engine(self.connection_string)
         return self.engine
 
     @contextmanager
     def get_connection(self):
-        """Context manager para conexao pyodbc."""
-        conn = pyodbc.connect(self.pyodbc_string)
+        """Context manager para conexao psycopg2."""
+        conn = psycopg2.connect(**self.conn_params)
         try:
             yield conn
         finally:
@@ -46,7 +46,6 @@ class DatabaseConnection:
         """Executa uma query com multiplos registros."""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.fast_executemany = True
             cursor.executemany(query, data)
             conn.commit()
 
@@ -70,12 +69,12 @@ class DatabaseConnection:
 
     def truncate_table(self, table_name: str, schema: str = "esg"):
         """Limpa uma tabela."""
-        query = f"TRUNCATE TABLE {schema}.{table_name}"
+        query = f"TRUNCATE TABLE {schema}.{table_name} RESTART IDENTITY CASCADE"
         self.execute_query(query)
 
     def get_max_id(self, table_name: str, id_column: str, schema: str = "esg") -> int:
         """Retorna o maior ID de uma tabela."""
-        query = f"SELECT ISNULL(MAX({id_column}), 0) FROM {schema}.{table_name}"
+        query = f"SELECT COALESCE(MAX({id_column}), 0) FROM {schema}.{table_name}"
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(query)
@@ -104,9 +103,9 @@ class DatabaseConnection:
                    erros: int = 0, status: str = "Sucesso", mensagem: str = None):
         """Registra log de importacao."""
         query = """
-        INSERT INTO esg.LogImportacao
-        (TabelaDestino, ArquivoOrigem, RegistrosImportados, RegistrosComErro, Status, MensagemErro)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO esg.logimportacao
+        (tabeladestino, arquivoorigem, registrosimportados, registroscomerro, status, mensagemerro)
+        VALUES (%s, %s, %s, %s, %s, %s)
         """
         self.execute_query(query, (tabela, arquivo, registros, erros, status, mensagem))
 

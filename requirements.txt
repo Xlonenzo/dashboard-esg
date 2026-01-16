@@ -1,0 +1,22 @@
+# =============================================================================
+# Dependencias do Dashboard ESG - Render Deploy
+# =============================================================================
+
+# Flask API
+flask>=2.0.0
+flask-cors>=3.0.0
+gunicorn>=21.0.0
+
+# PostgreSQL
+psycopg2-binary>=2.9.0
+sqlalchemy>=2.0.0
+
+# Data Processing
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# AI Integration (opcional)
+groq>=0.4.0
+
+# Environment
+python-dotenv>=1.0.0

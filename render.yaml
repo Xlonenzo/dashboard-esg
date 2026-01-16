@@ -1,0 +1,47 @@
+# =============================================================================
+# Render Blueprint - Dashboard ESG BV
+# =============================================================================
+# Para deploy automatico, conecte seu repositorio GitHub ao Render
+# =============================================================================
+
+services:
+  # Web Service - Flask API + Dashboard
+  - type: web
+    name: dashboard-esg-bv
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn api.servidor:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: PG_HOST
+        fromDatabase:
+          name: esg-db
+          property: host
+      - key: PG_PORT
+        fromDatabase:
+          name: esg-db
+          property: port
+      - key: PG_DATABASE
+        fromDatabase:
+          name: esg-db
+          property: database
+      - key: PG_USER
+        fromDatabase:
+          name: esg-db
+          property: user
+      - key: PG_PASSWORD
+        fromDatabase:
+          name: esg-db
+          property: password
+      - key: DB_MODE
+        value: "cloud"
+      - key: GROQ_API_KEY
+        sync: false  # Configure manualmente no dashboard
+
+databases:
+  # PostgreSQL Database
+  - name: esg-db
+    databaseName: esg_bv
+    user: esg_user
+    plan: free  # Mude para 'starter' ou 'standard' para producao

@@ -3,33 +3,41 @@ Servidor simples para o Dashboard
 Serve arquivos estáticos e redireciona API
 """
 import os
+from pathlib import Path
 from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
-import pyodbc
-from groq import Groq
+import psycopg2
 
-app = Flask(__name__, static_folder='../dashboard')
+# Caminho absoluto para a pasta dashboard
+BASE_DIR = Path(__file__).resolve().parent.parent
+DASHBOARD_DIR = BASE_DIR / "dashboard"
+
+app = Flask(__name__, static_folder=str(DASHBOARD_DIR))
 CORS(app)
+
+# Import opcional do Groq (pode não estar instalado)
+try:
+    from groq import Groq
+    GROQ_AVAILABLE = True
+except ImportError:
+    GROQ_AVAILABLE = False
+    Groq = None
 
 # Configuração da API Groq (defina GROQ_API_KEY como variável de ambiente)
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+groq_client = Groq(api_key=GROQ_API_KEY) if (GROQ_AVAILABLE and GROQ_API_KEY) else None
 
-# Configuração do banco
+# Configuração do banco PostgreSQL
 DB_CONFIG = {
-    "server": os.getenv("SQL_SERVER", "localhost"),
-    "database": os.getenv("SQL_DATABASE", "ANBIMA_ESG"),
-    "driver": "{ODBC Driver 17 for SQL Server}"
+    "host": os.getenv("PG_HOST", "localhost"),
+    "port": os.getenv("PG_PORT", "5432"),
+    "database": os.getenv("PG_DATABASE", "anbima_esg"),
+    "user": os.getenv("PG_USER", "postgres"),
+    "password": os.getenv("PG_PASSWORD", ""),
 }
 
 def get_connection():
-    conn_str = (
-        f"DRIVER={DB_CONFIG['driver']};"
-        f"SERVER={DB_CONFIG['server']};"
-        f"DATABASE={DB_CONFIG['database']};"
-        f"Trusted_Connection=yes;"
-    )
-    return pyodbc.connect(conn_str)
+    return psycopg2.connect(**DB_CONFIG)
 
 def query_to_dict(cursor):
     columns = [column[0] for column in cursor.description]
@@ -67,32 +75,32 @@ def get_fundos():
         conn = get_connection()
         cursor = conn.cursor()
 
-        where_clauses = ["Ativo = 1"]
+        where_clauses = ["ativo = true"]
         params = []
 
         if search:
-            where_clauses.append("(NomeComercial LIKE ? OR CNPJ LIKE ? OR RazaoSocial LIKE ?)")
+            where_clauses.append("(nomecomercial ILIKE %s OR cnpj ILIKE %s OR razaosocial ILIKE %s)")
             params.extend([f"%{search}%", f"%{search}%", f"%{search}%"])
         if categoria:
-            where_clauses.append("Categoria = ?")
+            where_clauses.append("categoria = %s")
             params.append(categoria)
         if tipo:
-            where_clauses.append("CategoriaESG = ?")
+            where_clauses.append("categoriaesg = %s")
             params.append(tipo)
 
         where_sql = " AND ".join(where_clauses)
 
-        cursor.execute(f"SELECT COUNT(*) FROM fundos.TodosFundos WHERE {where_sql}", params)
+        cursor.execute(f"SELECT COUNT(*) FROM fundos.todosfundos WHERE {where_sql}", params)
         total = cursor.fetchone()[0]
 
         cursor.execute(f"""
-            SELECT CodigoFundo, CNPJ, RazaoSocial, NomeComercial, TipoFundo, Categoria,
-                   ISNULL(CategoriaESG, 'Convencional') as CategoriaESG,
-                   ISNULL(FocoESG, 'Não aplicável') as FocoESG
-            FROM fundos.TodosFundos WHERE {where_sql}
-            ORDER BY NomeComercial
-            OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
-        """, params + [offset, per_page])
+            SELECT codigofundo, cnpj, razaosocial, nomecomercial, tipofundo, categoria,
+                   COALESCE(categoriaesg, 'Convencional') as categoriaesg,
+                   COALESCE(focoesg, 'Não aplicável') as focoesg
+            FROM fundos.todosfundos WHERE {where_sql}
+            ORDER BY nomecomercial
+            LIMIT %s OFFSET %s
+        """, params + [per_page, offset])
 
         fundos = query_to_dict(cursor)
         conn.close()
@@ -111,8 +119,8 @@ def get_categorias():
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT DISTINCT Categoria, COUNT(*) as Qtd FROM fundos.TodosFundos
-            WHERE Ativo = 1 AND Categoria IS NOT NULL GROUP BY Categoria ORDER BY Qtd DESC
+            SELECT DISTINCT categoria, COUNT(*) as qtd FROM fundos.todosfundos
+            WHERE ativo = true AND categoria IS NOT NULL GROUP BY categoria ORDER BY qtd DESC
         """)
         data = query_to_dict(cursor)
         conn.close()
@@ -125,16 +133,16 @@ def get_stats():
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM fundos.TodosFundos WHERE Ativo = 1")
+        cursor.execute("SELECT COUNT(*) FROM fundos.todosfundos WHERE ativo = true")
         total = cursor.fetchone()[0]
         cursor.execute("""
-            SELECT ISNULL(CategoriaESG, 'Convencional') as Tipo, COUNT(*) as Qtd
-            FROM fundos.TodosFundos WHERE Ativo = 1 GROUP BY CategoriaESG
+            SELECT COALESCE(categoriaesg, 'Convencional') as tipo, COUNT(*) as qtd
+            FROM fundos.todosfundos WHERE ativo = true GROUP BY categoriaesg
         """)
         por_tipo = {row[0]: row[1] for row in cursor.fetchall()}
         cursor.execute("""
-            SELECT TOP 10 Categoria, COUNT(*) as Qtd FROM fundos.TodosFundos
-            WHERE Ativo = 1 AND Categoria IS NOT NULL GROUP BY Categoria ORDER BY Qtd DESC
+            SELECT categoria, COUNT(*) as qtd FROM fundos.todosfundos
+            WHERE ativo = true AND categoria IS NOT NULL GROUP BY categoria ORDER BY qtd DESC LIMIT 10
         """)
         por_categoria = query_to_dict(cursor)
         conn.close()
@@ -157,15 +165,15 @@ def get_cricra():
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT CodigoAtivo, TipoContrato, Emissor, Originador, Serie, Emissao,
-                   DataVencimento, TaxaIndicativa, PU, Duration, TipoRemuneracao, TaxaCorrecao
-            FROM titulos.CRICRA
-            ORDER BY TipoContrato, Emissor
+            SELECT codigoativo, tipocontrato, emissor, originador, serie, emissao,
+                   datavencimento, taxaindicativa, pu, duration, tiporemuneracao, taxacorrecao
+            FROM titulos.cricra
+            ORDER BY tipocontrato, emissor
         """)
         data = query_to_dict(cursor)
 
         # Estatísticas
-        cursor.execute("SELECT TipoContrato, COUNT(*) as Qtd FROM titulos.CRICRA GROUP BY TipoContrato")
+        cursor.execute("SELECT tipocontrato, COUNT(*) as qtd FROM titulos.cricra GROUP BY tipocontrato")
         stats = {row[0]: row[1] for row in cursor.fetchall()}
 
         conn.close()
@@ -187,9 +195,9 @@ def get_debentures():
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT CodigoAtivo, Emissor, Grupo, PercentualTaxa, TaxaIndicativa, PU, Duration
-            FROM titulos.Debentures
-            ORDER BY Duration DESC
+            SELECT codigoativo, emissor, grupo, percentualtaxa, taxaindicativa, pu, duration
+            FROM titulos.debentures
+            ORDER BY duration DESC
         """)
         data = query_to_dict(cursor)
         conn.close()
@@ -202,7 +210,7 @@ def get_titulos_publicos():
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM titulos.TitulosPublicos")
+        cursor.execute("SELECT * FROM titulos.titulospublicos")
         data = query_to_dict(cursor)
         conn.close()
         return jsonify({"success": True, "data": data, "total": len(data)})
@@ -219,23 +227,23 @@ def get_tsb_empresas():
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT EmpresaID, Emissor, CNPJ, SetorTSB, Classificacao, Score, Titulos
-            FROM tsb.EmpresasTSB
-            ORDER BY SetorTSB, Emissor
+            SELECT empresaid, emissor, cnpj, setortsb, classificacao, score, titulos
+            FROM tsb.empresastsb
+            ORDER BY setortsb, emissor
         """)
         data = query_to_dict(cursor)
 
         # Estatísticas por setor
         cursor.execute("""
-            SELECT SetorTSB, COUNT(*) as Qtd, AVG(Score) as ScoreMedio
-            FROM tsb.EmpresasTSB GROUP BY SetorTSB
+            SELECT setortsb, COUNT(*) as qtd, AVG(score) as scoremedio
+            FROM tsb.empresastsb GROUP BY setortsb
         """)
         por_setor = query_to_dict(cursor)
 
         # Estatísticas por classificação
         cursor.execute("""
-            SELECT Classificacao, COUNT(*) as Qtd
-            FROM tsb.EmpresasTSB GROUP BY Classificacao
+            SELECT classificacao, COUNT(*) as qtd
+            FROM tsb.empresastsb GROUP BY classificacao
         """)
         por_class = {row[0]: row[1] for row in cursor.fetchall()}
 
@@ -259,16 +267,16 @@ def get_tsb_kpis():
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT KPIID, Setor, CodigoKPI, NomeKPI, Unidade, Frequencia, Obrigatorio
-            FROM tsb.KPIsTSB
-            ORDER BY Setor, CodigoKPI
+            SELECT kpiid, setor, codigokpi, nomekpi, unidade, frequencia, obrigatorio
+            FROM tsb.kpistsb
+            ORDER BY setor, codigokpi
         """)
         data = query_to_dict(cursor)
 
         # Agrupar por setor
         por_setor = {}
         for kpi in data:
-            setor = kpi['Setor']
+            setor = kpi['setor']
             if setor not in por_setor:
                 por_setor[setor] = []
             por_setor[setor].append(kpi)
@@ -291,8 +299,8 @@ def get_tsb_empresa_kpis(empresa_id):
 
         # Dados da empresa
         cursor.execute("""
-            SELECT EmpresaID, Emissor, CNPJ, SetorTSB, Classificacao, Score, Titulos
-            FROM tsb.EmpresasTSB WHERE EmpresaID = ?
+            SELECT empresaid, emissor, cnpj, setortsb, classificacao, score, titulos
+            FROM tsb.empresastsb WHERE empresaid = %s
         """, (empresa_id,))
         empresa = query_to_dict(cursor)
 
@@ -300,7 +308,7 @@ def get_tsb_empresa_kpis(empresa_id):
             return jsonify({"success": False, "error": "Empresa não encontrada"}), 404
 
         empresa = empresa[0]
-        setor = empresa['SetorTSB']
+        setor = empresa['setortsb']
 
         # Mapear setor para nome na tabela KPIs
         setor_map = {
@@ -313,28 +321,28 @@ def get_tsb_empresa_kpis(empresa_id):
 
         # KPIs do setor
         cursor.execute("""
-            SELECT KPIID, Setor, CodigoKPI, NomeKPI, Unidade, Frequencia, Obrigatorio
-            FROM tsb.KPIsTSB WHERE Setor = ?
-            ORDER BY CodigoKPI
+            SELECT kpiid, setor, codigokpi, nomekpi, unidade, frequencia, obrigatorio
+            FROM tsb.kpistsb WHERE setor = %s
+            ORDER BY codigokpi
         """, (setor_kpi,))
         kpis = query_to_dict(cursor)
 
         # KPIs preenchidos pela empresa
         cursor.execute("""
-            SELECT CodigoKPI, Valor, Status
-            FROM tsb.KPIsEmpresa WHERE EmpresaID = ?
+            SELECT codigokpi, valor, status
+            FROM tsb.kpisempresa WHERE empresaid = %s
         """, (empresa_id,))
         valores = {row[0]: {'valor': row[1], 'status': row[2]} for row in cursor.fetchall()}
 
         # Juntar KPIs com valores
         for kpi in kpis:
-            cod = kpi['CodigoKPI']
+            cod = kpi['codigokpi']
             if cod in valores:
-                kpi['Valor'] = valores[cod]['valor']
-                kpi['Status'] = valores[cod]['status']
+                kpi['valor'] = valores[cod]['valor']
+                kpi['status'] = valores[cod]['status']
             else:
-                kpi['Valor'] = None
-                kpi['Status'] = 'Pendente'
+                kpi['valor'] = None
+                kpi['status'] = 'Pendente'
 
         conn.close()
         return jsonify({
@@ -367,23 +375,23 @@ def get_emissores():
         params = []
 
         if search:
-            where_clauses.append("(Emissor LIKE ? OR CNPJ LIKE ?)")
+            where_clauses.append("(emissor ILIKE %s OR cnpj ILIKE %s)")
             params.extend([f"%{search}%", f"%{search}%"])
         if setor:
-            where_clauses.append("SetorTSB = ?")
+            where_clauses.append("setortsb = %s")
             params.append(setor)
         if classif:
-            where_clauses.append("Classificacao = ?")
+            where_clauses.append("classificacao = %s")
             params.append(classif)
 
         where_sql = " AND ".join(where_clauses)
 
         cursor.execute(f"""
-            SELECT EmpresaID, CNPJ, Emissor as RazaoSocial, SetorTSB as Setor,
-                   Classificacao, Score, Titulos
-            FROM tsb.EmpresasTSB
+            SELECT empresaid, cnpj, emissor as razaosocial, setortsb as setor,
+                   classificacao, score, titulos
+            FROM tsb.empresastsb
             WHERE {where_sql}
-            ORDER BY Score DESC, Emissor
+            ORDER BY score DESC, emissor
         """, params)
 
         empresas = query_to_dict(cursor)
@@ -409,8 +417,8 @@ def get_emissor_detalhe(cnpj):
         empresa = None
         try:
             cursor.execute("""
-                SELECT EmpresaID, CNPJ, RazaoSocial, CodigoCVM, Setor
-                FROM emissores.Empresas WHERE CNPJ = ?
+                SELECT empresaid, cnpj, razaosocial, codigocvm, setor
+                FROM emissores.empresas WHERE cnpj = %s
             """, (cnpj,))
             result = query_to_dict(cursor)
             if result:
@@ -420,9 +428,9 @@ def get_emissor_detalhe(cnpj):
 
         if not empresa:
             cursor.execute("""
-                SELECT EmpresaID, CNPJ, Emissor as RazaoSocial, SetorTSB as Setor,
-                       Classificacao, Score, Titulos
-                FROM tsb.EmpresasTSB WHERE CNPJ = ?
+                SELECT empresaid, cnpj, emissor as razaosocial, setortsb as setor,
+                       classificacao, score, titulos
+                FROM tsb.empresastsb WHERE cnpj = %s
             """, (cnpj,))
             result = query_to_dict(cursor)
             if result:
@@ -435,10 +443,11 @@ def get_emissor_detalhe(cnpj):
         dre = []
         try:
             cursor.execute("""
-                SELECT TOP 20 CodigoConta, DescricaoConta, Valor, AnoExercicio
-                FROM emissores.DemonstracoesFinanceiras
-                WHERE CNPJ = ? AND TipoDemonstracao = 'DRE'
-                ORDER BY AnoExercicio DESC, CodigoConta
+                SELECT codigoconta, descricaoconta, valor, anoexercicio
+                FROM emissores.demonstracoesfinanceiras
+                WHERE cnpj = %s AND tipodemonstracao = 'DRE'
+                ORDER BY anoexercicio DESC, codigoconta
+                LIMIT 20
             """, (cnpj,))
             dre = query_to_dict(cursor)
         except:
@@ -448,10 +457,11 @@ def get_emissor_detalhe(cnpj):
         governanca = []
         try:
             cursor.execute("""
-                SELECT TOP 30 Capitulo, Principio, PraticaAdotada
-                FROM emissores.Governanca
-                WHERE CNPJ = ?
-                ORDER BY Capitulo
+                SELECT capitulo, principio, praticaadotada
+                FROM emissores.governanca
+                WHERE cnpj = %s
+                ORDER BY capitulo
+                LIMIT 30
             """, (cnpj,))
             governanca = query_to_dict(cursor)
         except:
@@ -461,11 +471,11 @@ def get_emissor_detalhe(cnpj):
         kpis = []
         try:
             cursor.execute("""
-                SELECT k.CodigoKPI, kd.NomeKPI, k.Valor, k.Status, kd.Unidade
-                FROM tsb.KPIsEmpresa k
-                JOIN tsb.KPIsTSB kd ON k.CodigoKPI = kd.CodigoKPI
-                JOIN tsb.EmpresasTSB e ON k.EmpresaID = e.EmpresaID
-                WHERE e.CNPJ = ?
+                SELECT k.codigokpi, kd.nomekpi, k.valor, k.status, kd.unidade
+                FROM tsb.kpisempresa k
+                JOIN tsb.kpistsb kd ON k.codigokpi = kd.codigokpi
+                JOIN tsb.empresastsb e ON k.empresaid = e.empresaid
+                WHERE e.cnpj = %s
             """, (cnpj,))
             kpis = query_to_dict(cursor)
         except:
@@ -492,30 +502,30 @@ def get_emissores_stats():
         stats = {}
 
         # Total TSB
-        cursor.execute("SELECT COUNT(*) FROM tsb.EmpresasTSB")
+        cursor.execute("SELECT COUNT(*) FROM tsb.empresastsb")
         stats['total_tsb'] = cursor.fetchone()[0]
 
         # Por classificacao
         cursor.execute("""
-            SELECT Classificacao, COUNT(*) as Qtd
-            FROM tsb.EmpresasTSB GROUP BY Classificacao
+            SELECT classificacao, COUNT(*) as qtd
+            FROM tsb.empresastsb GROUP BY classificacao
         """)
         stats['por_classificacao'] = {row[0]: row[1] for row in cursor.fetchall()}
 
         # Por setor
         cursor.execute("""
-            SELECT TOP 10 SetorTSB, COUNT(*) as Qtd, AVG(Score) as ScoreMedio
-            FROM tsb.EmpresasTSB GROUP BY SetorTSB ORDER BY Qtd DESC
+            SELECT setortsb, COUNT(*) as qtd, AVG(score) as scoremedio
+            FROM tsb.empresastsb GROUP BY setortsb ORDER BY qtd DESC LIMIT 10
         """)
         stats['por_setor'] = query_to_dict(cursor)
 
         # Score medio
-        cursor.execute("SELECT AVG(Score) FROM tsb.EmpresasTSB")
+        cursor.execute("SELECT AVG(score) FROM tsb.empresastsb")
         stats['score_medio'] = round(cursor.fetchone()[0] or 0, 1)
 
         # Total emissores CVM (se existir)
         try:
-            cursor.execute("SELECT COUNT(*) FROM emissores.Empresas")
+            cursor.execute("SELECT COUNT(*) FROM emissores.empresas")
             stats['total_emissores_cvm'] = cursor.fetchone()[0]
         except:
             stats['total_emissores_cvm'] = 0
@@ -566,77 +576,79 @@ def obter_contexto_dados():
         cursor = conn.cursor()
 
         # Estatísticas gerais de fundos
-        cursor.execute("SELECT COUNT(*) FROM fundos.TodosFundos WHERE Ativo = 1")
+        cursor.execute("SELECT COUNT(*) FROM fundos.todosfundos WHERE ativo = true")
         contexto['total_fundos'] = cursor.fetchone()[0]
 
         cursor.execute("""
-            SELECT CategoriaESG, COUNT(*) as Qtd
-            FROM fundos.TodosFundos
-            WHERE Ativo = 1 AND CategoriaESG IS NOT NULL
-            GROUP BY CategoriaESG
+            SELECT categoriaesg, COUNT(*) as qtd
+            FROM fundos.todosfundos
+            WHERE ativo = true AND categoriaesg IS NOT NULL
+            GROUP BY categoriaesg
         """)
         contexto['fundos_esg'] = {row[0]: row[1] for row in cursor.fetchall()}
 
         cursor.execute("""
-            SELECT TOP 5 Categoria, COUNT(*) as Qtd
-            FROM fundos.TodosFundos WHERE Ativo = 1
-            GROUP BY Categoria ORDER BY Qtd DESC
+            SELECT categoria, COUNT(*) as qtd
+            FROM fundos.todosfundos WHERE ativo = true
+            GROUP BY categoria ORDER BY qtd DESC LIMIT 5
         """)
         contexto['categorias_fundos'] = query_to_dict(cursor)
 
         # Debêntures
         cursor.execute("""
-            SELECT TOP 10 Emissor, CodigoAtivo, Grupo, Duration, PercentualTaxa, PU
-            FROM titulos.Debentures ORDER BY Duration DESC
+            SELECT emissor, codigoativo, grupo, duration, percentualtaxa, pu
+            FROM titulos.debentures ORDER BY duration DESC LIMIT 10
         """)
         contexto['debentures'] = query_to_dict(cursor)
 
-        cursor.execute("SELECT COUNT(*) FROM titulos.Debentures")
+        cursor.execute("SELECT COUNT(*) FROM titulos.debentures")
         contexto['total_debentures'] = cursor.fetchone()[0]
 
         # Títulos Públicos
         cursor.execute("""
-            SELECT Tipo as TipoTitulo, COUNT(*) as Qtd, AVG(TaxaIndicativa) as TaxaMedia
-            FROM titulos.TitulosPublicos GROUP BY Tipo
+            SELECT tipo as tipotitulo, COUNT(*) as qtd, AVG(taxaindicativa) as taxamedia
+            FROM titulos.titulospublicos GROUP BY tipo
         """)
         contexto['titulos_publicos'] = query_to_dict(cursor)
 
         # TSB
         cursor.execute("""
-            SELECT Emissor, SetorTSB, Classificacao, Score
-            FROM tsb.EmpresasTSB ORDER BY Score DESC
+            SELECT emissor, setortsb, classificacao, score
+            FROM tsb.empresastsb ORDER BY score DESC
         """)
         contexto['empresas_tsb'] = query_to_dict(cursor)
 
         # CRI/CRA
-        cursor.execute("SELECT COUNT(*) as Total, TipoContrato FROM titulos.CRICRA GROUP BY TipoContrato")
+        cursor.execute("SELECT COUNT(*) as total, tipocontrato FROM titulos.cricra GROUP BY tipocontrato")
         contexto['cricra'] = {row[1]: row[0] for row in cursor.fetchall()}
 
         # Emissores - Empresas CVM
-        cursor.execute("SELECT COUNT(*) FROM emissores.Empresas")
+        cursor.execute("SELECT COUNT(*) FROM emissores.empresas")
         contexto['total_emissores'] = cursor.fetchone()[0]
 
         # Top empresas por receita (DRE)
         cursor.execute("""
-            SELECT TOP 15
-                e.RazaoSocial,
-                d.Valor / 1000 as ReceitaMilhoes,
-                d.AnoExercicio
-            FROM emissores.DemonstracoesFinanceiras d
-            JOIN emissores.Empresas e ON d.CNPJ = e.CNPJ
-            WHERE d.CodigoConta = '3.01' AND d.AnoExercicio >= 2023
-            ORDER BY d.Valor DESC
+            SELECT
+                e.razaosocial,
+                d.valor / 1000 as receitamilhoes,
+                d.anoexercicio
+            FROM emissores.demonstracoesfinanceiras d
+            JOIN emissores.empresas e ON d.cnpj = e.cnpj
+            WHERE d.codigoconta = '3.01' AND d.anoexercicio >= 2023
+            ORDER BY d.valor DESC
+            LIMIT 15
         """)
         contexto['top_receitas'] = query_to_dict(cursor)
 
         # Governanca - resumo por capitulo
         cursor.execute("""
-            SELECT TOP 10 Capitulo, COUNT(*) as Qtd,
-                SUM(CASE WHEN PraticaAdotada = 'Sim' THEN 1 ELSE 0 END) as Adotadas
-            FROM emissores.Governanca
-            WHERE AnoReferencia >= 2023
-            GROUP BY Capitulo
-            ORDER BY Qtd DESC
+            SELECT capitulo, COUNT(*) as qtd,
+                SUM(CASE WHEN praticaadotada = 'Sim' THEN 1 ELSE 0 END) as adotadas
+            FROM emissores.governanca
+            WHERE anoreferencia >= 2023
+            GROUP BY capitulo
+            ORDER BY qtd DESC
+            LIMIT 10
         """)
         contexto['governanca_resumo'] = query_to_dict(cursor)
 
@@ -740,19 +752,19 @@ def gerar_resposta_fallback(mensagem):
         cursor = conn.cursor()
 
         if 'esg' in msg_lower or 'sustent' in msg_lower:
-            cursor.execute("SELECT COUNT(*) FROM fundos.TodosFundos WHERE CategoriaESG IS NOT NULL AND Ativo = 1")
+            cursor.execute("SELECT COUNT(*) FROM fundos.todosfundos WHERE categoriaesg IS NOT NULL AND ativo = true")
             total = cursor.fetchone()[0]
             conn.close()
             return f"<p>📊 Temos {total} fundos ESG/IS cadastrados no sistema.</p>"
 
         elif 'debenture' in msg_lower or 'risco' in msg_lower:
-            cursor.execute("SELECT COUNT(*) FROM titulos.Debentures")
+            cursor.execute("SELECT COUNT(*) FROM titulos.debentures")
             total = cursor.fetchone()[0]
             conn.close()
             return f"<p>📈 Temos {total} debêntures no sistema para análise.</p>"
 
         elif 'tsb' in msg_lower or 'verde' in msg_lower:
-            cursor.execute("SELECT COUNT(*) FROM tsb.EmpresasTSB WHERE Classificacao = 'VERDE'")
+            cursor.execute("SELECT COUNT(*) FROM tsb.empresastsb WHERE classificacao = 'VERDE'")
             total = cursor.fetchone()[0]
             conn.close()
             return f"<p>🌿 Temos {total} empresas com classificação Verde na TSB.</p>"
@@ -765,7 +777,7 @@ def gerar_resposta_fallback(mensagem):
 
 if __name__ == '__main__':
     print("=" * 60)
-    print("SERVIDOR DASHBOARD + API")
+    print("SERVIDOR DASHBOARD + API (PostgreSQL)")
     print("=" * 60)
     print("Acesse: http://localhost:5000")
     print("=" * 60)
