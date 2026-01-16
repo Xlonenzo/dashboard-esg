@@ -277,7 +277,27 @@
         </div>
 
         <!-- TAB: Favoritos -->
-        <div id="favoritos" class="tab-content"><div class="chart-card has-tooltip" title="Lista de fundos marcados como favoritos para acompanhamento"><h3>⭐ Favoritos</h3><p style="color:var(--text-secondary);">Selecione fundos para favoritos</p></div></div>
+        <div id="favoritos" class="tab-content">
+            <div class="chart-card has-tooltip" title="Lista de fundos marcados como favoritos para acompanhamento">
+                <h3>⭐ Meus Favoritos (<span id="totalFavoritos">0</span>)</h3>
+                <div id="listaFavoritos" style="overflow-x:auto;max-height:500px;">
+                    <p id="semFavoritos" style="color:var(--text-secondary);text-align:center;padding:40px;">
+                        Nenhum fundo favoritado ainda.<br>
+                        <small>Clique em ⭐ na aba "Explorar Fundos" para adicionar favoritos.</small>
+                    </p>
+                    <table id="tabelaFavoritos" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>CNPJ</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoFavoritos"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         <!-- TAB: Fundos IS -->
         <div id="fundos-is" class="tab-content"><div class="chart-card has-tooltip" title="Fundos com selo IS - Investimento Sustentavel ANBIMA: atendem criterios rigorosos de sustentabilidade"><h3>🌱 Fundos IS (18)</h3><div style="overflow-x:auto;max-height:500px;"><table><thead><tr><th title="Nome completo do fundo IS">Nome</th><th title="CNPJ do fundo">CNPJ</th><th title="Foco principal: Ambiental, Social, Governanca ou Multi-tema">Foco</th></tr></thead><tbody><tr><td>BTG Pactual Credito Corporativo IS</td><td>40.123.456/0001-01</td><td>Ambiental</td></tr><tr><td>Itau Transicao Energetica IS</td><td>40.123.456/0001-02</td><td>Ambiental</td></tr><tr><td>BB Acoes Sustentabilidade IS</td><td>40.123.456/0001-03</td><td>Multi-tema</td></tr><tr><td>Bradesco FIA ISE IS</td><td>40.123.456/0001-04</td><td>Multi-tema</td></tr><tr><td>XP Debentures Incentivadas IS</td><td>40.123.456/0001-05</td><td>Ambiental</td></tr><tr><td>JGP Impacto Social IS</td><td>40.123.456/0001-06</td><td>Social</td></tr><tr><td>SANTANDER ETHICAL AÇÕES SUSTENTABILIDADE SPECIAL I</td><td>04.616.277/0001-02</td><td>Multi-tema</td></tr><tr><td>SANTANDER ETHICAL AÇÕES SUSTENTABILIDADE IS FUNDO </td><td>04.736.006/0001-82</td><td>Multi-tema</td></tr><tr><td>ITAÚ EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO</td><td>06.069.957/0001-70</td><td>Social</td></tr><tr><td>ITAÚ EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO</td><td>06.215.101/0001-66</td><td>Social</td></tr><tr><td>BB TOP ACOES INDICE DE SUSTENTABILIDADE EMPRESARIA</td><td>05.775.731/0001-22</td><td>Multi-tema</td></tr><tr><td>BB AÇÕES SUSTENTABILIDADE IS FUNDO DE INVESTIMENTO</td><td>06.349.816/0001-01</td><td>Multi-tema</td></tr><tr><td>ITAÚ GOVERNANÇA CORPORATIVA AÇÕES FUNDO DE INVESTI</td><td>07.686.680/0001-98</td><td>Multi-tema</td></tr><tr><td>ITAÚ AÇÕES GOVERNANÇA CORPORATIVA FUNDO DE INVESTI</td><td>07.686.658/0001-48</td><td>Multi-tema</td></tr><tr><td>ITAÚ PRIVATE EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVE</td><td>07.707.678/0001-58</td><td>Social</td></tr><tr><td>FUNDO DE INVESTIMENTO EM AÇÕES CAIXA SUSTENTABILID</td><td>08.070.838/0001-63</td><td>Governanca</td></tr><tr><td>BRADESCO FUNDO DE INVESTIMENTO EM AÇÕES IS SUSTENT</td><td>07.187.751/0001-08</td><td>Multi-tema</td></tr><tr><td>ITAÚ EMPRESA GOVERNANÇA CORPORATIVA AÇÕES FUNDO DE</td><td>09.145.127/0001-73</td><td>Multi-tema</td></tr></tbody></table></div></div></div>
@@ -1368,9 +1388,48 @@
                 favoritos.push({ cnpj, nome });
                 localStorage.setItem('fundos_favoritos', JSON.stringify(favoritos));
                 alert(`✓ "${nome}" adicionado aos favoritos!`);
+                carregarFavoritos(); // Atualizar a aba de favoritos
             } else {
                 alert('Este fundo já está nos favoritos.');
             }
+        }
+
+        function carregarFavoritos() {
+            const favoritos = JSON.parse(localStorage.getItem('fundos_favoritos') || '[]');
+            const totalEl = document.getElementById('totalFavoritos');
+            const semFavEl = document.getElementById('semFavoritos');
+            const tabelaEl = document.getElementById('tabelaFavoritos');
+            const corpoEl = document.getElementById('corpoFavoritos');
+
+            if (totalEl) totalEl.textContent = favoritos.length;
+
+            if (favoritos.length === 0) {
+                if (semFavEl) semFavEl.style.display = 'block';
+                if (tabelaEl) tabelaEl.style.display = 'none';
+            } else {
+                if (semFavEl) semFavEl.style.display = 'none';
+                if (tabelaEl) tabelaEl.style.display = 'table';
+                if (corpoEl) {
+                    corpoEl.innerHTML = favoritos.map(f => `
+                        <tr>
+                            <td style="max-width:400px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.nome}">${f.nome}</td>
+                            <td>${f.cnpj}</td>
+                            <td><button onclick="removerFavorito('${f.cnpj}')" style="background:rgba(244,67,54,0.2);border:1px solid rgba(244,67,54,0.3);color:#EF5350;padding:5px 10px;border-radius:5px;cursor:pointer;">🗑️ Remover</button></td>
+                        </tr>
+                    `).join('');
+                }
+            }
+        }
+
+        function removerFavorito(cnpj) {
+            let favoritos = JSON.parse(localStorage.getItem('fundos_favoritos') || '[]');
+            const fundo = favoritos.find(f => f.cnpj === cnpj);
+            favoritos = favoritos.filter(f => f.cnpj !== cnpj);
+            localStorage.setItem('fundos_favoritos', JSON.stringify(favoritos));
+            if (fundo) {
+                alert(`"${fundo.nome}" removido dos favoritos.`);
+            }
+            carregarFavoritos();
         }
 
         // Buscar ao pressionar Enter
@@ -2497,6 +2556,8 @@
                 carregarRiskScoring();
             } else if (tabId === 'early-warning') {
                 carregarEarlyWarning();
+            } else if (tabId === 'favoritos') {
+                carregarFavoritos();
             } else if (tabId === 'debt-analysis') {
                 console.log('Chamando carregarDebtAnalysis()...');
                 carregarDebtAnalysis();
