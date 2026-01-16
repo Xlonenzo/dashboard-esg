@@ -218,7 +218,7 @@
                         <tbody id="corpoTabelaFundos">
                             <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">
                                 Clique em "Buscar" para carregar os fundos do SQL Server<br>
-                                <small>A API deve estar rodando em localhost:5000</small>
+                                <small>Conectado ao servidor</small>
                             </td></tr>
                         </tbody>
                     </table>
@@ -604,7 +604,7 @@
         document.addEventListener('DOMContentLoaded', inicializarGraficos);
 
         // ========== API CONFIGURATION ==========
-        const API_URL = 'http://localhost:5000/api';
+        const API_URL = '/api';
         let paginaAtualAPI = 1;
         let totalPaginasAPI = 1;
         let totalFundosAPI = 0;
