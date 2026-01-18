@@ -92,11 +92,6 @@
             <div class="nav-item active" onclick="showTab('overview',event)" title="Visao geral do portfolio com metricas principais e graficos resumidos"><span class="icon">📊</span> Overview</div>
         </div>
         <div class="nav-section">
-            <div class="nav-section-title">Rankings</div>
-            <div class="nav-item" onclick="showTab('ranking',event)" title="Ranking das principais gestoras por patrimonio e numero de fundos"><span class="icon">🏆</span> Top Gestoras</div>
-            <div class="nav-item" onclick="showTab('comparativo',event)" title="Compare fundos lado a lado: rentabilidade, risco e indicadores"><span class="icon">⚖️</span> Comparativo</div>
-        </div>
-        <div class="nav-section">
             <div class="nav-section-title">Fundos</div>
             <div class="nav-item" onclick="showTab('explorar',event)" title="Pesquise e filtre entre 4.253 fundos por nome, CNPJ, categoria ou gestora"><span class="icon">🔍</span> Explorar Fundos</div>
             <div class="nav-item" onclick="showTab('gestoras',event)" title="Lista de gestoras com seus fundos, classes ANBIMA e distribuicao"><span class="icon">🏛️</span> Gestoras</div>
@@ -155,12 +150,6 @@
                 <div class="chart-card has-tooltip" title="Composicao da carteira de titulos publicos por tipo: quantidade e participacao de cada instrumento"><h3>🏛️ Titulos Publicos por Tipo</h3><div class="chart-container"><canvas id="chartTitulos"></canvas></div></div>
             </div>
         </div>
-
-        <!-- TAB: Ranking -->
-        <div id="ranking" class="tab-content"><div class="chart-card has-tooltip" title="Ranking das maiores gestoras de fundos por patrimonio liquido e numero de fundos sob gestao"><h3>🏆 Top Gestoras</h3><div class="chart-container" style="height:400px;"><canvas id="chartGestoras"></canvas></div></div></div>
-
-        <!-- TAB: Comparativo -->
-        <div id="comparativo" class="tab-content"><div class="grid-2"><div class="chart-card has-tooltip" title="Comparacao entre fundos IS (Investimento Sustentavel - selo ANBIMA) e fundos com integracao ESG em sua gestao"><h3>📊 IS vs ESG Integrado</h3><div class="chart-container"><canvas id="chartComparativo"></canvas></div></div><div class="chart-card has-tooltip" title="Distribuicao dos fundos ESG por foco: Ambiental (E), Social (S), Governanca (G) ou Multi-tema"><h3>🎯 Por Foco ESG</h3><div class="chart-container"><canvas id="chartFoco"></canvas></div></div></div></div>
 
         <!-- TAB: Explorar -->
         <div id="explorar" class="tab-content">
@@ -1110,31 +1099,10 @@
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
                 });
             }
-            if (!graficos['chartComparativo'] && document.getElementById('chartComparativo')) {
-                graficos['chartComparativo'] = new Chart(document.getElementById('chartComparativo'), {
-                    type: 'doughnut',
-                    data: { labels: ['IS', 'ESG Integrado'], datasets: [{ data: [18, 29], backgroundColor: ['#66BB6A', '#42A5F5'], borderWidth: 0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
-                });
-            }
             if (!graficos['chartTSBClass'] && document.getElementById('chartTSBClass')) {
                 graficos['chartTSBClass'] = new Chart(document.getElementById('chartTSBClass'), {
                     type: 'doughnut',
                     data: { labels: ['Verde', 'Transicao'], datasets: [{ data: [7, 0], backgroundColor: ['#4CAF50', '#FF9800'], borderWidth: 0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
-                });
-            }
-            if (!graficos['chartGestoras'] && document.getElementById('chartGestoras')) {
-                graficos['chartGestoras'] = new Chart(document.getElementById('chartGestoras'), {
-                    type: 'bar',
-                    data: { labels: ["Itau", "Itau Asset Management", "BTG Pactual Asset Management", "BB Asset Management", "Bradesco Asset Management", "JGP Asset Management", "Opportunity Asset Management", "Verde Asset Management", "XP Asset Management"], datasets: [{ label: 'Fundos', data: [6, 2, 2, 1, 1, 1, 1, 1, 1], backgroundColor: '#42A5F5', borderRadius: 4 }] },
-                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#a0a0b0' } }, x: { ticks: { color: '#a0a0b0' } } } }
-                });
-            }
-            if (!graficos['chartFoco'] && document.getElementById('chartFoco')) {
-                graficos['chartFoco'] = new Chart(document.getElementById('chartFoco'), {
-                    type: 'doughnut',
-                    data: { labels: ["Ambiental", "Multi-tema", "Social", "Governanca"], datasets: [{ data: [24, 14, 6, 3], backgroundColor: ['#4CAF50', '#FF9800', '#9C27B0', '#2196F3'], borderWidth: 0 }] },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
                 });
             }
