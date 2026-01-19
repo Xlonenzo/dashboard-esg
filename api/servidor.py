@@ -155,6 +155,174 @@ def get_fundos():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/fundos/<cnpj>/detalhes')
+def get_fundo_detalhes(cnpj):
+    """Retorna detalhes completos de um fundo pelo CNPJ"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Limpar CNPJ
+        cnpj_limpo = ''.join(filter(str.isdigit, cnpj))
+
+        # Buscar dados do fundo consolidado
+        cursor.execute("""
+            SELECT
+                fonte_principal, cnpj, nome, categoria_anbima, tipo_anbima,
+                fundo_esg, gestor_anbima, administrador_anbima,
+                patrimonio_liquido, numero_cotistas, valor_cota,
+                foco_atuacao, nivel1_categoria, nivel2_categoria,
+                classe_cvm, situacao_cvm, data_registro_cvm,
+                captacao_dia, resgate_dia, tem_dados_cvm
+            FROM fundos.fundos_consolidados
+            WHERE cnpj = %s
+        """, (cnpj_limpo,))
+
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({"success": False, "error": "Fundo não encontrado"}), 404
+
+        fundo = {
+            'fonte_principal': row[0],
+            'cnpj': row[1],
+            'nome': row[2],
+            'categoria_anbima': row[3],
+            'tipo_anbima': row[4],
+            'fundo_esg': row[5],
+            'gestor': row[6],
+            'administrador': row[7],
+            'patrimonio_liquido': float(row[8]) if row[8] else None,
+            'numero_cotistas': row[9],
+            'valor_cota': float(row[10]) if row[10] else None,
+            'foco_atuacao': row[11],
+            'nivel1_categoria': row[12],
+            'nivel2_categoria': row[13],
+            'classe_cvm': row[14],
+            'situacao_cvm': row[15],
+            'data_registro_cvm': row[16].isoformat() if row[16] else None,
+            'captacao_dia': float(row[17]) if row[17] else None,
+            'resgate_dia': float(row[18]) if row[18] else None,
+            'tem_dados_cvm': row[19]
+        }
+
+        # Buscar dados adicionais do ANBIMA (características)
+        cursor.execute("""
+            SELECT
+                codigo_anbima, estrutura, data_inicio, qtd_subclasses,
+                composicao, aberto_estatutariamente, tributacao_alvo,
+                primeiro_aporte, tipo_investidor, caracteristica_investidor,
+                cota_abertura, aplicacao_minima, prazo_resgate_dias,
+                adaptado_175, codigo_cvm_subclasse, nivel3_subcategoria
+            FROM fundos.fundos_anbima
+            WHERE cnpj_classe = %s
+        """, (cnpj_limpo,))
+
+        row_anbima = cursor.fetchone()
+        if row_anbima:
+            fundo['detalhes_anbima'] = {
+                'codigo_anbima': row_anbima[0],
+                'estrutura': row_anbima[1],
+                'data_inicio': row_anbima[2].isoformat() if row_anbima[2] else None,
+                'qtd_subclasses': row_anbima[3],
+                'composicao': row_anbima[4],
+                'aberto_estatutariamente': row_anbima[5],
+                'tributacao_alvo': row_anbima[6],
+                'primeiro_aporte': row_anbima[7].isoformat() if row_anbima[7] else None,
+                'tipo_investidor': row_anbima[8],
+                'caracteristica_investidor': row_anbima[9],
+                'cota_abertura': row_anbima[10],
+                'aplicacao_minima': float(row_anbima[11]) if row_anbima[11] else None,
+                'prazo_resgate_dias': row_anbima[12],
+                'adaptado_175': row_anbima[13],
+                'codigo_cvm': row_anbima[14],
+                'subcategoria': row_anbima[15]
+            }
+
+        # Buscar dados do cadastro CVM
+        cursor.execute("""
+            SELECT
+                data_constituicao, rentabilidade_fundo, condominio,
+                fundo_cotas, fundo_exclusivo, tributacao_longo_prazo,
+                investidor_qualificado, taxa_performance, info_taxa_performance,
+                taxa_administracao, info_taxa_administracao, diretor, auditor
+            FROM cvm.cadastro_fundos
+            WHERE cnpj = %s
+        """, (cnpj_limpo,))
+
+        row_cvm = cursor.fetchone()
+        if row_cvm:
+            fundo['detalhes_cvm'] = {
+                'data_constituicao': row_cvm[0].isoformat() if row_cvm[0] else None,
+                'rentabilidade_fundo': row_cvm[1],
+                'condominio': row_cvm[2],
+                'fundo_cotas': row_cvm[3],
+                'fundo_exclusivo': row_cvm[4],
+                'tributacao_longo_prazo': row_cvm[5],
+                'investidor_qualificado': row_cvm[6],
+                'taxa_performance': float(row_cvm[7]) if row_cvm[7] else None,
+                'info_taxa_performance': row_cvm[8],
+                'taxa_administracao': float(row_cvm[9]) if row_cvm[9] else None,
+                'info_taxa_administracao': row_cvm[10],
+                'diretor': row_cvm[11],
+                'auditor': row_cvm[12]
+            }
+
+        # Buscar últimos informes diários CVM
+        cursor.execute("""
+            SELECT data_competencia, valor_total, valor_cota, patrimonio_liquido,
+                   captacao_dia, resgate_dia, numero_cotistas
+            FROM cvm.informes_diarios
+            WHERE cnpj = %s
+            ORDER BY data_competencia DESC
+            LIMIT 5
+        """, (cnpj_limpo,))
+
+        informes = []
+        for r in cursor.fetchall():
+            informes.append({
+                'data': r[0].isoformat() if r[0] else None,
+                'valor_total': float(r[1]) if r[1] else None,
+                'valor_cota': float(r[2]) if r[2] else None,
+                'patrimonio_liquido': float(r[3]) if r[3] else None,
+                'captacao': float(r[4]) if r[4] else None,
+                'resgate': float(r[5]) if r[5] else None,
+                'cotistas': r[6]
+            })
+        fundo['informes_recentes'] = informes
+
+        # Buscar títulos relacionados (CRI/CRA do mesmo emissor/gestor)
+        gestor = fundo.get('gestor', '')
+        if gestor:
+            cursor.execute("""
+                SELECT tipo, codigo, emissor, devedor, tipo_remuneracao,
+                       data_vencimento, taxa_indicativa, pu_indicativo, duration_dias
+                FROM titulos.cricra_anbima
+                WHERE emissor ILIKE %s OR devedor ILIKE %s
+                LIMIT 10
+            """, (f'%{gestor[:20]}%', f'%{gestor[:20]}%'))
+
+            titulos_cricra = []
+            for r in cursor.fetchall():
+                titulos_cricra.append({
+                    'tipo': r[0],
+                    'codigo': r[1],
+                    'emissor': r[2],
+                    'devedor': r[3],
+                    'tipo_remuneracao': r[4],
+                    'data_vencimento': r[5].isoformat() if r[5] else None,
+                    'taxa_indicativa': float(r[6]) if r[6] else None,
+                    'pu_indicativo': float(r[7]) if r[7] else None,
+                    'duration': r[8]
+                })
+            fundo['titulos_relacionados'] = titulos_cricra
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({"success": True, "data": fundo})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/api/fundos/categorias')
 def get_categorias():
     try:

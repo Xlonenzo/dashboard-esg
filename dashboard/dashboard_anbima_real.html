@@ -2071,7 +2071,10 @@
                     <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${categoria}">${categoria}</td>
                     <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${gestora}">${gestora}</td>
                     <td><span style="background:${esgClass};padding:3px 8px;border-radius:10px;font-size:0.75rem;">${esgText}</span></td>
-                    <td><button data-cnpj="${f.cnpj_classe || f.cnpj}" data-nome="${nome}" onclick="adicionarFavoritoBtn(this)" style="background:none;border:none;cursor:pointer;font-size:1rem;" title="Adicionar aos favoritos">⭐</button></td>
+                    <td>
+                        <button onclick="verDetalhesFundo('${f.cnpj_classe || f.cnpj}')" style="background:#2196F3;color:white;border:none;cursor:pointer;padding:4px 8px;border-radius:4px;font-size:0.7rem;margin-right:4px;" title="Ver detalhes do fundo">🔍</button>
+                        <button data-cnpj="${f.cnpj_classe || f.cnpj}" data-nome="${nome}" onclick="adicionarFavoritoBtn(this)" style="background:none;border:none;cursor:pointer;font-size:1rem;" title="Adicionar aos favoritos">⭐</button>
+                    </td>
                 </tr>`;
             }
             corpo.innerHTML = html;
@@ -5019,6 +5022,215 @@
                 });
             }
         });
+
+        // ============================================
+        // MODAL DE DETALHES DO FUNDO
+        // ============================================
+        async function verDetalhesFundo(cnpj) {
+            const modal = document.getElementById('modalDetalhesFundo');
+            const conteudo = document.getElementById('conteudoDetalhesFundo');
+
+            modal.style.display = 'flex';
+            conteudo.innerHTML = '<div style="text-align:center;padding:40px;"><div style="display:inline-block;width:40px;height:40px;border:3px solid var(--border-color);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;"></div><p style="color:var(--text-secondary);margin-top:15px;">Carregando detalhes...</p></div>';
+
+            try {
+                const response = await fetch(`${API_URL}/fundos/${encodeURIComponent(cnpj)}/detalhes`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderizarDetalhesFundo(result.data);
+                } else {
+                    conteudo.innerHTML = `<div style="text-align:center;padding:40px;color:#EF5350;">Erro: ${result.error}</div>`;
+                }
+            } catch (e) {
+                conteudo.innerHTML = `<div style="text-align:center;padding:40px;color:#EF5350;">Erro ao carregar: ${e.message}</div>`;
+            }
+        }
+
+        function renderizarDetalhesFundo(fundo) {
+            const conteudo = document.getElementById('conteudoDetalhesFundo');
+
+            const formatarMoedaModal = (v) => {
+                if (!v) return '-';
+                if (v >= 1e12) return `R$ ${(v/1e12).toFixed(2)} Tri`;
+                if (v >= 1e9) return `R$ ${(v/1e9).toFixed(2)} Bi`;
+                if (v >= 1e6) return `R$ ${(v/1e6).toFixed(2)} Mi`;
+                return `R$ ${v.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            };
+
+            const fonteColor = fundo.fonte_principal === 'ANBIMA' ? '#42A5F5' : '#CE93D8';
+            const esgBadge = fundo.fundo_esg ? '<span style="background:#4CAF50;color:white;padding:4px 12px;border-radius:15px;font-size:0.8rem;margin-left:10px;">ESG</span>' : '';
+
+            let html = `
+                <div style="margin-bottom:25px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                        <span style="background:${fonteColor};color:white;padding:4px 12px;border-radius:15px;font-size:0.8rem;">${fundo.fonte_principal}</span>
+                        ${esgBadge}
+                    </div>
+                    <h2 style="color:var(--text-primary);margin:0;font-size:1.4rem;">${fundo.nome || '-'}</h2>
+                    <p style="color:var(--text-secondary);font-family:monospace;margin-top:5px;">CNPJ: ${fundo.cnpj || '-'}</p>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:25px;">
+                    <div style="background:rgba(76,175,80,0.1);padding:15px;border-radius:10px;border:1px solid rgba(76,175,80,0.3);">
+                        <div style="color:var(--text-secondary);font-size:0.75rem;margin-bottom:5px;">PATRIMONIO LIQUIDO</div>
+                        <div style="font-size:1.5rem;font-weight:700;color:#66BB6A;">${formatarMoedaModal(fundo.patrimonio_liquido)}</div>
+                    </div>
+                    <div style="background:rgba(33,150,243,0.1);padding:15px;border-radius:10px;border:1px solid rgba(33,150,243,0.3);">
+                        <div style="color:var(--text-secondary);font-size:0.75rem;margin-bottom:5px;">COTISTAS</div>
+                        <div style="font-size:1.5rem;font-weight:700;color:#42A5F5;">${fundo.numero_cotistas?.toLocaleString() || '-'}</div>
+                    </div>
+                    <div style="background:rgba(255,152,0,0.1);padding:15px;border-radius:10px;border:1px solid rgba(255,152,0,0.3);">
+                        <div style="color:var(--text-secondary);font-size:0.75rem;margin-bottom:5px;">VALOR DA COTA</div>
+                        <div style="font-size:1.5rem;font-weight:700;color:#FFB74D;">${fundo.valor_cota ? 'R$ ' + fundo.valor_cota.toFixed(6) : '-'}</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:25px;">
+                    <div>
+                        <h3 style="color:var(--primary-light);font-size:1rem;margin-bottom:15px;border-bottom:1px solid var(--border-color);padding-bottom:8px;">Informacoes Gerais</h3>
+                        <table style="width:100%;font-size:0.85rem;">
+                            <tr><td style="color:var(--text-secondary);padding:5px 0;">Categoria</td><td style="font-weight:500;">${fundo.categoria_anbima || fundo.classe_cvm || '-'}</td></tr>
+                            <tr><td style="color:var(--text-secondary);padding:5px 0;">Tipo</td><td>${fundo.tipo_anbima || '-'}</td></tr>
+                            <tr><td style="color:var(--text-secondary);padding:5px 0;">Foco</td><td>${fundo.foco_atuacao || '-'}</td></tr>
+                            <tr><td style="color:var(--text-secondary);padding:5px 0;">Situacao CVM</td><td>${fundo.situacao_cvm || '-'}</td></tr>
+                        </table>
+                    </div>
+                    <div>
+                        <h3 style="color:var(--primary-light);font-size:1rem;margin-bottom:15px;border-bottom:1px solid var(--border-color);padding-bottom:8px;">Gestao</h3>
+                        <table style="width:100%;font-size:0.85rem;">
+                            <tr><td style="color:var(--text-secondary);padding:5px 0;">Gestor</td><td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="${fundo.gestor || ''}">${fundo.gestor || '-'}</td></tr>
+                            <tr><td style="color:var(--text-secondary);padding:5px 0;">Administrador</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="${fundo.administrador || ''}">${fundo.administrador || '-'}</td></tr>
+                            <tr><td style="color:var(--text-secondary);padding:5px 0;">Captacao Dia</td><td style="color:#66BB6A;">${formatarMoedaModal(fundo.captacao_dia)}</td></tr>
+                            <tr><td style="color:var(--text-secondary);padding:5px 0;">Resgate Dia</td><td style="color:#EF5350;">${formatarMoedaModal(fundo.resgate_dia)}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // Detalhes ANBIMA
+            if (fundo.detalhes_anbima) {
+                const da = fundo.detalhes_anbima;
+                html += `
+                    <div style="margin-bottom:25px;">
+                        <h3 style="color:#42A5F5;font-size:1rem;margin-bottom:15px;border-bottom:1px solid var(--border-color);padding-bottom:8px;">Dados ANBIMA</h3>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:0.85rem;">
+                            <div><span style="color:var(--text-secondary);">Codigo ANBIMA:</span> <strong>${da.codigo_anbima || '-'}</strong></div>
+                            <div><span style="color:var(--text-secondary);">Estrutura:</span> ${da.estrutura || '-'}</div>
+                            <div><span style="color:var(--text-secondary);">Data Inicio:</span> ${da.data_inicio ? new Date(da.data_inicio).toLocaleDateString('pt-BR') : '-'}</div>
+                            <div><span style="color:var(--text-secondary);">Tipo Investidor:</span> ${da.tipo_investidor || '-'}</div>
+                            <div><span style="color:var(--text-secondary);">Aplicacao Minima:</span> ${formatarMoedaModal(da.aplicacao_minima)}</div>
+                            <div><span style="color:var(--text-secondary);">Prazo Resgate:</span> ${da.prazo_resgate_dias ? da.prazo_resgate_dias + ' dias' : '-'}</div>
+                            <div><span style="color:var(--text-secondary);">Tributacao:</span> ${da.tributacao_alvo || '-'}</div>
+                            <div><span style="color:var(--text-secondary);">Composicao:</span> ${da.composicao || '-'}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Detalhes CVM
+            if (fundo.detalhes_cvm) {
+                const dc = fundo.detalhes_cvm;
+                html += `
+                    <div style="margin-bottom:25px;">
+                        <h3 style="color:#CE93D8;font-size:1rem;margin-bottom:15px;border-bottom:1px solid var(--border-color);padding-bottom:8px;">Dados CVM</h3>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:0.85rem;">
+                            <div><span style="color:var(--text-secondary);">Data Constituicao:</span> ${dc.data_constituicao ? new Date(dc.data_constituicao).toLocaleDateString('pt-BR') : '-'}</div>
+                            <div><span style="color:var(--text-secondary);">Condominio:</span> ${dc.condominio || '-'}</div>
+                            <div><span style="color:var(--text-secondary);">Fundo de Cotas:</span> ${dc.fundo_cotas ? 'Sim' : 'Nao'}</div>
+                            <div><span style="color:var(--text-secondary);">Exclusivo:</span> ${dc.fundo_exclusivo ? 'Sim' : 'Nao'}</div>
+                            <div><span style="color:var(--text-secondary);">Taxa Admin:</span> ${dc.taxa_administracao ? dc.taxa_administracao.toFixed(2) + '%' : '-'}</div>
+                            <div><span style="color:var(--text-secondary);">Taxa Performance:</span> ${dc.taxa_performance ? dc.taxa_performance.toFixed(2) + '%' : '-'}</div>
+                            <div><span style="color:var(--text-secondary);">Auditor:</span> ${dc.auditor || '-'}</div>
+                            <div><span style="color:var(--text-secondary);">Diretor:</span> ${dc.diretor || '-'}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Informes Recentes
+            if (fundo.informes_recentes && fundo.informes_recentes.length > 0) {
+                html += `
+                    <div style="margin-bottom:25px;">
+                        <h3 style="color:#FF9800;font-size:1rem;margin-bottom:15px;border-bottom:1px solid var(--border-color);padding-bottom:8px;">Informes Diarios Recentes</h3>
+                        <table style="width:100%;font-size:0.8rem;">
+                            <thead>
+                                <tr style="background:rgba(255,255,255,0.05);">
+                                    <th style="padding:8px;text-align:left;">Data</th>
+                                    <th style="padding:8px;text-align:right;">PL</th>
+                                    <th style="padding:8px;text-align:right;">Cota</th>
+                                    <th style="padding:8px;text-align:right;">Cotistas</th>
+                                    <th style="padding:8px;text-align:right;">Captacao</th>
+                                    <th style="padding:8px;text-align:right;">Resgate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                fundo.informes_recentes.forEach(inf => {
+                    html += `
+                        <tr>
+                            <td style="padding:6px 8px;">${inf.data ? new Date(inf.data).toLocaleDateString('pt-BR') : '-'}</td>
+                            <td style="padding:6px 8px;text-align:right;color:#66BB6A;">${formatarMoedaModal(inf.patrimonio_liquido)}</td>
+                            <td style="padding:6px 8px;text-align:right;">${inf.valor_cota ? inf.valor_cota.toFixed(4) : '-'}</td>
+                            <td style="padding:6px 8px;text-align:right;">${inf.cotistas?.toLocaleString() || '-'}</td>
+                            <td style="padding:6px 8px;text-align:right;color:#66BB6A;">${formatarMoedaModal(inf.captacao)}</td>
+                            <td style="padding:6px 8px;text-align:right;color:#EF5350;">${formatarMoedaModal(inf.resgate)}</td>
+                        </tr>
+                    `;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            // Titulos Relacionados
+            if (fundo.titulos_relacionados && fundo.titulos_relacionados.length > 0) {
+                html += `
+                    <div style="margin-bottom:25px;">
+                        <h3 style="color:#26A69A;font-size:1rem;margin-bottom:15px;border-bottom:1px solid var(--border-color);padding-bottom:8px;">Titulos Relacionados (CRI/CRA)</h3>
+                        <table style="width:100%;font-size:0.8rem;">
+                            <thead>
+                                <tr style="background:rgba(255,255,255,0.05);">
+                                    <th style="padding:8px;text-align:left;">Tipo</th>
+                                    <th style="padding:8px;text-align:left;">Codigo</th>
+                                    <th style="padding:8px;text-align:left;">Emissor</th>
+                                    <th style="padding:8px;text-align:right;">Taxa Ind.</th>
+                                    <th style="padding:8px;text-align:right;">PU Ind.</th>
+                                    <th style="padding:8px;text-align:right;">Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                fundo.titulos_relacionados.forEach(tit => {
+                    html += `
+                        <tr>
+                            <td style="padding:6px 8px;"><span style="background:${tit.tipo === 'CRI' ? '#4CAF50' : '#2196F3'};color:white;padding:2px 8px;border-radius:8px;font-size:0.7rem;">${tit.tipo}</span></td>
+                            <td style="padding:6px 8px;font-family:monospace;">${tit.codigo || '-'}</td>
+                            <td style="padding:6px 8px;max-width:150px;overflow:hidden;text-overflow:ellipsis;">${tit.emissor || '-'}</td>
+                            <td style="padding:6px 8px;text-align:right;">${tit.taxa_indicativa ? tit.taxa_indicativa.toFixed(2) + '%' : '-'}</td>
+                            <td style="padding:6px 8px;text-align:right;">${tit.pu_indicativo ? tit.pu_indicativo.toFixed(2) : '-'}</td>
+                            <td style="padding:6px 8px;text-align:right;">${tit.duration || '-'}</td>
+                        </tr>
+                    `;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            conteudo.innerHTML = html;
+        }
+
+        function fecharModalDetalhes() {
+            document.getElementById('modalDetalhesFundo').style.display = 'none';
+        }
     </script>
+
+    <!-- Modal de Detalhes do Fundo -->
+    <div id="modalDetalhesFundo" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;justify-content:center;align-items:center;padding:20px;" onclick="if(event.target===this)fecharModalDetalhes()">
+        <div style="background:var(--bg-card);border-radius:15px;max-width:900px;width:100%;max-height:90vh;overflow-y:auto;border:1px solid var(--border-color);position:relative;">
+            <div style="position:sticky;top:0;background:var(--bg-card);padding:20px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;z-index:1;">
+                <h2 style="margin:0;color:var(--text-primary);font-size:1.2rem;">Detalhes do Fundo</h2>
+                <button onclick="fecharModalDetalhes()" style="background:none;border:none;color:var(--text-secondary);font-size:1.5rem;cursor:pointer;padding:5px 10px;">&times;</button>
+            </div>
+            <div id="conteudoDetalhesFundo" style="padding:20px;"></div>
+        </div>
+    </div>
 </body>
 </html>
