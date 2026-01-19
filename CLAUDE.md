@@ -259,10 +259,10 @@ return jsonify({
 ## UI/Frontend Standards
 
 ### Tables
-- **All data tables MUST include column filters** for filtering data directly in each column header
+- **All data tables MUST include dropdown column filters** with all unique values from each column
 - Use **Simple-DataTables** library (https://github.com/fiduswriter/Simple-DataTables) for table functionality
 - Required features for all tables:
-  - Column filters (text input or dropdown as appropriate)
+  - **Dropdown filters per column** (select with "Todos" + unique values)
   - Sortable columns
   - Pagination for large datasets
   - Responsive design for mobile
@@ -277,10 +277,69 @@ return jsonify({
 <script>
 const table = new simpleDatatables.DataTable("#myTable", {
     searchable: true,
-    fixedHeight: true,
+    sortable: true,
     perPage: 25
 });
+
+// Add dropdown filters after initialization
+adicionarFiltrosColunas('myTable', table);
 </script>
+```
+
+### Dropdown Column Filters Pattern
+```javascript
+// Function to add dropdown filters to table columns
+function adicionarFiltrosColunas(tableId, dtInstance) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const thead = table.querySelector('thead');
+    const tbody = table.querySelector('tbody');
+    const headers = thead.querySelector('tr').querySelectorAll('th');
+
+    // Skip if filters already exist
+    if (thead.querySelector('.filter-row')) return;
+
+    // Collect unique values from each column
+    const rows = tbody.querySelectorAll('tr');
+    const uniqueValues = [];
+    headers.forEach((th, index) => {
+        const values = new Set(['']); // Empty = "Todos"
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length > index) {
+                const text = cells[index].textContent.trim();
+                if (text && text !== '-') values.add(text);
+            }
+        });
+        uniqueValues.push(Array.from(values).sort());
+    });
+
+    // Create filter row with dropdowns
+    const filterRow = document.createElement('tr');
+    filterRow.className = 'filter-row';
+
+    headers.forEach((th, index) => {
+        const filterTh = document.createElement('th');
+        // Skip last column (actions)
+        if (index < headers.length - 1) {
+            const select = document.createElement('select');
+            select.className = 'datatable-filter';
+            // Add "Todos" option + unique values (max 50)
+            uniqueValues[index].slice(0, 50).forEach(val => {
+                const option = document.createElement('option');
+                option.value = val;
+                option.textContent = val || 'Todos';
+                select.appendChild(option);
+            });
+            select.addEventListener('change', () => filtrarColuna(tableId, index, select.value));
+            filterTh.appendChild(select);
+        }
+        filterRow.appendChild(filterTh);
+    });
+
+    thead.appendChild(filterRow);
+}
 ```
 
 ## Deployment

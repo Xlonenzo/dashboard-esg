@@ -110,7 +110,7 @@
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Fundos</div>
-            <div class="nav-item" onclick="showTab('explorar',event)" title="Pesquise e filtre entre 4.253 fundos por nome, CNPJ, categoria ou gestora"><span class="icon">🔍</span> Explorar Fundos</div>
+            <div class="nav-item" onclick="showTab('explorar',event)" title="Pesquise e filtre entre 40.332 fundos por nome, CNPJ, categoria ou gestora"><span class="icon">🔍</span> Explorar Fundos</div>
             <div class="nav-item" onclick="showTab('gestoras',event)" title="Lista de gestoras com seus fundos, classes ANBIMA e distribuicao"><span class="icon">🏛️</span> Gestoras</div>
             <div class="nav-item" onclick="showTab('favoritos',event)" title="Seus fundos favoritos salvos para acompanhamento rapido"><span class="icon">⭐</span> Favoritos</div>
             <div class="nav-item" onclick="showTab('fundos-is',event)" title="Fundos classificados como Investimento Sustentavel (IS) pela ANBIMA"><span class="icon">🌱</span> Fundos IS</div>
@@ -125,6 +125,13 @@
         <div class="nav-section">
             <div class="nav-section-title">Sustentabilidade</div>
             <div class="nav-item" onclick="showTab('tsb',event)" title="Taxonomia Sustentavel Brasileira: 58 empresas classificadas Verde/Transicao, titulos verdes e fundos ESG"><span class="icon">🌿</span> Mapeamento TSB</div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">ANBIMA Data</div>
+            <div class="nav-item" onclick="showTab('anbima-fundos',event)" title="40.332 fundos da ANBIMA com caracteristicas, categorias e classificacao ESG"><span class="icon">📈</span> Fundos ANBIMA</div>
+            <div class="nav-item" onclick="showTab('anbima-periodicos',event)" title="33.235 fundos com PL, cotistas e valor da cota - R$ 12,97 trilhoes"><span class="icon">💰</span> Dados Periodicos</div>
+            <div class="nav-item" onclick="showTab('anbima-cricra',event)" title="1.709 CRI/CRA com precos indicativos, taxas e duration"><span class="icon">🏗️</span> CRI/CRA ANBIMA</div>
+            <div class="nav-item" onclick="showTab('anbima-titulos',event)" title="Titulos publicos com precos indicativos da ANBIMA"><span class="icon">📋</span> Titulos Publicos</div>
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Analise de Credito</div>
@@ -172,30 +179,10 @@
         <div id="explorar" class="tab-content">
             <div class="chart-card has-tooltip" title="Pesquisa avancada em toda a base de fundos ANBIMA e CVM">
                 <h3>🔍 Explorar Fundos</h3>
-                <p style="color:var(--text-secondary);margin-bottom:20px;">Pesquise entre todos os 100.000 fundos da ANBIMA</p>
+                <p style="color:var(--text-secondary);margin-bottom:20px;">Pesquise entre todos os 40.332 fundos da base ANBIMA Data</p>
 
                 <!-- Status da API -->
                 <div id="apiStatus" style="margin-bottom:15px;padding:10px 15px;border-radius:8px;font-size:0.85rem;display:none;"></div>
-
-                <!-- Filtros e Busca -->
-                <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;">
-                    <div style="flex:1;min-width:250px;">
-                        <input type="text" id="searchFundos" placeholder="Buscar por nome, CNPJ ou gestora..."
-                            style="width:100%;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.9rem;" title="Digite nome, CNPJ ou gestora para pesquisar">
-                    </div>
-                    <select id="filtroCategoria" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);min-width:150px;" title="Filtrar por categoria ANBIMA">
-                        <option value="">Todas Categorias</option>
-                    </select>
-                    <select id="filtroTipo" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);min-width:180px;" title="Filtrar por tipo de fundo: IS, ESG ou Convencional">
-                        <option value="">Todos os Tipos</option>
-                        <option value="IS - Investimento Sustentavel">IS (Investimento Sustentável)</option>
-                        <option value="ESG Integrado">ESG Integrado</option>
-                        <option value="Convencional">Convencional</option>
-                    </select>
-                    <button onclick="buscarFundosAPI()" style="padding:12px 20px;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;" title="Executar busca com os filtros selecionados">
-                        🔍 Buscar
-                    </button>
-                </div>
 
                 <!-- Estatísticas -->
                 <div id="statsExplorar" style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;">
@@ -228,14 +215,14 @@
                                 <th title="CNPJ do fundo">CNPJ</th>
                                 <th title="Categoria ANBIMA do fundo">Categoria</th>
                                 <th title="Gestora responsavel pelo fundo">Gestora</th>
-                                <th title="Origem dos dados: ANBIMA ou CVM">Fonte</th>
+                                <th title="Fundo com classificacao ESG">ESG</th>
                                 <th title="Acoes disponiveis: detalhes, favoritar">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="corpoTabelaFundos">
                             <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">
                                 Clique em "Buscar" para carregar os fundos<br>
-                                <small>Total: 4.253 fundos (ANBIMA + CVM)</small>
+                                <small>Total: 40.332 fundos (ANBIMA Data)</small>
                             </td></tr>
                         </tbody>
                     </table>
@@ -305,11 +292,45 @@
             </div>
         </div>
 
-        <!-- TAB: Fundos IS -->
-        <div id="fundos-is" class="tab-content"><div class="chart-card has-tooltip" title="Fundos com selo IS - Investimento Sustentavel ANBIMA: atendem criterios rigorosos de sustentabilidade"><h3>🌱 Fundos IS (18)</h3><div style="overflow-x:auto;max-height:500px;"><table><thead><tr><th title="Nome completo do fundo IS">Nome</th><th title="CNPJ do fundo">CNPJ</th><th title="Foco principal: Ambiental, Social, Governanca ou Multi-tema">Foco</th></tr></thead><tbody><tr><td>BTG Pactual Credito Corporativo IS</td><td>40.123.456/0001-01</td><td>Ambiental</td></tr><tr><td>Itau Transicao Energetica IS</td><td>40.123.456/0001-02</td><td>Ambiental</td></tr><tr><td>BB Acoes Sustentabilidade IS</td><td>40.123.456/0001-03</td><td>Multi-tema</td></tr><tr><td>Bradesco FIA ISE IS</td><td>40.123.456/0001-04</td><td>Multi-tema</td></tr><tr><td>XP Debentures Incentivadas IS</td><td>40.123.456/0001-05</td><td>Ambiental</td></tr><tr><td>JGP Impacto Social IS</td><td>40.123.456/0001-06</td><td>Social</td></tr><tr><td>SANTANDER ETHICAL AÇÕES SUSTENTABILIDADE SPECIAL I</td><td>04.616.277/0001-02</td><td>Multi-tema</td></tr><tr><td>SANTANDER ETHICAL AÇÕES SUSTENTABILIDADE IS FUNDO </td><td>04.736.006/0001-82</td><td>Multi-tema</td></tr><tr><td>ITAÚ EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO</td><td>06.069.957/0001-70</td><td>Social</td></tr><tr><td>ITAÚ EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVESTIMENTO</td><td>06.215.101/0001-66</td><td>Social</td></tr><tr><td>BB TOP ACOES INDICE DE SUSTENTABILIDADE EMPRESARIA</td><td>05.775.731/0001-22</td><td>Multi-tema</td></tr><tr><td>BB AÇÕES SUSTENTABILIDADE IS FUNDO DE INVESTIMENTO</td><td>06.349.816/0001-01</td><td>Multi-tema</td></tr><tr><td>ITAÚ GOVERNANÇA CORPORATIVA AÇÕES FUNDO DE INVESTI</td><td>07.686.680/0001-98</td><td>Multi-tema</td></tr><tr><td>ITAÚ AÇÕES GOVERNANÇA CORPORATIVA FUNDO DE INVESTI</td><td>07.686.658/0001-48</td><td>Multi-tema</td></tr><tr><td>ITAÚ PRIVATE EXCELÊNCIA SOCIAL AÇÕES FUNDO DE INVE</td><td>07.707.678/0001-58</td><td>Social</td></tr><tr><td>FUNDO DE INVESTIMENTO EM AÇÕES CAIXA SUSTENTABILID</td><td>08.070.838/0001-63</td><td>Governanca</td></tr><tr><td>BRADESCO FUNDO DE INVESTIMENTO EM AÇÕES IS SUSTENT</td><td>07.187.751/0001-08</td><td>Multi-tema</td></tr><tr><td>ITAÚ EMPRESA GOVERNANÇA CORPORATIVA AÇÕES FUNDO DE</td><td>09.145.127/0001-73</td><td>Multi-tema</td></tr></tbody></table></div></div></div>
+        <!-- TAB: Fundos IS/ESG -->
+        <div id="fundos-is" class="tab-content">
+            <div class="chart-card has-tooltip" title="Fundos com classificacao ESG da base ANBIMA">
+                <h3>🌱 Fundos ESG - Base ANBIMA (<span id="countFundosESG">...</span>)</h3>
+                <p style="color:var(--text-secondary);margin-bottom:15px;">Fundos classificados como ESG na base ANBIMA Data</p>
+                <div id="loadingFundosIS" style="text-align:center;padding:20px;color:var(--text-secondary);">Carregando...</div>
+                <div style="overflow-x:auto;max-height:500px;">
+                    <table id="tabelaFundosIS">
+                        <thead><tr>
+                            <th title="Nome completo do fundo">Nome</th>
+                            <th title="CNPJ do fundo">CNPJ</th>
+                            <th title="Categoria ANBIMA">Categoria</th>
+                            <th title="Gestor do fundo">Gestor</th>
+                        </tr></thead>
+                        <tbody id="corpoFundosIS"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-        <!-- TAB: Fundos ESG -->
-        <div id="fundos-esg" class="tab-content"><div class="chart-card has-tooltip" title="Fundos com integracao ESG: incorporam criterios ambientais, sociais e de governanca na gestao"><h3>🌍 Fundos ESG (29)</h3><div style="overflow-x:auto;max-height:500px;"><table><thead><tr><th title="Nome completo do fundo ESG">Nome</th><th title="CNPJ do fundo">CNPJ</th><th title="Foco principal: Ambiental (E), Social (S), Governanca (G) ou Multi-tema">Foco</th></tr></thead><tbody><tr><td>Verde AM ESG Selection</td><td>40.123.456/0001-07</td><td>Multi-tema</td></tr><tr><td>Opportunity ESG FIA</td><td>40.123.456/0001-08</td><td>Ambiental</td></tr><tr><td>BTG ESG Corporativo</td><td>40.123.456/0001-09</td><td>Governanca</td></tr><tr><td>Itau Governanca Responsavel</td><td>40.123.456/0001-10</td><td>Governanca</td></tr><tr><td>CSHG VERDE FUNDO DE INVESTIMENTO EM COTAS DE FUNDO</td><td>01.221.890/0001-24</td><td>Ambiental</td></tr><tr><td>CSHG VERDE AM STRATEGY II FUNDO DE INVESTIMENTO EM</td><td>03.408.336/0001-86</td><td>Ambiental</td></tr><tr><td>VERDE PVT MULTIMERCADO FUNDO DE INVESTIMENTO EM CO</td><td>04.222.368/0001-55</td><td>Ambiental</td></tr><tr><td>CSHG ALLOCATION VERDE 14 FUNDO DE INVESTIMENTO EM </td><td>04.147.027/0001-62</td><td>Ambiental</td></tr><tr><td>BB RENDA FIXA REFERENCIADO DI SOCIAL  50 FUNDO DE </td><td>05.080.623/0001-35</td><td>Social</td></tr><tr><td>CSHG ALLOCATION VERDE AM AGAR FUNDO DE INVESTIMENT</td><td>05.491.230/0001-14</td><td>Ambiental</td></tr><tr><td>WESTERN ASSET PONTA VERDE FUNDO DE INVESTIMENTO RE</td><td>03.888.387/0001-52</td><td>Ambiental</td></tr><tr><td>CSHG VERDE AM HIPER FUNDO DE INVESTIMENTO EM COTAS</td><td>05.586.675/0001-88</td><td>Ambiental</td></tr><tr><td>SICREDI – FUNDO DE INVESTIMENTO  RENDA FIXA CURTO </td><td>01.627.516/0001-23</td><td>Multi-tema</td></tr><tr><td>CSHG ALLOCATION VERDE 30 FUNDO DE INVESTIMENTO EM </td><td>05.586.704/0001-01</td><td>Ambiental</td></tr><tr><td>BRADESCO PRIME FIC DE FIA IND SUSTENTABILIDADE EMP</td><td>07.667.274/0001-88</td><td>Multi-tema</td></tr><tr><td>BRADESCO H FC FI DE AÇÕES SUSTENTABILIDADE</td><td>07.535.827/0001-49</td><td>Multi-tema</td></tr><tr><td>SANTANDER FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS</td><td>07.647.132/0001-59</td><td>Ambiental</td></tr><tr><td>CSHG ALLOCATION VERDE 90 FUNDO DE INVESTIMENTO EM </td><td>07.455.460/0001-53</td><td>Ambiental</td></tr><tr><td>VERDE 90 DISTRIBUIDORES FUNDO DE INVESTIMENTO EM C</td><td>07.455.788/0001-70</td><td>Ambiental</td></tr><tr><td>VERDE MASTER FUNDO DE INVESTIMENTO MULTIMERCADO</td><td>07.455.507/0001-89</td><td>Ambiental</td></tr><tr><td>PS VERDE D1 FUNDO DE INVESTIMENTO EM COTAS DE FUND</td><td>04.311.271/0001-19</td><td>Ambiental</td></tr><tr><td>VERDE AM MULTI ESTRATÉGIA FUNDO DE INVESTIMENTO MU</td><td>08.507.696/0001-59</td><td>Ambiental</td></tr><tr><td>VERDE AM PERFORMANCE FUNDO DE INVESTIMENTO EM AÇÕE</td><td>08.707.235/0001-20</td><td>Ambiental</td></tr><tr><td>RIO VERDE SMALL CAPS FUNDO DE INVESTIMENTO EM AÇÕE</td><td>07.420.595/0001-83</td><td>Ambiental</td></tr><tr><td>VERDE AM MULTI ALLOCATION BP FUNDO DE INVESTIMENTO</td><td>08.893.097/0001-10</td><td>Ambiental</td></tr><tr><td>CSHG VERDE TM FUNDO DE INVESTIMENTO EM COTAS DE FU</td><td>09.150.949/0001-42</td><td>Ambiental</td></tr><tr><td>VÉRTICE VERDE AM JADE FUNDO DE INVESTIMENTO EM COT</td><td>09.485.813/0001-93</td><td>Ambiental</td></tr><tr><td>VERDE AM JADE FUNDO DE INVESTIMENTO EM COTAS DE FU</td><td>09.489.250/0001-01</td><td>Ambiental</td></tr><tr><td>FUNDO SOCIAL FUNDO DE INVESTIMENTO EM AÇÕES</td><td>10.265.295/0001-81</td><td>Social</td></tr></tbody></table></div></div></div>
+        <!-- TAB: Fundos ESG (redirect to same data) -->
+        <div id="fundos-esg" class="tab-content">
+            <div class="chart-card has-tooltip" title="Fundos com classificacao ESG da base ANBIMA">
+                <h3>🌍 Fundos ESG - Base ANBIMA (<span id="countFundosESG2">...</span>)</h3>
+                <p style="color:var(--text-secondary);margin-bottom:15px;">Fundos classificados como ESG na base ANBIMA Data</p>
+                <div id="loadingFundosESG" style="text-align:center;padding:20px;color:var(--text-secondary);">Carregando...</div>
+                <div style="overflow-x:auto;max-height:500px;">
+                    <table id="tabelaFundosESG">
+                        <thead><tr>
+                            <th title="Nome completo do fundo">Nome</th>
+                            <th title="CNPJ do fundo">CNPJ</th>
+                            <th title="Categoria ANBIMA">Categoria</th>
+                            <th title="Gestor do fundo">Gestor</th>
+                        </tr></thead>
+                        <tbody id="corpoFundosESG"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         <!-- TAB: Debentures -->
         <div id="debentures" class="tab-content">
@@ -319,7 +340,23 @@
                 <div class="stat-card has-tooltip" title="Debentures com remuneracao DI + spread (ex: CDI + 2%)"><div class="label">DI Spread</div><div class="value text-info" id="debDISpread">...</div></div>
                 <div class="stat-card has-tooltip" title="Debentures indexadas ao IPCA + spread (ex: IPCA + 6%)"><div class="label">IPCA Spread</div><div class="value text-secondary" id="debIPCASpread">...</div></div>
             </div>
-            <div class="chart-card has-tooltip" title="Lista completa de debentures com dados de taxa, duration e preco unitario"><h3>📜 Debêntures Corporativas</h3><div style="overflow-x:auto;max-height:500px;"><table><thead><tr><th title="Empresa emissora da debenture">Emissor</th><th title="Codigo do titulo no mercado">Codigo</th><th title="Tipo de indexador: DI Percentual, DI Spread ou IPCA Spread">Grupo</th><th title="Taxa de remuneracao do titulo">Taxa</th><th title="Duration: prazo medio ponderado em dias">Duration</th><th title="Preco unitario atual do titulo">PU</th></tr></thead><tbody><tr><td>TRANSMISSORA SUL LITORANEA DE ENERGIA S/</td><td>TSLE11</td><td>IPCA SPREAD</td><td>IPCA + 7,5651%</td><td>1777.0</td><td>1155.58</td></tr><tr><td>VALE S/A</td><td>VALE48</td><td>IPCA SPREAD</td><td>IPCA + 6,78%</td><td>1678.0</td><td>1508.18</td></tr><tr><td>CHAPADA DO PIAUÍ I HOLDING S.A.</td><td>CHPA11</td><td>IPCA SPREAD</td><td>IPCA + 9,223%</td><td>1637.0</td><td>14153.28</td></tr><tr><td>ENGIE BRASIL ENERGIA S.A.(*)</td><td>TBLE26</td><td>IPCA SPREAD</td><td>IPCA + 6,2515%</td><td>1593.0</td><td>1165.73</td></tr><tr><td>ODEBRECHT TRANSPORT S/A</td><td>ODTR11</td><td>IPCA SPREAD</td><td>IPCA + 6,7%</td><td>1592.0</td><td>11667.51</td></tr><tr><td>VALE S/A</td><td>VALE38</td><td>IPCA SPREAD</td><td>IPCA + 6,71%</td><td>1453.0</td><td>1495.93</td></tr><tr><td>VENTOS DE SÃO TOMÉ HOLDING S/A</td><td>TOME12</td><td>IPCA SPREAD</td><td>IPCA + 8,8593%</td><td>1444.0</td><td>1249.09</td></tr><tr><td>EXTREMOZ TRANSMISSORA DO NORDESTE ETN S.</td><td>EXTZ11</td><td>IPCA SPREAD</td><td>IPCA + 7,0291%</td><td>1428.0</td><td>1016.01</td></tr><tr><td>ENERGISA S/A</td><td>ENGI28</td><td>IPCA SPREAD</td><td>IPCA + 5,6601%</td><td>1420.0</td><td>1044.57</td></tr><tr><td>COMPANHIA DE TRANSMISSÃO DE ENERGIA ELÉT</td><td>CTEE15</td><td>IPCA SPREAD</td><td>IPCA + 5,0373%</td><td>1363.0</td><td>1066.73</td></tr><tr><td>VENTOS DE SÃO TITO HOLDING S/A</td><td>VNTT11</td><td>IPCA SPREAD</td><td>IPCA + 9,2360%</td><td>1345.0</td><td>1153.64</td></tr><tr><td>PARANAIBA TRANSMISSORA DE ENERGIA S.A.</td><td>PRTE12</td><td>IPCA SPREAD</td><td>IPCA + 6,9045%</td><td>1345.0</td><td>1016.29</td></tr><tr><td>COMPANHIA ENERGÉTICA DO MARANHÃO - CEMAR</td><td>CEMA27</td><td>IPCA SPREAD</td><td>IPCA + 5,5422%</td><td>1321.0</td><td>1057.55</td></tr><tr><td>MRS LOGÍSTICA S/A</td><td>MRSL27</td><td>IPCA SPREAD</td><td>IPCA + 6,4277%</td><td>1312.0</td><td>1336.16</td></tr><tr><td>COMPANHIA DE GAS DE SÃO PAULO - COMGAS</td><td>GASP15</td><td>IPCA SPREAD</td><td>IPCA + 5,8680%</td><td>1291.0</td><td>1139.01</td></tr><tr><td>ENGIE BRASIL ENERGIA S.A.</td><td>TBLE15</td><td>IPCA SPREAD</td><td>IPCA + 6,3%</td><td>1276.0</td><td>1385.85</td></tr><tr><td>AES TIETE S/A (*)</td><td>TIET26</td><td>IPCA SPREAD</td><td>IPCA + 6,7842%</td><td>1268.0</td><td>1.07</td></tr><tr><td>COMPANHIA PIRATININGA DE FORÇA E LUZ</td><td>CPFP18</td><td>IPCA SPREAD</td><td>IPCA + 5,2901%</td><td>1267.0</td><td>1034.17</td></tr><tr><td>RIO GRANDE ENERGIA S/A</td><td>RIGE18</td><td>IPCA SPREAD</td><td>IPCA + 5,3473%</td><td>1266.0</td><td>1045.06</td></tr><tr><td>CENTRAIS ELETRICAS DO PARA S.A - CELPA</td><td>CLPP23</td><td>IPCA SPREAD</td><td>IPCA + 6,8702%</td><td>1258.0</td><td>1174.28</td></tr><tr><td>LOJAS AMERICANAS S/A (*)</td><td>LAMEB1</td><td>IPCA SPREAD</td><td>IPCA + 7,0972%</td><td>1242.0</td><td>11143.90</td></tr><tr><td>ALGAR TELECOM S/A</td><td>ALGA26</td><td>IPCA SPREAD</td><td>IPCA + 6,8734%</td><td>1235.0</td><td>1114.32</td></tr><tr><td>TRANS. ALIANÇA DE ENERGIA ELÉTRICA S/A</td><td>TAEE33</td><td>IPCA SPREAD</td><td>IPCA + 5,1%</td><td>1226.0</td><td>1361.58</td></tr><tr><td>CONCESSIONÁRIA ECOVIAS DOS IMIGRANTES S/</td><td>ECOV22</td><td>IPCA SPREAD</td><td>IPCA + 4,28%</td><td>1222.0</td><td>1303.63</td></tr><tr><td>CEMIG DISTRIBUIÇÃO S/A</td><td>CMDT33</td><td>IPCA SPREAD</td><td>IPCA + 5,1%</td><td>1214.0</td><td>1123.43</td></tr><tr><td>EDP ENERGIAS DO BRASIL S/A</td><td>ENBR34</td><td>IPCA SPREAD</td><td>IPCA + 8,7608%</td><td>1212.0</td><td>1331.15</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU12</td><td>IPCA SPREAD</td><td>IPCA + 6,4%</td><td>1206.0</td><td>1083.05</td></tr><tr><td>NORTE BRASIL TRANSMISSORA DE ENERGIA S/A</td><td>NRTB11</td><td>IPCA SPREAD</td><td>IPCA + 7,15%</td><td>1182.0</td><td>1363.27</td></tr><tr><td>NORTE BRASIL TRANSMISSORA DE ENERGIA S/A</td><td>NRTB21</td><td>IPCA SPREAD</td><td>IPCA + 7,15%</td><td>1182.0</td><td>1618.85</td></tr><tr><td>AES TIETE ENERGIA S/A (*)</td><td>TIET15</td><td>IPCA SPREAD</td><td>IPCA + 6,5365%</td><td>1180.0</td><td>1168.37</td></tr><tr><td>SANTO ANTÔNIO ENERGIA S/A</td><td>STEN23</td><td>IPCA SPREAD</td><td>IPCA + 7,4943%</td><td>1144.0</td><td>12609.01</td></tr><tr><td>CONCESSIONÁRIA AUTO RAPOSO TAVARES S/A (</td><td>CART22</td><td>IPCA SPREAD</td><td>IPCA + 6,05%</td><td>1136.0</td><td>1325.22</td></tr><tr><td>CONCESSIONÁRIA AUTO RAPOSO TAVARES S/A (</td><td>CART12</td><td>IPCA SPREAD</td><td>IPCA + 5,8%</td><td>1130.0</td><td>1250.60</td></tr><tr><td>VALE S/A</td><td>VALE28</td><td>IPCA SPREAD</td><td>IPCA + 6,57%</td><td>1111.0</td><td>1451.89</td></tr><tr><td>ITAUSA - INVESTIMENTOS ITAU S/A (*)</td><td>ITSA12</td><td>DI PERCENTUAL</td><td>106,9% do DI</td><td>1082.0</td><td>105045.83</td></tr><tr><td>VALE S/A</td><td>VALE29</td><td>IPCA SPREAD</td><td>IPCA + 6,6252%</td><td>1069.0</td><td>1227.99</td></tr><tr><td>CONCESSIONÁRIA DO SISTEMA ANHANGUERA-BAN</td><td>ANHB18</td><td>IPCA SPREAD</td><td>IPCA + 5,4705%</td><td>1056.0</td><td>1037.02</td></tr><tr><td>ENERGISA S/A</td><td>ENGI18</td><td>IPCA SPREAD</td><td>IPCA + 5,6%</td><td>1046.0</td><td>1044.02</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU31</td><td>IPCA SPREAD</td><td>IPCA + 7,86%</td><td>1043.0</td><td>1155.99</td></tr><tr><td>TCP TERMINAL DE CONTÊINERES DE PARANAGUÁ</td><td>TCPA31</td><td>IPCA SPREAD</td><td>IPCA + 7,8164%</td><td>1032.0</td><td>1096.36</td></tr><tr><td>CONCESSIONÁRIA RODOVIAS DO TIETE S/A (*)</td><td>RDVT11</td><td>IPCA SPREAD</td><td>IPCA + 8%</td><td>1030.0</td><td>848.39</td></tr><tr><td>CONCESSIONÁRIA ROTA DAS BANDEIRAS S/A (*</td><td>CBAN21</td><td>IPCA SPREAD</td><td>IPCA + 9,57%</td><td>1006.0</td><td>15312.42</td></tr><tr><td>RODOVIAS DAS COLINAS S/A (*)</td><td>RDCO34</td><td>IPCA SPREAD</td><td>IPCA + 5,7%</td><td>988.0</td><td>13069.01</td></tr><tr><td>COMPANHIA DE GAS DE SÃO PAULO - COMGAS</td><td>GASP24</td><td>IPCA SPREAD</td><td>IPCA + 7,4820%</td><td>982.0</td><td>1294.42</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU21</td><td>IPCA SPREAD</td><td>IPCA + 7,86%</td><td>979.0</td><td>1181.93</td></tr><tr><td>CONCESSIONÁRIA DO AEROPORTO INTERNACIONA</td><td>AGRU41</td><td>IPCA SPREAD</td><td>IPCA + 7,86%</td><td>973.0</td><td>1291.93</td></tr><tr><td>CIA. DE SANEAMENTO BÁSICO DO ESTADO DE S</td><td>SBESC7</td><td>IPCA SPREAD</td><td>IPCA + 4,75%</td><td>951.0</td><td>13746.43</td></tr><tr><td>MRV ENGENHARIA E PARTICIPAÇÃO S/A</td><td>MRVE39</td><td>IPCA SPREAD</td><td>IPCA + 8,2502%</td><td>931.0</td><td>11067.46</td></tr><tr><td>LOCALIZA RENT A CAR (*)</td><td>LORTA2</td><td>DI PERCENTUAL</td><td>107,25% do DI</td><td>925.0</td><td>1043.62</td></tr><tr><td>COMPANHIA ENERGÉTICA DO MARANHÃO - CEMAR</td><td>CEMA17</td><td>IPCA SPREAD</td><td>IPCA + 5,4795%</td><td>925.0</td><td>1060.24</td></tr></tbody></table></div></div>
+            <div class="chart-card has-tooltip" title="Lista completa de debentures com dados de taxa, duration e preco unitario">
+                <h3>📜 Debêntures Corporativas</h3>
+                <div id="loadingDebentures" style="text-align:center;padding:20px;color:var(--text-secondary);">Carregando debêntures...</div>
+                <div style="overflow-x:auto;max-height:500px;">
+                    <table id="tabelaDebentures">
+                        <thead><tr>
+                            <th title="Empresa emissora da debenture">Emissor</th>
+                            <th title="Codigo do titulo no mercado">Codigo</th>
+                            <th title="Tipo de indexador: DI Percentual, DI Spread ou IPCA Spread">Grupo</th>
+                            <th title="Taxa de remuneracao do titulo">Taxa</th>
+                            <th title="Duration: prazo medio ponderado em dias">Duration</th>
+                            <th title="Preco unitario atual do titulo">PU</th>
+                        </tr></thead>
+                        <tbody id="corpoDebentures"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- TAB: Titulos Publicos -->
@@ -331,7 +368,21 @@
                 <div class="stat-card has-tooltip" title="NTN-B: Nota do Tesouro Nacional serie B - indexado ao IPCA com cupom semestral"><div class="label">NTN-B</div><div class="value text-secondary" id="titNTNB">...</div></div>
                 <div class="stat-card has-tooltip" title="LFT: Letra Financeira do Tesouro - pos-fixado atrelado a SELIC"><div class="label">LFT</div><div class="value text-info" id="titLFT">...</div></div>
             </div>
-            <div class="chart-card has-tooltip" title="Titulos publicos federais com taxas indicativas e precos unitarios"><h3>🏛️ Titulos Publicos</h3><div style="overflow-x:auto;"><table><thead><tr><th title="Tipo do titulo: LTN, NTN-F, NTN-B ou LFT">Tipo</th><th title="Data de vencimento do titulo">Vencimento</th><th title="Taxa indicativa anual do titulo">Taxa Indicativa</th><th title="Preco unitario atual do titulo">PU</th></tr></thead><tbody><tr><td>LTN</td><td>2024-04-01</td><td>10.97%</td><td>992.59</td></tr><tr><td>LTN</td><td>2024-07-01</td><td>10.41%</td><td>968.67</td></tr><tr><td>NTN-B</td><td>2024-08-15</td><td>7.54%</td><td>4217.56</td></tr><tr><td>LFT</td><td>2024-09-01</td><td>-0.04%</td><td>14543.87</td></tr><tr><td>LTN</td><td>2024-10-01</td><td>10.01%</td><td>945.85</td></tr><tr><td>LTN</td><td>2025-01-01</td><td>9.82%</td><td>924.94</td></tr><tr><td>NTN-F</td><td>2025-01-01</td><td>9.87%</td><td>1017.06</td></tr><tr><td>LFT</td><td>2025-03-01</td><td>-0.02%</td><td>14543.58</td></tr><tr><td>LTN</td><td>2025-04-01</td><td>9.76%</td><td>904.70</td></tr><tr><td>NTN-B</td><td>2025-05-15</td><td>5.96%</td><td>4311.98</td></tr><tr><td>LTN</td><td>2025-07-01</td><td>9.72%</td><td>884.99</td></tr><tr><td>LFT</td><td>2025-09-01</td><td>0.02%</td><td>14538.00</td></tr><tr><td>LTN</td><td>2025-10-01</td><td>9.72%</td><td>863.66</td></tr><tr><td>LTN</td><td>2026-01-01</td><td>9.72%</td><td>843.66</td></tr><tr><td>LFT</td><td>2026-03-01</td><td>0.03%</td><td>14531.96</td></tr><tr><td>LTN</td><td>2026-04-01</td><td>9.79%</td><td>823.87</td></tr><tr><td>LTN</td><td>2026-07-01</td><td>9.84%</td><td>804.54</td></tr><tr><td>NTN-B</td><td>2026-08-15</td><td>5.64%</td><td>4279.49</td></tr><tr><td>LFT</td><td>2026-09-01</td><td>0.05%</td><td>14522.06</td></tr><tr><td>NTN-F</td><td>2027-01-01</td><td>9.94%</td><td>1018.55</td></tr><tr><td>LFT</td><td>2027-03-01</td><td>0.10%</td><td>14496.42</td></tr><tr><td>NTN-B</td><td>2027-05-15</td><td>5.58%</td><td>4361.69</td></tr><tr><td>LTN</td><td>2027-07-01</td><td>10.09%</td><td>727.57</td></tr><tr><td>LFT</td><td>2027-09-01</td><td>0.12%</td><td>14479.38</td></tr><tr><td>LTN</td><td>2028-01-01</td><td>10.24%</td><td>689.13</td></tr><tr><td>LFT</td><td>2028-03-01</td><td>0.13%</td><td>14466.80</td></tr><tr><td>NTN-B</td><td>2028-08-15</td><td>5.59%</td><td>4315.04</td></tr><tr><td>LFT</td><td>2028-09-01</td><td>0.14%</td><td>14450.90</td></tr><tr><td>NTN-F</td><td>2029-01-01</td><td>10.36%</td><td>1005.72</td></tr><tr><td>LFT</td><td>2029-03-01</td><td>0.16%</td><td>14426.81</td></tr><tr><td>NTN-B</td><td>2029-05-15</td><td>5.61%</td><td>4387.77</td></tr><tr><td>LFT</td><td>2029-09-01</td><td>0.17%</td><td>14406.47</td></tr><tr><td>LTN</td><td>2030-01-01</td><td>10.61%</td><td>557.62</td></tr><tr><td>LFT</td><td>2030-03-01</td><td>0.18%</td><td>14385.20</td></tr><tr><td>NTN-B</td><td>2030-08-15</td><td>5.59%</td><td>4344.94</td></tr><tr><td>NTN-C</td><td>2031-01-01</td><td>5.47%</td><td>8376.22</td></tr><tr><td>NTN-F</td><td>2031-01-01</td><td>10.60%</td><td>991.89</td></tr><tr><td>NTN-B</td><td>2032-08-15</td><td>5.68%</td><td>4342.21</td></tr><tr><td>NTN-F</td><td>2033-01-01</td><td>10.65%</td><td>984.22</td></tr><tr><td>NTN-B</td><td>2033-05-15</td><td>5.67%</td><td>4413.42</td></tr><tr><td>NTN-F</td><td>2035-01-01</td><td>10.73%</td><td>975.80</td></tr><tr><td>NTN-B</td><td>2035-05-15</td><td>5.70%</td><td>4421.88</td></tr><tr><td>NTN-B</td><td>2040-08-15</td><td>5.72%</td><td>4380.40</td></tr><tr><td>NTN-B</td><td>2045-05-15</td><td>5.78%</td><td>4437.97</td></tr><tr><td>NTN-B</td><td>2050-08-15</td><td>5.79%</td><td>4381.68</td></tr><tr><td>NTN-B</td><td>2055-05-15</td><td>5.78%</td><td>4460.34</td></tr><tr><td>NTN-B</td><td>2060-08-15</td><td>5.81%</td><td>4385.98</td></tr></tbody></table></div></div>
+            <div class="chart-card has-tooltip" title="Titulos publicos federais com taxas indicativas e precos unitarios">
+                <h3>🏛️ Titulos Publicos</h3>
+                <div id="loadingTitulosPublicos" style="text-align:center;padding:20px;color:var(--text-secondary);">Carregando títulos públicos...</div>
+                <div style="overflow-x:auto;">
+                    <table id="tabelaTitulosPublicos">
+                        <thead><tr>
+                            <th title="Tipo do titulo: LTN, NTN-F, NTN-B ou LFT">Tipo</th>
+                            <th title="Data de vencimento do titulo">Vencimento</th>
+                            <th title="Taxa indicativa anual do titulo">Taxa Indicativa</th>
+                            <th title="Preco unitario atual do titulo">PU</th>
+                        </tr></thead>
+                        <tbody id="corpoTitulosPublicos"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- TAB: CRI/CRA -->
@@ -347,7 +398,7 @@
             <div id="cricraContainer" class="chart-card has-tooltip" style="display:none;" title="Lista completa de CRIs e CRAs com dados de taxa, PU e duration">
                 <h3>🏠 CRI/CRA - Certificados de Recebíveis</h3>
                 <div style="overflow-x:auto;max-height:500px;">
-                    <table>
+                    <table id="tabelaCRICRA">
                         <thead><tr><th title="Tipo do titulo: CRI ou CRA">Tipo</th><th title="Codigo do titulo">Código</th><th title="Securitizadora emissora do titulo">Emissor</th><th title="Serie da emissao">Série</th><th title="Data de vencimento do titulo">Vencimento</th><th title="Taxa indicativa de remuneracao">Taxa Indicativa</th><th title="Preco unitario atual">PU</th><th title="Duration: prazo medio ponderado em dias">Duration</th></tr></thead>
                         <tbody id="corpoCRICRA"></tbody>
                     </table>
@@ -937,6 +988,239 @@
                 </div>
             </div>
         </div>
+
+        <!-- TAB: ANBIMA Fundos -->
+        <div id="anbima-fundos" class="tab-content">
+            <div class="chart-card">
+                <h3>📈 Fundos ANBIMA - Base Completa</h3>
+                <p style="color:var(--text-secondary);margin-bottom:15px;">40.332 fundos com caracteristicas, categorias e classificacao ESG</p>
+
+                <!-- Estatisticas -->
+                <div class="stats-grid" style="margin-bottom:20px;">
+                    <div class="stat-card"><div class="label">Total Fundos</div><div class="value text-primary" id="statAnbimaFundos">...</div></div>
+                    <div class="stat-card"><div class="label">Fundos ESG</div><div class="value text-secondary" id="statAnbimaESG">...</div></div>
+                    <div class="stat-card"><div class="label">Fundos Ativos</div><div class="value text-success" id="statAnbimaAtivos">...</div></div>
+                    <div class="stat-card"><div class="label">Categorias</div><div class="value text-accent" id="statAnbimaCategorias">...</div></div>
+                </div>
+
+                <!-- Filtros -->
+                <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;">
+                    <input type="text" id="searchAnbimaFundos" placeholder="Buscar por nome, CNPJ ou gestor..."
+                        style="flex:1;min-width:250px;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                    <select id="filtroAnbimaCategoria" style="padding:12px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">Todas Categorias</option>
+                    </select>
+                    <select id="filtroAnbimaESG" style="padding:12px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">ESG / Todos</option>
+                        <option value="true">Apenas ESG</option>
+                        <option value="false">Nao ESG</option>
+                    </select>
+                    <button onclick="carregarAnbimaFundos()" style="padding:12px 20px;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;">
+                        🔍 Buscar
+                    </button>
+                </div>
+
+                <!-- Tabela -->
+                <div style="overflow-x:auto;">
+                    <table id="tabelaAnbimaFundos">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>CNPJ</th>
+                                <th>Categoria</th>
+                                <th>Tipo</th>
+                                <th>Gestor</th>
+                                <th>Status</th>
+                                <th>ESG</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="paginacaoAnbimaFundos" style="margin-top:15px;display:flex;justify-content:center;gap:10px;"></div>
+            </div>
+        </div>
+
+        <!-- TAB: ANBIMA Dados Periodicos -->
+        <div id="anbima-periodicos" class="tab-content">
+            <div class="chart-card" style="background:linear-gradient(135deg,rgba(255,193,7,0.1) 0%,rgba(255,152,0,0.1) 100%);border-color:rgba(255,193,7,0.3);">
+                <div style="display:flex;align-items:center;gap:20px;">
+                    <div style="font-size:3rem;">💰</div>
+                    <div>
+                        <h2 style="color:#FFC107;margin:0;">Fundos 175 - Dados Periodicos</h2>
+                        <p style="color:#FFD54F;margin-top:8px;">Patrimonio Liquido, Cotistas e Valor da Cota</p>
+                        <span id="anbimaPeriodicosDataRef" class="badge" style="background:#FF9800;">Data Ref: ...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatisticas Principais -->
+            <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);">
+                <div class="stat-card has-tooltip" title="Total de fundos com dados periodicos"><div class="label">Total Fundos</div><div class="value text-primary" id="statPeriodFundos">...</div></div>
+                <div class="stat-card has-tooltip" title="Fundos com PL maior que zero"><div class="label">Com PL > 0</div><div class="value text-info" id="statPeriodComPL">...</div></div>
+                <div class="stat-card has-tooltip" title="Soma do patrimonio liquido de todos os fundos"><div class="label">PL Total</div><div class="value text-accent" id="statPeriodPLTotal">...</div></div>
+                <div class="stat-card has-tooltip" title="Soma de todos os cotistas"><div class="label">Total Cotistas</div><div class="value text-secondary" id="statPeriodCotistas">...</div></div>
+                <div class="stat-card has-tooltip" title="Media do valor da cota"><div class="label">Cota Media</div><div class="value text-info" id="statPeriodCotaMedia">...</div></div>
+            </div>
+
+            <!-- Top 10 por PL -->
+            <div class="chart-card">
+                <h3>🏆 Top 10 Fundos por Patrimonio Liquido</h3>
+                <div style="overflow-x:auto;">
+                    <table id="tabelaTopPL">
+                        <thead><tr>
+                            <th>#</th>
+                            <th>Nome do Fundo</th>
+                            <th>Patrimonio Liquido</th>
+                            <th>Cotistas</th>
+                            <th>Valor Cota</th>
+                        </tr></thead>
+                        <tbody id="corpoTopPL"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Distribuicao por Foco e Categoria -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                <div class="chart-card">
+                    <h3>📊 Por Foco de Atuacao</h3>
+                    <div style="overflow-x:auto;max-height:300px;">
+                        <table id="tabelaPorFoco">
+                            <thead><tr><th>Foco</th><th>Qtd Fundos</th><th>PL Total</th></tr></thead>
+                            <tbody id="corpoPorFoco"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>📈 Por Categoria</h3>
+                    <div style="overflow-x:auto;max-height:300px;">
+                        <table id="tabelaPorCategoria">
+                            <thead><tr><th>Categoria</th><th>Qtd Fundos</th><th>PL Total</th></tr></thead>
+                            <tbody id="corpoPorCategoria"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros e Tabela Principal -->
+            <div class="chart-card">
+                <h3>📋 Todos os Fundos com Dados Periodicos</h3>
+                <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;">
+                    <input type="text" id="searchPeriodicos" placeholder="Buscar fundo..." style="flex:1;min-width:200px;padding:10px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                    <select id="filtroPeriodFoco" style="padding:10px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">Todos os Focos</option>
+                    </select>
+                    <select id="filtroPeriodCategoria" style="padding:10px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">Todas Categorias</option>
+                    </select>
+                    <select id="filtroPeriodOrdem" style="padding:10px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="pl">Maior PL</option>
+                        <option value="cotistas">Mais Cotistas</option>
+                        <option value="cota">Maior Cota</option>
+                        <option value="nome">Nome A-Z</option>
+                    </select>
+                    <button onclick="carregarAnbimaPeriodicos()" style="padding:10px 20px;background:var(--accent);border:none;border-radius:8px;color:#000;cursor:pointer;font-weight:bold;">Buscar</button>
+                </div>
+                <div id="loadingPeriodicos" style="text-align:center;padding:20px;color:var(--text-secondary);">Carregando...</div>
+                <div style="overflow-x:auto;max-height:500px;">
+                    <table id="tabelaPeriodicos">
+                        <thead><tr>
+                            <th>Nome</th>
+                            <th>CNPJ</th>
+                            <th>PL Atual</th>
+                            <th>Cotistas</th>
+                            <th>Valor Cota</th>
+                            <th>Foco</th>
+                            <th>Categoria</th>
+                        </tr></thead>
+                        <tbody id="corpoPeriodicos"></tbody>
+                    </table>
+                </div>
+                <div id="paginacaoPeriodicos" style="margin-top:15px;display:flex;justify-content:center;gap:10px;"></div>
+            </div>
+        </div>
+
+        <!-- TAB: ANBIMA CRI/CRA -->
+        <div id="anbima-cricra" class="tab-content">
+            <div class="chart-card">
+                <h3>🏗️ CRI/CRA ANBIMA - Precos Indicativos</h3>
+                <p style="color:var(--text-secondary);margin-bottom:15px;">Certificados de Recebiveis com taxas e precos diarios</p>
+
+                <!-- Estatisticas -->
+                <div class="stats-grid" style="margin-bottom:20px;">
+                    <div class="stat-card"><div class="label">Total CRI/CRA</div><div class="value text-primary" id="statAnbimaCRICRA">...</div></div>
+                    <div class="stat-card"><div class="label">CRI</div><div class="value text-info" id="statAnbimaCRI">...</div></div>
+                    <div class="stat-card"><div class="label">CRA</div><div class="value text-secondary" id="statAnbimaCRA">...</div></div>
+                    <div class="stat-card"><div class="label">Data Referencia</div><div class="value text-accent" id="statAnbimaDataRef" style="font-size:1rem;">...</div></div>
+                </div>
+
+                <!-- Filtros -->
+                <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;">
+                    <input type="text" id="searchAnbimaCRICRA" placeholder="Buscar por emissor, devedor ou codigo..."
+                        style="flex:1;min-width:250px;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                    <select id="filtroAnbimaTipoCRICRA" style="padding:12px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">Todos Tipos</option>
+                        <option value="CRI">CRI</option>
+                        <option value="CRA">CRA</option>
+                    </select>
+                    <button onclick="carregarAnbimaCRICRA()" style="padding:12px 20px;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;">
+                        🔍 Buscar
+                    </button>
+                </div>
+
+                <!-- Tabela -->
+                <div style="overflow-x:auto;">
+                    <table id="tabelaAnbimaCRICRA">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Codigo</th>
+                                <th>Emissor</th>
+                                <th>Devedor</th>
+                                <th>Vencimento</th>
+                                <th>Taxa Indicativa</th>
+                                <th>PU Indicativo</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: ANBIMA Titulos Publicos -->
+        <div id="anbima-titulos" class="tab-content">
+            <div class="chart-card">
+                <h3>📋 Titulos Publicos ANBIMA</h3>
+                <p style="color:var(--text-secondary);margin-bottom:15px;">Precos indicativos de titulos publicos federais</p>
+
+                <!-- Estatisticas -->
+                <div class="stats-grid" style="margin-bottom:20px;">
+                    <div class="stat-card"><div class="label">Total Titulos</div><div class="value text-primary" id="statAnbimaTitulos">...</div></div>
+                    <div class="stat-card"><div class="label">Data Referencia</div><div class="value text-accent" id="statAnbimaTitulosData" style="font-size:1rem;">...</div></div>
+                </div>
+
+                <!-- Tabela -->
+                <div style="overflow-x:auto;">
+                    <table id="tabelaAnbimaTitulos">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Codigo SELIC</th>
+                                <th>ISIN</th>
+                                <th>Vencimento</th>
+                                <th>Taxa Compra</th>
+                                <th>Taxa Venda</th>
+                                <th>Taxa Indicativa</th>
+                                <th>PU Indicativo</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modal KPIs Empresa -->
@@ -965,6 +1249,14 @@
         let graficos = {};
         let gestorasCarregado = false;
         let dadosGestoras = [];
+
+        // Funcao para formatar CNPJ
+        function formatarCNPJ(cnpj) {
+            if (!cnpj) return '-';
+            cnpj = cnpj.toString().replace(/\D/g, '');
+            if (cnpj.length !== 14) return cnpj;
+            return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+        }
 
         // ========== GESTORAS ==========
         async function carregarGestoras() {
@@ -1139,18 +1431,112 @@
         let totalPaginasAPI = 1;
         let totalFundosAPI = 0;
         let dataTableFundos = null; // Instância do Simple-DataTables
+        // Instâncias de DataTables para todas as tabelas
+        let dataTableInstances = {
+            tabelaFundosIS: null,
+            tabelaFundosESG: null,
+            tabelaDebentures: null,
+            tabelaTitulosPublicos: null,
+            tabelaCRICRA: null,
+            tabelaEmissores: null,
+            tabelaFavoritos: null
+        };
 
-        // Função para adicionar filtros por coluna
+        // Função genérica para inicializar Simple-DataTables
+        function inicializarDataTable(tableId, options = {}) {
+            const tableElement = document.getElementById(tableId);
+            if (!tableElement) {
+                console.warn(`Tabela ${tableId} não encontrada`);
+                return null;
+            }
+
+            // Destruir instância anterior se existir
+            if (dataTableInstances[tableId]) {
+                try {
+                    dataTableInstances[tableId].destroy();
+                } catch (e) {
+                    console.warn(`Erro ao destruir DataTable ${tableId}:`, e);
+                }
+            }
+
+            const defaultOptions = {
+                searchable: true,
+                sortable: true,
+                perPage: 25,
+                perPageSelect: [10, 25, 50, 100],
+                labels: {
+                    placeholder: "Buscar...",
+                    perPage: "por página",
+                    noRows: "Nenhum registro encontrado",
+                    info: "Mostrando {start} a {end} de {rows} registros"
+                }
+            };
+
+            try {
+                const mergedOptions = { ...defaultOptions, ...options };
+                const dtInstance = new simpleDatatables.DataTable(`#${tableId}`, mergedOptions);
+                dataTableInstances[tableId] = dtInstance;
+
+                // Adicionar filtros por coluna após inicialização
+                setTimeout(() => {
+                    adicionarFiltrosColunas(tableId, dtInstance);
+                }, 100);
+
+                return dtInstance;
+            } catch (e) {
+                console.error(`Erro ao inicializar DataTable ${tableId}:`, e);
+                return null;
+            }
+        }
+
+        // Função para inicializar tabelas estáticas quando a aba for exibida
+        function inicializarTabelasEstaticas() {
+            // Fundos IS
+            if (!dataTableInstances.tabelaFundosIS && document.getElementById('tabelaFundosIS')) {
+                inicializarDataTable('tabelaFundosIS', { perPage: 25 });
+            }
+            // Fundos ESG
+            if (!dataTableInstances.tabelaFundosESG && document.getElementById('tabelaFundosESG')) {
+                inicializarDataTable('tabelaFundosESG', { perPage: 25 });
+            }
+            // Debêntures
+            if (!dataTableInstances.tabelaDebentures && document.getElementById('tabelaDebentures')) {
+                inicializarDataTable('tabelaDebentures', { perPage: 25 });
+            }
+            // Títulos Públicos
+            if (!dataTableInstances.tabelaTitulosPublicos && document.getElementById('tabelaTitulosPublicos')) {
+                inicializarDataTable('tabelaTitulosPublicos', { perPage: 25 });
+            }
+        }
+
+        // Função para adicionar filtros por coluna (dropdown)
         function adicionarFiltrosColunas(tableId, dtInstance) {
             const table = document.getElementById(tableId);
             if (!table) return;
 
             const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
             const headerRow = thead.querySelector('tr');
             const headers = headerRow.querySelectorAll('th');
 
             // Verificar se já existe linha de filtros
             if (thead.querySelector('.filter-row')) return;
+
+            // Coletar valores únicos de cada coluna
+            const rows = tbody.querySelectorAll('tr');
+            const uniqueValues = [];
+            headers.forEach((th, index) => {
+                const values = new Set();
+                values.add(''); // Opção "Todos"
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length > index) {
+                        const text = cells[index].textContent.trim();
+                        if (text && text !== '-') values.add(text);
+                    }
+                });
+                uniqueValues.push(Array.from(values).sort());
+            });
 
             // Criar linha de filtros
             const filterRow = document.createElement('tr');
@@ -1162,14 +1548,38 @@
 
                 // Não adicionar filtro na última coluna (ações)
                 if (index < headers.length - 1) {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.className = 'datatable-filter';
-                    input.placeholder = 'Filtrar...';
-                    input.addEventListener('input', function() {
+                    const select = document.createElement('select');
+                    select.className = 'datatable-filter';
+                    select.style.width = '100%';
+                    select.style.padding = '4px';
+                    select.style.background = 'var(--bg-card)';
+                    select.style.color = 'var(--text-primary)';
+                    select.style.border = '1px solid var(--border-color)';
+                    select.style.borderRadius = '4px';
+                    select.style.fontSize = '0.7rem';
+
+                    // Adicionar opções
+                    const optionAll = document.createElement('option');
+                    optionAll.value = '';
+                    optionAll.textContent = 'Todos';
+                    select.appendChild(optionAll);
+
+                    // Limitar a 50 valores únicos por coluna
+                    const valores = uniqueValues[index].slice(0, 50);
+                    valores.forEach(val => {
+                        if (val) {
+                            const option = document.createElement('option');
+                            option.value = val;
+                            option.textContent = val.length > 25 ? val.substring(0, 25) + '...' : val;
+                            option.title = val;
+                            select.appendChild(option);
+                        }
+                    });
+
+                    select.addEventListener('change', function() {
                         filtrarColuna(tableId, index, this.value);
                     });
-                    filterTh.appendChild(input);
+                    filterTh.appendChild(select);
                 }
                 filterRow.appendChild(filterTh);
             });
@@ -1177,47 +1587,47 @@
             thead.appendChild(filterRow);
         }
 
-        // Função para filtrar por coluna
+        // Função para filtrar por coluna (suporta select dropdown)
         function filtrarColuna(tableId, colIndex, valor) {
             const table = document.getElementById(tableId);
             if (!table) return;
 
             const tbody = table.querySelector('tbody');
             const rows = tbody.querySelectorAll('tr');
-            const valorLower = valor.toLowerCase();
 
             rows.forEach(row => {
                 const cells = row.querySelectorAll('td');
-                if (cells.length > colIndex) {
-                    const cellText = cells[colIndex].textContent.toLowerCase();
-                    const matchesFilter = cellText.includes(valorLower);
+                if (cells.length === 0) return;
 
-                    // Verificar todos os filtros ativos
-                    const filterInputs = table.querySelectorAll('.filter-row input');
-                    let showRow = true;
+                // Verificar todos os filtros ativos (select dropdowns)
+                const filterSelects = table.querySelectorAll('.filter-row select');
+                let showRow = true;
 
-                    filterInputs.forEach((input, idx) => {
-                        if (input.value && cells[idx]) {
-                            const cellVal = cells[idx].textContent.toLowerCase();
-                            if (!cellVal.includes(input.value.toLowerCase())) {
-                                showRow = false;
-                            }
+                filterSelects.forEach((select, idx) => {
+                    if (select.value && cells[idx]) {
+                        const cellVal = cells[idx].textContent.trim();
+                        const filterVal = select.value;
+                        // Comparação exata para dropdown
+                        if (cellVal !== filterVal && !cellVal.includes(filterVal)) {
+                            showRow = false;
                         }
-                    });
+                    }
+                });
 
-                    row.style.display = showRow ? '' : 'none';
-                }
+                row.style.display = showRow ? '' : 'none';
             });
         }
 
         // Carregar dados do Overview automaticamente
         async function carregarOverview() {
             try {
-                // Carregar total de fundos
-                const fundosResponse = await fetch(`${API_URL}/fundos/stats`);
-                const fundosData = await fundosResponse.json();
-                if (fundosData.success) {
-                    document.getElementById('statTotalFundos').textContent = fundosData.data.total.toLocaleString();
+                // Carregar resumo ANBIMA (dados novos)
+                const anbimaResponse = await fetch(`${API_URL}/anbima/resumo`);
+                const anbimaData = await anbimaResponse.json();
+                if (anbimaData.success) {
+                    document.getElementById('statTotalFundos').textContent = anbimaData.data.fundos.toLocaleString();
+                    document.getElementById('statFundosESG').textContent = anbimaData.data.fundos_esg.toLocaleString();
+                    document.getElementById('statFundosESGDetalhe').textContent = 'Base ANBIMA Data';
                 }
 
                 // Carregar total de debêntures
@@ -1268,10 +1678,6 @@
                     document.getElementById('statEmpresasTSB').textContent = tsbData.data.length;
                     document.getElementById('statEmpresasTSBDetalhe').textContent = Math.round(empresasVerdes / tsbData.data.length * 100) + '% Verde';
                 }
-
-                // Fundos ESG (IS + ESG Integrado)
-                document.getElementById('statFundosESG').textContent = '47';
-                document.getElementById('statFundosESGDetalhe').textContent = '18 IS | 29 Integrado';
 
             } catch (e) {
                 console.error('Erro ao carregar Overview:', e);
@@ -1340,12 +1746,8 @@
             }
         }
 
-        // Buscar fundos da API
+        // Buscar fundos da API (usando dados ANBIMA)
         async function buscarFundosAPI() {
-            const search = document.getElementById('searchFundos')?.value || '';
-            const categoria = document.getElementById('filtroCategoria')?.value || '';
-            const tipo = document.getElementById('filtroTipo')?.value || '';
-
             // Mostrar loading
             document.getElementById('loadingFundos').style.display = 'block';
             document.getElementById('tabelaContainer').style.display = 'none';
@@ -1353,19 +1755,16 @@
             try {
                 const params = new URLSearchParams({
                     page: paginaAtualAPI,
-                    per_page: 50,
-                    search: search,
-                    categoria: categoria,
-                    tipo: tipo
+                    per_page: 50
                 });
 
-                const response = await fetch(`${API_URL}/fundos?${params}`);
+                const response = await fetch(`${API_URL}/anbima/fundos?${params}`);
                 const data = await response.json();
 
                 if (data.success) {
                     renderizarTabelaAPI(data.data);
-                    totalFundosAPI = data.pagination.total;
-                    totalPaginasAPI = data.pagination.total_pages;
+                    totalFundosAPI = data.total;
+                    totalPaginasAPI = data.pages;
 
                     // Atualizar estatísticas
                     document.getElementById('totalEncontrados').textContent = totalFundosAPI.toLocaleString();
@@ -1408,23 +1807,22 @@
             let html = '';
             for (let i = 0; i < fundos.length; i++) {
                 const f = fundos[i];
-                const nome = escapeHtml(f.nomecomercial || f.razaosocial);
-                const cnpj = escapeHtml(f.cnpj);
-                const categoria = escapeHtml(f.categoria);
-                const gestora = escapeHtml(f.gestora);
-                const fonte = f.fonte || 'N/A';
+                const nome = escapeHtml(f.nome || f.nomecomercial || f.razaosocial);
+                const cnpj = formatarCNPJ(f.cnpj_classe || f.cnpj);
+                const categoria = escapeHtml(f.categoria_anbima || f.categoria);
+                const gestora = escapeHtml(f.gestor || f.gestora);
+                const isESG = f.fundo_esg === true;
 
-                const fonteClass = fonte === 'ANBIMA' ? 'rgba(66,165,245,0.2);color:#42A5F5' :
-                                   fonte === 'CVM' ? 'rgba(102,187,106,0.2);color:#66BB6A' :
-                                   'rgba(100,100,100,0.2);color:#a0a0b0';
+                const esgClass = isESG ? 'rgba(46,125,50,0.2);color:#66BB6A' : 'rgba(100,100,100,0.2);color:#a0a0b0';
+                const esgText = isESG ? 'ESG' : '-';
 
                 html += `<tr>
                     <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${nome}">${nome}</td>
                     <td style="font-family:monospace;font-size:0.75rem;">${cnpj}</td>
                     <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${categoria}">${categoria}</td>
                     <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${gestora}">${gestora}</td>
-                    <td><span style="background:${fonteClass};padding:3px 8px;border-radius:10px;font-size:0.75rem;">${fonte}</span></td>
-                    <td><button data-cnpj="${cnpj}" data-nome="${nome}" onclick="adicionarFavoritoBtn(this)" style="background:none;border:none;cursor:pointer;font-size:1rem;" title="Adicionar aos favoritos">⭐</button></td>
+                    <td><span style="background:${esgClass};padding:3px 8px;border-radius:10px;font-size:0.75rem;">${esgText}</span></td>
+                    <td><button data-cnpj="${f.cnpj_classe || f.cnpj}" data-nome="${nome}" onclick="adicionarFavoritoBtn(this)" style="background:none;border:none;cursor:pointer;font-size:1rem;" title="Adicionar aos favoritos">⭐</button></td>
                 </tr>`;
             }
             corpo.innerHTML = html;
@@ -1484,6 +1882,14 @@
             const tabelaEl = document.getElementById('tabelaFavoritos');
             const corpoEl = document.getElementById('corpoFavoritos');
 
+            // Destruir instância anterior do DataTable se existir
+            if (dataTableInstances.tabelaFavoritos) {
+                try {
+                    dataTableInstances.tabelaFavoritos.destroy();
+                    dataTableInstances.tabelaFavoritos = null;
+                } catch (e) {}
+            }
+
             if (totalEl) totalEl.textContent = favoritos.length;
 
             if (favoritos.length === 0) {
@@ -1500,6 +1906,11 @@
                             <td><button onclick="removerFavorito('${f.cnpj}')" style="background:rgba(244,67,54,0.2);border:1px solid rgba(244,67,54,0.3);color:#EF5350;padding:5px 10px;border-radius:5px;cursor:pointer;">🗑️ Remover</button></td>
                         </tr>
                     `).join('');
+
+                    // Inicializar Simple-DataTables para Favoritos
+                    setTimeout(() => {
+                        inicializarDataTable('tabelaFavoritos', { perPage: 10 });
+                    }, 100);
                 }
             }
         }
@@ -1529,15 +1940,23 @@
         });
 
         // Carregar CRI/CRA da API
+        let cricraDataTable = null;
+        let cricraCarregado = false;
+
         async function carregarCRICRA() {
+            if (cricraCarregado) return;
+
             try {
-                const response = await fetch(`${API_URL}/cricra`);
+                // Usar endpoint ANBIMA com os dados carregados
+                const response = await fetch(`${API_URL}/anbima/cricra`);
                 const data = await response.json();
                 if (data.success) {
-                    // Atualizar estatísticas
-                    document.getElementById('cricraTotal').textContent = data.stats.total;
-                    document.getElementById('cricraCountCRI').textContent = data.stats.cri;
-                    document.getElementById('cricraCountCRA').textContent = data.stats.cra;
+                    cricraCarregado = true;
+
+                    // Atualizar estatísticas com dados ANBIMA
+                    document.getElementById('cricraTotal').textContent = data.total.toLocaleString('pt-BR');
+                    document.getElementById('cricraCountCRI').textContent = (data.stats?.cri || 0).toLocaleString('pt-BR');
+                    document.getElementById('cricraCountCRA').textContent = (data.stats?.cra || 0).toLocaleString('pt-BR');
 
                     // Renderizar tabela
                     const corpo = document.getElementById('corpoCRICRA');
@@ -1548,16 +1967,18 @@
 
                     let html = '';
                     data.data.forEach(item => {
-                        const tipoClass = item.tipocontrato === 'CRI' ? 'rgba(66,165,245,0.2);color:#42A5F5' : 'rgba(102,187,106,0.2);color:#66BB6A';
-                        const taxa = item.taxaindicativa != null ? parseFloat(item.taxaindicativa).toFixed(2) + '%' : '-';
-                        const pu = item.pu != null ? 'R$ ' + parseFloat(item.pu).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '-';
-                        const duration = item.duration != null ? Math.round(parseFloat(item.duration)) : '-';
+                        const tipo = item.tipo || item.tipocontrato || '-';
+                        const tipoClass = tipo === 'CRI' ? 'rgba(66,165,245,0.2);color:#42A5F5' : 'rgba(102,187,106,0.2);color:#66BB6A';
+                        const taxa = item.taxa_indicativa != null ? parseFloat(item.taxa_indicativa).toFixed(2) + '%' : '-';
+                        const pu = item.pu_indicativo != null ? 'R$ ' + parseFloat(item.pu_indicativo).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '-';
+                        const duration = item.duration_dias != null ? Math.round(parseFloat(item.duration_dias)) + ' dias' : '-';
+                        const vencimento = item.data_vencimento ? new Date(item.data_vencimento).toLocaleDateString('pt-BR') : '-';
                         html += `<tr>
-                            <td><span style="background:${tipoClass};padding:3px 8px;border-radius:10px;font-size:0.75rem;">${item.tipocontrato || '-'}</span></td>
-                            <td style="font-family:monospace;">${escapeHtml(item.codigoativo)}</td>
+                            <td><span style="background:${tipoClass};padding:3px 8px;border-radius:10px;font-size:0.75rem;">${tipo}</span></td>
+                            <td style="font-family:monospace;">${escapeHtml(item.codigo || item.codigoativo)}</td>
                             <td style="max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(item.emissor)}">${escapeHtml(item.emissor)}</td>
                             <td>${escapeHtml(item.serie)}</td>
-                            <td>${item.datavencimento ? item.datavencimento.substring(0,10) : '-'}</td>
+                            <td>${vencimento}</td>
                             <td>${taxa}</td>
                             <td>${pu}</td>
                             <td>${duration}</td>
@@ -1568,10 +1989,34 @@
                     // Mostrar tabela
                     document.getElementById('cricraLoading').style.display = 'none';
                     document.getElementById('cricraContainer').style.display = 'block';
+
+                    // Destruir DataTable anterior se existir
+                    if (cricraDataTable) {
+                        cricraDataTable.destroy();
+                        cricraDataTable = null;
+                    }
+
+                    // Inicializar Simple-DataTables para CRI/CRA após carregar dados
+                    cricraDataTable = new simpleDatatables.DataTable('#tabelaCRICRA', {
+                        searchable: true,
+                        sortable: true,
+                        perPage: 25,
+                        perPageSelect: [10, 25, 50, 100],
+                        labels: {
+                            placeholder: "Buscar CRI/CRA...",
+                            perPage: "por pagina",
+                            noRows: "Nenhum CRI/CRA encontrado",
+                            info: "Mostrando {start} a {end} de {rows} titulos"
+                        }
+                    });
+
+                    // Adicionar filtros dropdown por coluna
+                    setTimeout(() => adicionarFiltrosColunas('tabelaCRICRA', cricraDataTable), 100);
                 } else {
                     document.getElementById('cricraLoading').innerHTML = '<p style="color:#EF5350;">Erro ao carregar CRI/CRA</p>';
                 }
             } catch (e) {
+                console.error('Erro ao carregar CRI/CRA:', e);
                 document.getElementById('cricraLoading').innerHTML = '<p style="color:#EF5350;">API não disponível. Execute: python api/servidor.py</p>';
             }
         }
@@ -2631,6 +3076,7 @@
             originalShowTabAPI(tabId, event);
             if (tabId === 'explorar') {
                 verificarAPI();
+                buscarFundosAPI(); // Carregar fundos automaticamente
             } else if (tabId === 'cri-cra') {
                 carregarCRICRA();
             } else if (tabId === 'tsb') {
@@ -2646,6 +3092,16 @@
                 carregarDebtAnalysis();
             } else if (tabId === 'vencimentos') {
                 carregarVencimentos();
+            } else if (tabId === 'fundos-is') {
+                carregarFundosESGAnbima('tabelaFundosIS', 'corpoFundosIS', 'loadingFundosIS', 'countFundosESG');
+            } else if (tabId === 'fundos-esg') {
+                carregarFundosESGAnbima('tabelaFundosESG', 'corpoFundosESG', 'loadingFundosESG', 'countFundosESG2');
+            } else if (tabId === 'debentures') {
+                // Carregar debêntures da API
+                carregarDebentures();
+            } else if (tabId === 'titulos-publicos') {
+                // Carregar títulos públicos da API
+                carregarTitulosPublicos();
             }
         };
 
@@ -2960,6 +3416,18 @@
                 </tr>`;
             });
             corpo.innerHTML = html;
+
+            // Inicializar Simple-DataTables para Emissores após carregar dados
+            setTimeout(() => {
+                // Destruir instância anterior se existir (para recarregamentos)
+                if (dataTableInstances.tabelaEmissores) {
+                    try {
+                        dataTableInstances.tabelaEmissores.destroy();
+                        dataTableInstances.tabelaEmissores = null;
+                    } catch (e) {}
+                }
+                inicializarDataTable('tabelaEmissores', { perPage: 25 });
+            }, 100);
         }
 
         function atualizarGraficosEmissores(stats) {
@@ -3372,6 +3840,625 @@
             `;
             document.getElementById('aiResultsContainer').style.display = 'none';
         }
+
+        // ========== ANBIMA DATA ==========
+        let anbimaFundosPage = 1;
+        let anbimaFundosDataTable = null;
+        let anbimaCRICRADataTable = null;
+        let anbimaTitulosDataTable = null;
+
+        async function carregarAnbimaFundos() {
+            const search = document.getElementById('searchAnbimaFundos').value;
+            const categoria = document.getElementById('filtroAnbimaCategoria').value;
+            const esg = document.getElementById('filtroAnbimaESG').value;
+
+            const params = new URLSearchParams({
+                page: anbimaFundosPage,
+                per_page: 50
+            });
+            if (search) params.append('search', search);
+            if (categoria) params.append('categoria', categoria);
+            if (esg) params.append('esg', esg);
+
+            try {
+                const response = await fetch(`${API_URL}/anbima/fundos?${params}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Atualizar estatisticas
+                    document.getElementById('statAnbimaFundos').textContent = data.total.toLocaleString('pt-BR');
+                    if (data.stats) {
+                        document.getElementById('statAnbimaESG').textContent = data.stats.total_esg?.toLocaleString('pt-BR') || '0';
+                        document.getElementById('statAnbimaAtivos').textContent = data.stats.ativos?.toLocaleString('pt-BR') || '0';
+                        document.getElementById('statAnbimaCategorias').textContent = data.stats.categorias?.toLocaleString('pt-BR') || '0';
+
+                        // Preencher select de categorias
+                        const selectCategoria = document.getElementById('filtroAnbimaCategoria');
+                        if (selectCategoria.options.length <= 1 && data.stats.lista_categorias) {
+                            data.stats.lista_categorias.forEach(cat => {
+                                const opt = document.createElement('option');
+                                opt.value = cat;
+                                opt.textContent = cat;
+                                selectCategoria.appendChild(opt);
+                            });
+                        }
+                    }
+
+                    // Preencher tabela
+                    const tbody = document.querySelector('#tabelaAnbimaFundos tbody');
+                    tbody.innerHTML = data.data.map(f => `
+                        <tr>
+                            <td title="${f.nome || ''}">${(f.nome || '').substring(0, 50)}${(f.nome || '').length > 50 ? '...' : ''}</td>
+                            <td>${formatarCNPJ(f.cnpj_classe || '')}</td>
+                            <td>${f.categoria_anbima || '-'}</td>
+                            <td>${f.tipo_anbima || '-'}</td>
+                            <td title="${f.gestor || ''}">${(f.gestor || '').substring(0, 30)}${(f.gestor || '').length > 30 ? '...' : ''}</td>
+                            <td><span style="color:${f.status === 'EM FUNCIONAMENTO NORMAL' ? 'var(--success)' : 'var(--text-secondary)'}">${f.status || '-'}</span></td>
+                            <td>${f.fundo_esg ? '<span style="color:var(--secondary)">✓ ESG</span>' : '-'}</td>
+                        </tr>
+                    `).join('');
+
+                    // Inicializar DataTable
+                    if (anbimaFundosDataTable) {
+                        anbimaFundosDataTable.destroy();
+                    }
+                    anbimaFundosDataTable = new simpleDatatables.DataTable('#tabelaAnbimaFundos', {
+                        searchable: true,
+                        sortable: true,
+                        perPage: 25,
+                        perPageSelect: [10, 25, 50, 100],
+                        labels: {
+                            placeholder: "Buscar na tabela...",
+                            perPage: "por pagina",
+                            noRows: "Nenhum fundo encontrado",
+                            info: "Mostrando {start} a {end} de {rows} registros"
+                        }
+                    });
+
+                    // Adicionar filtros dropdown por coluna
+                    setTimeout(() => adicionarFiltrosColunas('tabelaAnbimaFundos', anbimaFundosDataTable), 100);
+
+                    // Paginacao servidor
+                    renderizarPaginacaoAnbima(data.total, data.page, data.per_page);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar fundos ANBIMA:', error);
+            }
+        }
+
+        function renderizarPaginacaoAnbima(total, page, perPage) {
+            const totalPages = Math.ceil(total / perPage);
+            const container = document.getElementById('paginacaoAnbimaFundos');
+
+            let html = '';
+            if (page > 1) {
+                html += `<button onclick="anbimaFundosPage=${page-1};carregarAnbimaFundos()" style="padding:8px 15px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;">← Anterior</button>`;
+            }
+            html += `<span style="padding:8px 15px;color:var(--text-secondary);">Pagina ${page} de ${totalPages} (${total.toLocaleString('pt-BR')} registros)</span>`;
+            if (page < totalPages) {
+                html += `<button onclick="anbimaFundosPage=${page+1};carregarAnbimaFundos()" style="padding:8px 15px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;">Proxima →</button>`;
+            }
+            container.innerHTML = html;
+        }
+
+        async function carregarAnbimaCRICRA() {
+            const search = document.getElementById('searchAnbimaCRICRA').value;
+            const tipo = document.getElementById('filtroAnbimaTipoCRICRA').value;
+
+            const params = new URLSearchParams();
+            if (search) params.append('search', search);
+            if (tipo) params.append('tipo', tipo);
+
+            try {
+                const response = await fetch(`${API_URL}/anbima/cricra?${params}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Estatisticas
+                    document.getElementById('statAnbimaCRICRA').textContent = data.total.toLocaleString('pt-BR');
+                    document.getElementById('statAnbimaCRI').textContent = data.stats?.cri?.toLocaleString('pt-BR') || '0';
+                    document.getElementById('statAnbimaCRA').textContent = data.stats?.cra?.toLocaleString('pt-BR') || '0';
+                    document.getElementById('statAnbimaDataRef').textContent = data.stats?.data_referencia || '-';
+
+                    // Tabela
+                    const tbody = document.querySelector('#tabelaAnbimaCRICRA tbody');
+                    tbody.innerHTML = data.data.map(c => `
+                        <tr>
+                            <td><span style="color:${c.tipo === 'CRI' ? 'var(--info)' : 'var(--secondary)'}">${c.tipo}</span></td>
+                            <td>${c.codigo || '-'}</td>
+                            <td title="${c.emissor || ''}">${(c.emissor || '').substring(0, 30)}${(c.emissor || '').length > 30 ? '...' : ''}</td>
+                            <td title="${c.devedor || ''}">${(c.devedor || '').substring(0, 30)}${(c.devedor || '').length > 30 ? '...' : ''}</td>
+                            <td>${c.data_vencimento ? new Date(c.data_vencimento).toLocaleDateString('pt-BR') : '-'}</td>
+                            <td>${c.taxa_indicativa ? c.taxa_indicativa.toFixed(2) + '%' : '-'}</td>
+                            <td>${c.pu_indicativo ? 'R$ ' + c.pu_indicativo.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '-'}</td>
+                            <td>${c.duration_dias ? Math.round(c.duration_dias) + ' dias' : '-'}</td>
+                        </tr>
+                    `).join('');
+
+                    // DataTable
+                    if (anbimaCRICRADataTable) {
+                        anbimaCRICRADataTable.destroy();
+                    }
+                    anbimaCRICRADataTable = new simpleDatatables.DataTable('#tabelaAnbimaCRICRA', {
+                        searchable: true,
+                        sortable: true,
+                        perPage: 25,
+                        perPageSelect: [10, 25, 50, 100],
+                        labels: {
+                            placeholder: "Buscar...",
+                            perPage: "por pagina",
+                            noRows: "Nenhum CRI/CRA encontrado",
+                            info: "Mostrando {start} a {end} de {rows}"
+                        }
+                    });
+
+                    // Adicionar filtros dropdown por coluna
+                    setTimeout(() => adicionarFiltrosColunas('tabelaAnbimaCRICRA', anbimaCRICRADataTable), 100);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar CRI/CRA ANBIMA:', error);
+            }
+        }
+
+        async function carregarAnbimaTitulos() {
+            try {
+                const response = await fetch(`${API_URL}/anbima/titulos-publicos`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Estatisticas
+                    document.getElementById('statAnbimaTitulos').textContent = data.total.toLocaleString('pt-BR');
+                    document.getElementById('statAnbimaTitulosData').textContent = data.stats?.data_referencia || '-';
+
+                    // Tabela
+                    const tbody = document.querySelector('#tabelaAnbimaTitulos tbody');
+                    tbody.innerHTML = data.data.map(t => `
+                        <tr>
+                            <td>${t.tipo_titulo || '-'}</td>
+                            <td>${t.codigo_selic || '-'}</td>
+                            <td>${t.codigo_isin || '-'}</td>
+                            <td>${t.data_vencimento ? new Date(t.data_vencimento).toLocaleDateString('pt-BR') : '-'}</td>
+                            <td>${t.taxa_compra ? t.taxa_compra.toFixed(2) + '%' : '-'}</td>
+                            <td>${t.taxa_venda ? t.taxa_venda.toFixed(2) + '%' : '-'}</td>
+                            <td>${t.taxa_indicativa ? t.taxa_indicativa.toFixed(2) + '%' : '-'}</td>
+                            <td>${t.pu_indicativo ? 'R$ ' + t.pu_indicativo.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '-'}</td>
+                        </tr>
+                    `).join('');
+
+                    // DataTable
+                    if (anbimaTitulosDataTable) {
+                        anbimaTitulosDataTable.destroy();
+                    }
+                    anbimaTitulosDataTable = new simpleDatatables.DataTable('#tabelaAnbimaTitulos', {
+                        searchable: true,
+                        sortable: true,
+                        perPage: 25,
+                        labels: {
+                            placeholder: "Buscar...",
+                            perPage: "por pagina",
+                            noRows: "Nenhum titulo encontrado",
+                            info: "Mostrando {start} a {end} de {rows}"
+                        }
+                    });
+
+                    // Adicionar filtros dropdown por coluna
+                    setTimeout(() => adicionarFiltrosColunas('tabelaAnbimaTitulos', anbimaTitulosDataTable), 100);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar titulos ANBIMA:', error);
+            }
+        }
+
+        // ========== FUNDOS ESG ANBIMA (para tabs Fundos IS e Fundos ESG) ==========
+        let fundosESGDataTableIS = null;
+        let fundosESGDataTableESG = null;
+
+        async function carregarFundosESGAnbima(tableId, tbodyId, loadingId, countId) {
+            const loading = document.getElementById(loadingId);
+            const tbody = document.getElementById(tbodyId);
+            const count = document.getElementById(countId);
+
+            if (loading) loading.style.display = 'block';
+            if (tbody) tbody.innerHTML = '';
+
+            try {
+                // Buscar apenas fundos ESG
+                const response = await fetch(`${API_URL}/anbima/fundos?esg=true&per_page=500`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Atualizar contagem
+                    if (count) count.textContent = data.total.toLocaleString('pt-BR');
+
+                    // Preencher tabela
+                    if (tbody) {
+                        tbody.innerHTML = data.data.map(f => `
+                            <tr>
+                                <td title="${f.nome || ''}">${(f.nome || '').substring(0, 60)}${(f.nome || '').length > 60 ? '...' : ''}</td>
+                                <td style="font-family:monospace;font-size:0.75rem;">${formatarCNPJ(f.cnpj_classe || '')}</td>
+                                <td>${f.categoria_anbima || '-'}</td>
+                                <td title="${f.gestor || ''}">${(f.gestor || '').substring(0, 40)}${(f.gestor || '').length > 40 ? '...' : ''}</td>
+                            </tr>
+                        `).join('');
+                    }
+
+                    // Destruir DataTable anterior se existir
+                    if (tableId === 'tabelaFundosIS' && fundosESGDataTableIS) {
+                        fundosESGDataTableIS.destroy();
+                        fundosESGDataTableIS = null;
+                    } else if (tableId === 'tabelaFundosESG' && fundosESGDataTableESG) {
+                        fundosESGDataTableESG.destroy();
+                        fundosESGDataTableESG = null;
+                    }
+
+                    // Inicializar DataTable
+                    const dtInstance = new simpleDatatables.DataTable(`#${tableId}`, {
+                        searchable: true,
+                        sortable: true,
+                        perPage: 25,
+                        perPageSelect: [10, 25, 50, 100],
+                        labels: {
+                            placeholder: "Buscar fundo ESG...",
+                            perPage: "por pagina",
+                            noRows: "Nenhum fundo ESG encontrado",
+                            info: "Mostrando {start} a {end} de {rows} fundos ESG"
+                        }
+                    });
+
+                    // Guardar referencia
+                    if (tableId === 'tabelaFundosIS') {
+                        fundosESGDataTableIS = dtInstance;
+                    } else if (tableId === 'tabelaFundosESG') {
+                        fundosESGDataTableESG = dtInstance;
+                    }
+
+                    // Adicionar filtros dropdown por coluna
+                    setTimeout(() => adicionarFiltrosColunas(tableId, dtInstance), 100);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar fundos ESG ANBIMA:', error);
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--error);">Erro ao carregar dados. Tente novamente.</td></tr>';
+                }
+            } finally {
+                if (loading) loading.style.display = 'none';
+            }
+        }
+
+        // ========== DEBENTURES DINAMICO ==========
+        let debenturesDataTable = null;
+        let debenturesCarregadas = false;
+
+        async function carregarDebentures() {
+            if (debenturesCarregadas) return;
+
+            const loading = document.getElementById('loadingDebentures');
+            const tbody = document.getElementById('corpoDebentures');
+
+            try {
+                const response = await fetch(`${API_URL}/debentures`);
+                const data = await response.json();
+
+                if (data.success) {
+                    debenturesCarregadas = true;
+
+                    // Estatisticas por grupo
+                    const porGrupo = { 'DI PERCENTUAL': 0, 'DI SPREAD': 0, 'IPCA SPREAD': 0 };
+                    data.data.forEach(d => {
+                        const grupo = (d.grupo || '').toUpperCase();
+                        if (grupo.includes('DI PERCENTUAL') || grupo.includes('DI %')) porGrupo['DI PERCENTUAL']++;
+                        else if (grupo.includes('DI SPREAD') || grupo.includes('DI +')) porGrupo['DI SPREAD']++;
+                        else if (grupo.includes('IPCA')) porGrupo['IPCA SPREAD']++;
+                    });
+
+                    document.getElementById('debTotal').textContent = data.total.toLocaleString('pt-BR');
+                    document.getElementById('debDIPerc').textContent = porGrupo['DI PERCENTUAL'].toLocaleString('pt-BR');
+                    document.getElementById('debDISpread').textContent = porGrupo['DI SPREAD'].toLocaleString('pt-BR');
+                    document.getElementById('debIPCASpread').textContent = porGrupo['IPCA SPREAD'].toLocaleString('pt-BR');
+
+                    // Preencher tabela
+                    tbody.innerHTML = data.data.map(d => `
+                        <tr>
+                            <td title="${d.emissor || ''}">${(d.emissor || '').substring(0, 45)}${(d.emissor || '').length > 45 ? '...' : ''}</td>
+                            <td>${d.codigoativo || '-'}</td>
+                            <td>${d.grupo || '-'}</td>
+                            <td>${d.percentualtaxa || '-'}</td>
+                            <td>${d.duration ? Math.round(d.duration) : '-'}</td>
+                            <td>${d.pu ? 'R$ ' + parseFloat(d.pu).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '-'}</td>
+                        </tr>
+                    `).join('');
+
+                    // Destruir DataTable anterior se existir
+                    if (debenturesDataTable) {
+                        debenturesDataTable.destroy();
+                        debenturesDataTable = null;
+                    }
+
+                    // Inicializar DataTable
+                    debenturesDataTable = new simpleDatatables.DataTable('#tabelaDebentures', {
+                        searchable: true,
+                        sortable: true,
+                        perPage: 25,
+                        perPageSelect: [10, 25, 50, 100],
+                        labels: {
+                            placeholder: "Buscar debenture...",
+                            perPage: "por pagina",
+                            noRows: "Nenhuma debenture encontrada",
+                            info: "Mostrando {start} a {end} de {rows} debentures"
+                        }
+                    });
+
+                    // Adicionar filtros dropdown por coluna
+                    setTimeout(() => adicionarFiltrosColunas('tabelaDebentures', debenturesDataTable), 100);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar debentures:', error);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--error);">Erro ao carregar dados.</td></tr>';
+            } finally {
+                if (loading) loading.style.display = 'none';
+            }
+        }
+
+        // ========== TITULOS PUBLICOS DINAMICO ==========
+        let titulosPublicosDataTable = null;
+        let titulosPublicosCarregados = false;
+
+        async function carregarTitulosPublicos() {
+            if (titulosPublicosCarregados) return;
+
+            const loading = document.getElementById('loadingTitulosPublicos');
+            const tbody = document.getElementById('corpoTitulosPublicos');
+
+            try {
+                // Usar endpoint ANBIMA com os dados carregados
+                const response = await fetch(`${API_URL}/anbima/titulos-publicos`);
+                const data = await response.json();
+
+                if (data.success) {
+                    titulosPublicosCarregados = true;
+
+                    // Usar estatisticas da API se disponiveis
+                    document.getElementById('titTotal').textContent = data.total.toLocaleString('pt-BR');
+                    document.getElementById('titLTN').textContent = (data.stats?.LTN || 0).toLocaleString('pt-BR');
+                    document.getElementById('titNTNF').textContent = (data.stats?.['NTN-F'] || 0).toLocaleString('pt-BR');
+                    document.getElementById('titNTNB').textContent = (data.stats?.['NTN-B'] || 0).toLocaleString('pt-BR');
+                    document.getElementById('titLFT').textContent = (data.stats?.LFT || 0).toLocaleString('pt-BR');
+
+                    // Preencher tabela com campos ANBIMA
+                    tbody.innerHTML = data.data.map(t => {
+                        const vencimento = t.data_vencimento ? new Date(t.data_vencimento).toLocaleDateString('pt-BR') : '-';
+                        const taxa = t.taxa_indicativa != null ? parseFloat(t.taxa_indicativa).toFixed(2) + '%' : '-';
+                        const pu = t.pu_indicativo != null ? 'R$ ' + parseFloat(t.pu_indicativo).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '-';
+                        return `<tr>
+                            <td>${t.tipo_titulo || '-'}</td>
+                            <td>${vencimento}</td>
+                            <td>${taxa}</td>
+                            <td>${pu}</td>
+                        </tr>`;
+                    }).join('');
+
+                    // Destruir DataTable anterior se existir
+                    if (titulosPublicosDataTable) {
+                        titulosPublicosDataTable.destroy();
+                        titulosPublicosDataTable = null;
+                    }
+
+                    // Inicializar DataTable
+                    titulosPublicosDataTable = new simpleDatatables.DataTable('#tabelaTitulosPublicos', {
+                        searchable: true,
+                        sortable: true,
+                        perPage: 25,
+                        perPageSelect: [10, 25, 50, 100],
+                        labels: {
+                            placeholder: "Buscar titulo...",
+                            perPage: "por pagina",
+                            noRows: "Nenhum titulo encontrado",
+                            info: "Mostrando {start} a {end} de {rows} titulos"
+                        }
+                    });
+
+                    // Adicionar filtros dropdown por coluna
+                    setTimeout(() => adicionarFiltrosColunas('tabelaTitulosPublicos', titulosPublicosDataTable), 100);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar titulos publicos:', error);
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--error);">Erro ao carregar dados.</td></tr>';
+            } finally {
+                if (loading) loading.style.display = 'none';
+            }
+        }
+
+        // ========== ANBIMA DADOS PERIODICOS ==========
+        let anbimaPeriodicosPage = 1;
+        let anbimaPeriodicosDataTable = null;
+        let anbimaPeriodicosCarregado = false;
+
+        async function carregarAnbimaPeriodicos() {
+            const search = document.getElementById('searchPeriodicos')?.value || '';
+            const foco = document.getElementById('filtroPeriodFoco')?.value || '';
+            const categoria = document.getElementById('filtroPeriodCategoria')?.value || '';
+            const ordem = document.getElementById('filtroPeriodOrdem')?.value || 'pl';
+
+            const loading = document.getElementById('loadingPeriodicos');
+            const tbody = document.getElementById('corpoPeriodicos');
+
+            if (loading) loading.style.display = 'block';
+
+            const params = new URLSearchParams({
+                page: anbimaPeriodicosPage,
+                per_page: 50,
+                ordem: ordem
+            });
+            if (search) params.append('search', search);
+            if (foco) params.append('foco', foco);
+            if (categoria) params.append('categoria', categoria);
+
+            try {
+                const response = await fetch(`${API_URL}/anbima/fundos/periodicos?${params}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const stats = data.stats;
+
+                    // Atualizar estatisticas
+                    document.getElementById('statPeriodFundos').textContent = stats.total_fundos?.toLocaleString('pt-BR') || '0';
+                    document.getElementById('statPeriodComPL').textContent = stats.fundos_com_pl?.toLocaleString('pt-BR') || '0';
+                    document.getElementById('statPeriodPLTotal').textContent = stats.pl_total ? 'R$ ' + (stats.pl_total / 1e12).toFixed(2) + ' Tri' : '-';
+                    document.getElementById('statPeriodCotistas').textContent = stats.cotistas_total ? (stats.cotistas_total / 1e6).toFixed(1) + ' Mi' : '-';
+                    document.getElementById('statPeriodCotaMedia').textContent = stats.cota_media ? 'R$ ' + stats.cota_media.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-';
+                    document.getElementById('anbimaPeriodicosDataRef').textContent = 'Data Ref: ' + (stats.data_referencia || '-');
+
+                    // Top 10 por PL
+                    if (stats.top_pl && !anbimaPeriodicosCarregado) {
+                        document.getElementById('corpoTopPL').innerHTML = stats.top_pl.map((f, i) => `
+                            <tr>
+                                <td style="font-weight:bold;color:var(--accent);">${i + 1}</td>
+                                <td title="${f.nome}">${f.nome.substring(0, 50)}${f.nome.length > 50 ? '...' : ''}</td>
+                                <td style="text-align:right;color:var(--success);">R$ ${(f.pl / 1e9).toFixed(2)} Bi</td>
+                                <td style="text-align:right;">${f.cotistas?.toLocaleString('pt-BR') || '-'}</td>
+                                <td style="text-align:right;">R$ ${f.cota?.toLocaleString('pt-BR', {minimumFractionDigits: 2}) || '-'}</td>
+                            </tr>
+                        `).join('');
+                    }
+
+                    // Por Foco
+                    if (stats.por_foco && !anbimaPeriodicosCarregado) {
+                        document.getElementById('corpoPorFoco').innerHTML = stats.por_foco.map(f => `
+                            <tr>
+                                <td>${f.foco || '-'}</td>
+                                <td style="text-align:right;">${f.qtd?.toLocaleString('pt-BR') || '0'}</td>
+                                <td style="text-align:right;color:var(--success);">R$ ${(f.pl / 1e9).toFixed(2)} Bi</td>
+                            </tr>
+                        `).join('');
+                    }
+
+                    // Por Categoria
+                    if (stats.por_categoria && !anbimaPeriodicosCarregado) {
+                        document.getElementById('corpoPorCategoria').innerHTML = stats.por_categoria.map(c => `
+                            <tr>
+                                <td>${c.categoria || '-'}</td>
+                                <td style="text-align:right;">${c.qtd?.toLocaleString('pt-BR') || '0'}</td>
+                                <td style="text-align:right;color:var(--success);">R$ ${(c.pl / 1e9).toFixed(2)} Bi</td>
+                            </tr>
+                        `).join('');
+                    }
+
+                    // Preencher selects de filtro na primeira vez
+                    if (!anbimaPeriodicosCarregado) {
+                        const selectFoco = document.getElementById('filtroPeriodFoco');
+                        const selectCategoria = document.getElementById('filtroPeriodCategoria');
+
+                        if (stats.lista_focos) {
+                            stats.lista_focos.forEach(f => {
+                                const opt = document.createElement('option');
+                                opt.value = f;
+                                opt.textContent = f;
+                                selectFoco.appendChild(opt);
+                            });
+                        }
+                        if (stats.lista_categorias) {
+                            stats.lista_categorias.forEach(c => {
+                                const opt = document.createElement('option');
+                                opt.value = c;
+                                opt.textContent = c;
+                                selectCategoria.appendChild(opt);
+                            });
+                        }
+                        anbimaPeriodicosCarregado = true;
+                    }
+
+                    // Tabela principal
+                    tbody.innerHTML = data.data.map(f => `
+                        <tr>
+                            <td title="${f.nome || ''}">${(f.nome || '').substring(0, 45)}${(f.nome || '').length > 45 ? '...' : ''}</td>
+                            <td style="font-family:monospace;font-size:0.75rem;">${formatarCNPJ(f.cnpj_classe || '')}</td>
+                            <td style="text-align:right;color:var(--success);">${f.pl_atual ? 'R$ ' + (f.pl_atual / 1e6).toFixed(2) + ' Mi' : '-'}</td>
+                            <td style="text-align:right;">${f.qtd_cotistas?.toLocaleString('pt-BR') || '-'}</td>
+                            <td style="text-align:right;">R$ ${f.valor_cota?.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '-'}</td>
+                            <td>${f.foco_atuacao || '-'}</td>
+                            <td>${f.nivel1_categoria || '-'}</td>
+                        </tr>
+                    `).join('');
+
+                    // Destruir DataTable anterior se existir
+                    if (anbimaPeriodicosDataTable) {
+                        anbimaPeriodicosDataTable.destroy();
+                        anbimaPeriodicosDataTable = null;
+                    }
+
+                    // Inicializar DataTable
+                    anbimaPeriodicosDataTable = new simpleDatatables.DataTable('#tabelaPeriodicos', {
+                        searchable: true,
+                        sortable: true,
+                        perPage: 25,
+                        perPageSelect: [10, 25, 50, 100],
+                        labels: {
+                            placeholder: "Buscar...",
+                            perPage: "por pagina",
+                            noRows: "Nenhum fundo encontrado",
+                            info: "Mostrando {start} a {end} de {rows} fundos"
+                        }
+                    });
+
+                    // Adicionar filtros dropdown por coluna
+                    setTimeout(() => adicionarFiltrosColunas('tabelaPeriodicos', anbimaPeriodicosDataTable), 100);
+
+                    // Paginacao
+                    renderizarPaginacaoPeriodicos(data.total, data.page, data.per_page);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados periodicos:', error);
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--error);">Erro ao carregar dados.</td></tr>';
+            } finally {
+                if (loading) loading.style.display = 'none';
+            }
+        }
+
+        function renderizarPaginacaoPeriodicos(total, page, perPage) {
+            const totalPages = Math.ceil(total / perPage);
+            const container = document.getElementById('paginacaoPeriodicos');
+
+            let html = '';
+            if (page > 1) {
+                html += `<button onclick="anbimaPeriodicosPage=${page-1};carregarAnbimaPeriodicos()" style="padding:8px 15px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;">← Anterior</button>`;
+            }
+            html += `<span style="padding:8px 15px;color:var(--text-secondary);">Pagina ${page} de ${totalPages} (${total.toLocaleString('pt-BR')} registros)</span>`;
+            if (page < totalPages) {
+                html += `<button onclick="anbimaPeriodicosPage=${page+1};carregarAnbimaPeriodicos()" style="padding:8px 15px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;">Proxima →</button>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // Carregar dados quando as abas sao mostradas
+        const originalShowTabAnbima = showTab;
+        showTab = function(tabId, event) {
+            originalShowTabAnbima(tabId, event);
+            if (tabId === 'anbima-fundos' && !anbimaFundosDataTable) {
+                carregarAnbimaFundos();
+            } else if (tabId === 'anbima-periodicos' && !anbimaPeriodicosCarregado) {
+                carregarAnbimaPeriodicos();
+            } else if (tabId === 'anbima-cricra' && !anbimaCRICRADataTable) {
+                carregarAnbimaCRICRA();
+            } else if (tabId === 'anbima-titulos' && !anbimaTitulosDataTable) {
+                carregarAnbimaTitulos();
+            }
+        };
+
+        // Enter para buscar nos inputs ANBIMA
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchAnbimaFundos = document.getElementById('searchAnbimaFundos');
+            if (searchAnbimaFundos) {
+                searchAnbimaFundos.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') carregarAnbimaFundos();
+                });
+            }
+            const searchAnbimaCRICRA = document.getElementById('searchAnbimaCRICRA');
+            if (searchAnbimaCRICRA) {
+                searchAnbimaCRICRA.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') carregarAnbimaCRICRA();
+                });
+            }
+        });
     </script>
 </body>
 </html>

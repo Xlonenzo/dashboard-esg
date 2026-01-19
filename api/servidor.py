@@ -1845,6 +1845,440 @@ def get_vencimentos():
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
+# ========== ENDPOINTS ANBIMA DATA (NOVOS DADOS) ==========
+
+@app.route('/api/anbima/fundos')
+def get_anbima_fundos():
+    """Lista fundos da tabela fundos.fundos_anbima com filtros"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Parametros
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 50))
+        search = request.args.get('search', '')
+        categoria = request.args.get('categoria', '')
+        tipo = request.args.get('tipo', '')
+        esg = request.args.get('esg', '')
+
+        offset = (page - 1) * per_page
+
+        # Construir query
+        where_clauses = ["1=1"]
+        params = []
+
+        if search:
+            where_clauses.append("(nome ILIKE %s OR cnpj_classe ILIKE %s OR gestor ILIKE %s)")
+            params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
+
+        if categoria:
+            where_clauses.append("categoria_anbima ILIKE %s")
+            params.append(f'%{categoria}%')
+
+        if tipo:
+            where_clauses.append("tipo_anbima ILIKE %s")
+            params.append(f'%{tipo}%')
+
+        if esg == 'true':
+            where_clauses.append("fundo_esg = true")
+
+        where_sql = " AND ".join(where_clauses)
+
+        # Contar total
+        cursor.execute(f"SELECT COUNT(*) FROM fundos.fundos_anbima WHERE {where_sql}", params)
+        total = cursor.fetchone()[0]
+
+        # Buscar dados
+        cursor.execute(f"""
+            SELECT codigo_anbima, estrutura, nome, cnpj_classe, cnpj_fundo,
+                   status, data_inicio, categoria_anbima, tipo_anbima,
+                   fundo_esg, administrador, gestor, tipo_investidor,
+                   foco_atuacao, nivel1_categoria, nivel2_categoria, nivel3_subcategoria,
+                   pl_atual, qtd_cotistas, valor_cota
+            FROM fundos.fundos_anbima
+            WHERE {where_sql}
+            ORDER BY pl_atual DESC NULLS LAST
+            LIMIT %s OFFSET %s
+        """, params + [per_page, offset])
+
+        fundos = query_to_dict(cursor)
+
+        # Estatisticas basicas (apenas na primeira pagina)
+        stats = None
+        if page == 1:
+            stats = {}
+            # Total ESG
+            cursor.execute("SELECT COUNT(*) FROM fundos.fundos_anbima WHERE fundo_esg = true")
+            stats['total_esg'] = cursor.fetchone()[0]
+            # Fundos ativos
+            cursor.execute("SELECT COUNT(*) FROM fundos.fundos_anbima WHERE status ILIKE '%ativo%'")
+            stats['ativos'] = cursor.fetchone()[0]
+            # Categorias distintas
+            cursor.execute("SELECT COUNT(DISTINCT categoria_anbima) FROM fundos.fundos_anbima WHERE categoria_anbima IS NOT NULL")
+            stats['categorias'] = cursor.fetchone()[0]
+            # Lista de categorias para o filtro
+            cursor.execute("SELECT DISTINCT categoria_anbima FROM fundos.fundos_anbima WHERE categoria_anbima IS NOT NULL ORDER BY categoria_anbima")
+            stats['lista_categorias'] = [r[0] for r in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        response = {
+            "success": True,
+            "data": fundos,
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "pages": (total + per_page - 1) // per_page
+        }
+        if stats:
+            response['stats'] = stats
+
+        return jsonify(response)
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/anbima/fundos/stats')
+def get_anbima_fundos_stats():
+    """Estatisticas dos fundos ANBIMA"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        stats = {}
+
+        # Total de fundos
+        cursor.execute("SELECT COUNT(*) FROM fundos.fundos_anbima")
+        stats['total'] = cursor.fetchone()[0]
+
+        # Fundos ESG
+        cursor.execute("SELECT COUNT(*) FROM fundos.fundos_anbima WHERE fundo_esg = true")
+        stats['total_esg'] = cursor.fetchone()[0]
+
+        # Por categoria
+        cursor.execute("""
+            SELECT categoria_anbima, COUNT(*) as qtd
+            FROM fundos.fundos_anbima
+            WHERE categoria_anbima IS NOT NULL
+            GROUP BY categoria_anbima
+            ORDER BY qtd DESC
+            LIMIT 10
+        """)
+        stats['por_categoria'] = [{'categoria': r[0], 'qtd': r[1]} for r in cursor.fetchall()]
+
+        # Por tipo
+        cursor.execute("""
+            SELECT tipo_anbima, COUNT(*) as qtd
+            FROM fundos.fundos_anbima
+            WHERE tipo_anbima IS NOT NULL
+            GROUP BY tipo_anbima
+            ORDER BY qtd DESC
+            LIMIT 10
+        """)
+        stats['por_tipo'] = [{'tipo': r[0], 'qtd': r[1]} for r in cursor.fetchall()]
+
+        # Patrimonio total
+        cursor.execute("SELECT SUM(pl_atual) FROM fundos.fundos_anbima WHERE pl_atual IS NOT NULL")
+        pl_total = cursor.fetchone()[0]
+        stats['patrimonio_total'] = float(pl_total) if pl_total else 0
+
+        # Total cotistas
+        cursor.execute("SELECT SUM(qtd_cotistas) FROM fundos.fundos_anbima WHERE qtd_cotistas IS NOT NULL")
+        cotistas = cursor.fetchone()[0]
+        stats['total_cotistas'] = int(cotistas) if cotistas else 0
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({"success": True, "data": stats})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/anbima/fundos/periodicos')
+def get_anbima_fundos_periodicos():
+    """Lista fundos com dados periodicos (PL, cotistas, valor da cota)"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Parametros
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 50))
+        search = request.args.get('search', '')
+        ordem = request.args.get('ordem', 'pl')  # pl, cotistas, cota, nome
+        foco = request.args.get('foco', '')
+        categoria = request.args.get('categoria', '')
+
+        offset = (page - 1) * per_page
+
+        where_sql = "1=1"
+        params = []
+
+        if search:
+            where_sql += " AND (nome ILIKE %s OR cnpj_classe LIKE %s)"
+            params.extend([f'%{search}%', f'%{search}%'])
+
+        if foco:
+            where_sql += " AND foco_atuacao = %s"
+            params.append(foco)
+
+        if categoria:
+            where_sql += " AND nivel1_categoria = %s"
+            params.append(categoria)
+
+        # Definir ordenacao
+        ordem_sql = "pl_atual DESC NULLS LAST"
+        if ordem == 'cotistas':
+            ordem_sql = "qtd_cotistas DESC NULLS LAST"
+        elif ordem == 'cota':
+            ordem_sql = "valor_cota DESC NULLS LAST"
+        elif ordem == 'nome':
+            ordem_sql = "nome ASC"
+
+        # Buscar dados
+        cursor.execute(f"""
+            SELECT codigo_anbima, nome, cnpj_classe, status, data_referencia,
+                   pl_atual, qtd_cotistas, valor_cota, foco_atuacao,
+                   nivel1_categoria, nivel2_categoria, nivel3_subcategoria
+            FROM fundos.fundos_anbima_periodicos
+            WHERE {where_sql}
+            ORDER BY {ordem_sql}
+            LIMIT %s OFFSET %s
+        """, params + [per_page, offset])
+
+        data = query_to_dict(cursor)
+
+        # Contagem total
+        cursor.execute(f"SELECT COUNT(*) FROM fundos.fundos_anbima_periodicos WHERE {where_sql}", params)
+        total = cursor.fetchone()[0]
+
+        # Estatisticas gerais
+        cursor.execute("""
+            SELECT
+                COUNT(*) as total_fundos,
+                COUNT(CASE WHEN pl_atual > 0 THEN 1 END) as fundos_com_pl,
+                SUM(pl_atual) as pl_total,
+                SUM(qtd_cotistas) as cotistas_total,
+                AVG(valor_cota) as cota_media,
+                MAX(data_referencia) as data_referencia
+            FROM fundos.fundos_anbima_periodicos
+        """)
+        stats_row = cursor.fetchone()
+        stats = {
+            'total_fundos': stats_row[0],
+            'fundos_com_pl': stats_row[1],
+            'pl_total': float(stats_row[2]) if stats_row[2] else 0,
+            'cotistas_total': int(stats_row[3]) if stats_row[3] else 0,
+            'cota_media': float(stats_row[4]) if stats_row[4] else 0,
+            'data_referencia': stats_row[5].strftime('%d/%m/%Y') if stats_row[5] else '-'
+        }
+
+        # Top 10 por PL
+        cursor.execute("""
+            SELECT nome, pl_atual, qtd_cotistas, valor_cota
+            FROM fundos.fundos_anbima_periodicos
+            WHERE pl_atual IS NOT NULL AND pl_atual > 0
+            ORDER BY pl_atual DESC
+            LIMIT 10
+        """)
+        stats['top_pl'] = [
+            {'nome': r[0], 'pl': float(r[1]), 'cotistas': int(r[2]) if r[2] else 0, 'cota': float(r[3]) if r[3] else 0}
+            for r in cursor.fetchall()
+        ]
+
+        # Por foco de atuacao
+        cursor.execute("""
+            SELECT foco_atuacao, COUNT(*) as qtd, SUM(pl_atual) as pl
+            FROM fundos.fundos_anbima_periodicos
+            WHERE foco_atuacao IS NOT NULL
+            GROUP BY foco_atuacao
+            ORDER BY pl DESC NULLS LAST
+        """)
+        stats['por_foco'] = [
+            {'foco': r[0], 'qtd': r[1], 'pl': float(r[2]) if r[2] else 0}
+            for r in cursor.fetchall()
+        ]
+
+        # Por categoria nivel 1
+        cursor.execute("""
+            SELECT nivel1_categoria, COUNT(*) as qtd, SUM(pl_atual) as pl
+            FROM fundos.fundos_anbima_periodicos
+            WHERE nivel1_categoria IS NOT NULL
+            GROUP BY nivel1_categoria
+            ORDER BY pl DESC NULLS LAST
+            LIMIT 10
+        """)
+        stats['por_categoria'] = [
+            {'categoria': r[0], 'qtd': r[1], 'pl': float(r[2]) if r[2] else 0}
+            for r in cursor.fetchall()
+        ]
+
+        # Lista de focos para filtro
+        cursor.execute("SELECT DISTINCT foco_atuacao FROM fundos.fundos_anbima_periodicos WHERE foco_atuacao IS NOT NULL ORDER BY 1")
+        stats['lista_focos'] = [r[0] for r in cursor.fetchall()]
+
+        # Lista de categorias para filtro
+        cursor.execute("SELECT DISTINCT nivel1_categoria FROM fundos.fundos_anbima_periodicos WHERE nivel1_categoria IS NOT NULL ORDER BY 1")
+        stats['lista_categorias'] = [r[0] for r in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "data": data,
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "pages": (total + per_page - 1) // per_page,
+            "stats": stats
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/anbima/cricra')
+def get_anbima_cricra():
+    """Lista CRI/CRA da tabela titulos.cricra_anbima"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Parametros
+        tipo = request.args.get('tipo', '')  # CRI ou CRA
+
+        where_sql = "1=1"
+        params = []
+
+        if tipo:
+            where_sql += " AND tipo = %s"
+            params.append(tipo)
+
+        cursor.execute(f"""
+            SELECT data_referencia, tipo, codigo, emissor, devedor,
+                   tipo_remuneracao, taxa_correcao, serie, emissao,
+                   data_vencimento, taxa_compra, taxa_venda, taxa_indicativa,
+                   pu_indicativo, desvio_padrao, duration_dias
+            FROM titulos.cricra_anbima
+            WHERE {where_sql}
+            ORDER BY duration_dias DESC NULLS LAST
+        """, params)
+
+        data = query_to_dict(cursor)
+
+        # Estatisticas
+        cursor.execute("SELECT tipo, COUNT(*) FROM titulos.cricra_anbima GROUP BY tipo")
+        stats_rows = cursor.fetchall()
+        stats = {'total': sum(r[1] for r in stats_rows)}
+        for row in stats_rows:
+            stats[row[0].lower()] = row[1]
+
+        # Data de referencia
+        cursor.execute("SELECT MAX(data_referencia) FROM titulos.cricra_anbima")
+        data_ref = cursor.fetchone()[0]
+        stats['data_referencia'] = data_ref.strftime('%d/%m/%Y') if data_ref else '-'
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "data": data,
+            "total": len(data),
+            "stats": stats
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/anbima/titulos-publicos')
+def get_anbima_titulos_publicos():
+    """Lista titulos publicos da tabela titulos.titulos_publicos_anbima"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        tipo = request.args.get('tipo', '')
+
+        where_sql = "1=1"
+        params = []
+
+        if tipo:
+            where_sql += " AND tipo_titulo = %s"
+            params.append(tipo)
+
+        cursor.execute(f"""
+            SELECT data_referencia, tipo_titulo, codigo_selic, data_vencimento,
+                   codigo_isin, data_emissao, taxa_compra, taxa_venda,
+                   taxa_indicativa, pu_indicativo, desvio_padrao
+            FROM titulos.titulos_publicos_anbima
+            WHERE {where_sql}
+            ORDER BY data_vencimento
+        """, params)
+
+        data = query_to_dict(cursor)
+
+        # Estatisticas
+        cursor.execute("SELECT tipo_titulo, COUNT(*) FROM titulos.titulos_publicos_anbima GROUP BY tipo_titulo")
+        stats_rows = cursor.fetchall()
+        stats = {'total': sum(r[1] for r in stats_rows)}
+        for row in stats_rows:
+            stats[row[0]] = row[1]
+
+        # Data de referencia
+        cursor.execute("SELECT MAX(data_referencia) FROM titulos.titulos_publicos_anbima")
+        data_ref = cursor.fetchone()[0]
+        stats['data_referencia'] = data_ref.strftime('%d/%m/%Y') if data_ref else '-'
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "data": data,
+            "total": len(data),
+            "stats": stats
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/anbima/resumo')
+def get_anbima_resumo():
+    """Resumo geral dos dados ANBIMA"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        resumo = {}
+
+        # Fundos
+        cursor.execute("SELECT COUNT(*) FROM fundos.fundos_anbima")
+        resumo['fundos'] = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM fundos.fundos_anbima WHERE fundo_esg = true")
+        resumo['fundos_esg'] = cursor.fetchone()[0]
+
+        cursor.execute("SELECT SUM(pl_atual) FROM fundos.fundos_anbima")
+        pl = cursor.fetchone()[0]
+        resumo['patrimonio_total'] = float(pl) if pl else 0
+
+        # CRI/CRA
+        cursor.execute("SELECT COUNT(*) FROM titulos.cricra_anbima WHERE tipo = 'CRI'")
+        resumo['cri'] = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM titulos.cricra_anbima WHERE tipo = 'CRA'")
+        resumo['cra'] = cursor.fetchone()[0]
+
+        # Titulos Publicos
+        cursor.execute("SELECT COUNT(*) FROM titulos.titulos_publicos_anbima")
+        resumo['titulos_publicos'] = cursor.fetchone()[0]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({"success": True, "data": resumo})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == '__main__':
     print("=" * 60)
     print("SERVIDOR DASHBOARD + API (PostgreSQL)")
