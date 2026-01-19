@@ -2829,6 +2829,155 @@ def get_cvm_carteira_stats():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/fundos/<cnpj>/titulos-anbima')
+def get_fundo_titulos_anbima(cnpj):
+    """Retorna titulos ANBIMA encontrados na carteira do fundo"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Limpar CNPJ
+        cnpj_limpo = cnpj.replace('.', '').replace('/', '').replace('-', '')
+
+        # Buscar titulos ANBIMA na carteira do fundo
+        cursor.execute("""
+            SELECT tipo_ativo, emissor_carteira, cnpj_emissor, valor_mercado,
+                   tipo_titulo_anbima, codigo_anbima, emissor_anbima, originador,
+                   taxaindicativa, pu_indicativo, duration, tiporemuneracao
+            FROM fundos.carteira_titulos_anbima
+            WHERE cnpj_fundo = %s
+            ORDER BY valor_mercado DESC NULLS LAST
+        """, (cnpj_limpo,))
+
+        columns = ['tipo_ativo', 'emissor_carteira', 'cnpj_emissor', 'valor_mercado',
+                   'tipo_titulo_anbima', 'codigo_anbima', 'emissor_anbima', 'originador',
+                   'taxa_indicativa', 'pu_indicativo', 'duration', 'tipo_remuneracao']
+
+        titulos = []
+        valor_total = 0
+        for row in cursor.fetchall():
+            item = {}
+            for i, col in enumerate(columns):
+                val = row[i]
+                if val is not None:
+                    if hasattr(val, 'isoformat'):
+                        val = val.isoformat()
+                    elif isinstance(val, Decimal):
+                        val = float(val)
+                item[col] = val
+            titulos.append(item)
+            if item.get('valor_mercado'):
+                valor_total += item['valor_mercado']
+
+        # Resumo por tipo
+        cursor.execute("""
+            SELECT tipo_titulo_anbima, COUNT(*), SUM(valor_mercado)
+            FROM fundos.carteira_titulos_anbima
+            WHERE cnpj_fundo = %s
+            GROUP BY tipo_titulo_anbima
+        """, (cnpj_limpo,))
+
+        resumo = [{'tipo': r[0], 'quantidade': r[1], 'valor': float(r[2]) if r[2] else 0}
+                  for r in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "cnpj": cnpj,
+            "total_titulos": len(titulos),
+            "valor_total": valor_total,
+            "resumo_por_tipo": resumo,
+            "titulos": titulos
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/titulos-anbima/fundos')
+def get_titulos_anbima_fundos():
+    """Lista fundos que possuem titulos ANBIMA em suas carteiras"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 50))
+        tipo_titulo = request.args.get('tipo', '')  # CRI/CRA ou Debenture
+        codigo = request.args.get('codigo', '')
+
+        offset = (page - 1) * per_page
+        where_sql = "1=1"
+        params = []
+
+        if tipo_titulo:
+            where_sql += " AND tipo_titulo_anbima = %s"
+            params.append(tipo_titulo)
+
+        if codigo:
+            where_sql += " AND codigo_anbima ILIKE %s"
+            params.append(f'%{codigo}%')
+
+        # Total
+        cursor.execute(f"""
+            SELECT COUNT(DISTINCT cnpj_fundo) FROM fundos.carteira_titulos_anbima WHERE {where_sql}
+        """, params)
+        total_fundos = cursor.fetchone()[0]
+
+        # Dados agregados por fundo
+        cursor.execute(f"""
+            SELECT cnpj_fundo, nome_fundo,
+                   COUNT(*) as total_titulos,
+                   SUM(valor_mercado) as valor_total,
+                   array_agg(DISTINCT tipo_titulo_anbima) as tipos
+            FROM fundos.carteira_titulos_anbima
+            WHERE {where_sql}
+            GROUP BY cnpj_fundo, nome_fundo
+            ORDER BY SUM(valor_mercado) DESC NULLS LAST
+            LIMIT %s OFFSET %s
+        """, params + [per_page, offset])
+
+        fundos = []
+        for row in cursor.fetchall():
+            fundos.append({
+                'cnpj': row[0],
+                'nome': row[1],
+                'total_titulos': row[2],
+                'valor_total': float(row[3]) if row[3] else 0,
+                'tipos': row[4]
+            })
+
+        # Stats
+        cursor.execute(f"""
+            SELECT tipo_titulo_anbima, COUNT(*), COUNT(DISTINCT cnpj_fundo), SUM(valor_mercado)
+            FROM fundos.carteira_titulos_anbima
+            WHERE {where_sql}
+            GROUP BY tipo_titulo_anbima
+        """, params)
+
+        stats = {
+            'total_fundos': total_fundos,
+            'por_tipo': [{'tipo': r[0], 'posicoes': r[1], 'fundos': r[2], 'valor': float(r[3]) if r[3] else 0}
+                         for r in cursor.fetchall()]
+        }
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "data": fundos,
+            "stats": stats,
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total_fundos,
+                "total_pages": (total_fundos + per_page - 1) // per_page
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/api/fundos/consolidados')
 def get_fundos_consolidados():
     """Lista fundos consolidados (ANBIMA + CVM)"""

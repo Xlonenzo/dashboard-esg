@@ -5034,14 +5034,16 @@
             conteudo.innerHTML = '<div style="text-align:center;padding:40px;"><div style="display:inline-block;width:40px;height:40px;border:3px solid var(--border-color);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;"></div><p style="color:var(--text-secondary);margin-top:15px;">Carregando detalhes...</p></div>';
 
             try {
-                // Buscar detalhes e carteira em paralelo
-                const [detalhesRes, carteiraRes] = await Promise.all([
+                // Buscar detalhes, carteira e titulos ANBIMA em paralelo
+                const [detalhesRes, carteiraRes, titulosAnbimaRes] = await Promise.all([
                     fetch(`${API_URL}/fundos/${encodeURIComponent(cnpj)}/detalhes`),
-                    fetch(`${API_URL}/fundos/${encodeURIComponent(cnpj)}/carteira`)
+                    fetch(`${API_URL}/fundos/${encodeURIComponent(cnpj)}/carteira`),
+                    fetch(`${API_URL}/fundos/${encodeURIComponent(cnpj)}/titulos-anbima`)
                 ]);
 
                 const detalhes = await detalhesRes.json();
                 const carteira = await carteiraRes.json();
+                const titulosAnbima = await titulosAnbimaRes.json();
 
                 if (detalhes.success) {
                     // Adicionar carteira aos dados do fundo
@@ -5051,6 +5053,15 @@
                             valor_total_mercado: carteira.valor_total_mercado,
                             resumo_por_tipo: carteira.resumo_por_tipo,
                             posicoes: carteira.posicoes
+                        };
+                    }
+                    // Adicionar titulos ANBIMA
+                    if (titulosAnbima.success && titulosAnbima.total_titulos > 0) {
+                        detalhes.data.titulos_anbima_carteira = {
+                            total: titulosAnbima.total_titulos,
+                            valor_total: titulosAnbima.valor_total,
+                            resumo: titulosAnbima.resumo_por_tipo,
+                            titulos: titulosAnbima.titulos
                         };
                     }
                     renderizarDetalhesFundo(detalhes.data);
@@ -5283,6 +5294,70 @@
                         ${fundo.carteira.total_posicoes > 15 ? `
                             <p style="text-align:center;color:var(--text-secondary);font-size:0.75rem;margin-top:10px;">
                                 Exibindo 15 de ${fundo.carteira.total_posicoes} posicoes (ordenadas por valor)
+                            </p>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // Titulos ANBIMA na Carteira (cruzamento)
+            if (fundo.titulos_anbima_carteira && fundo.titulos_anbima_carteira.total > 0) {
+                html += `
+                    <div style="margin-bottom:25px;">
+                        <h3 style="color:#FF5722;font-size:1rem;margin-bottom:15px;border-bottom:1px solid var(--border-color);padding-bottom:8px;">
+                            Titulos ANBIMA na Carteira
+                            <span style="font-weight:normal;font-size:0.8rem;color:var(--text-secondary);margin-left:10px;">
+                                ${fundo.titulos_anbima_carteira.total} titulos | ${formatarMoedaModal(fundo.titulos_anbima_carteira.valor_total)}
+                            </span>
+                        </h3>
+
+                        <!-- Resumo por tipo -->
+                        ${fundo.titulos_anbima_carteira.resumo && fundo.titulos_anbima_carteira.resumo.length > 0 ? `
+                            <div style="display:flex;gap:15px;margin-bottom:15px;">
+                                ${fundo.titulos_anbima_carteira.resumo.map(r => `
+                                    <div style="background:rgba(255,87,34,0.1);padding:10px 15px;border-radius:8px;border:1px solid rgba(255,87,34,0.3);">
+                                        <div style="font-size:0.75rem;color:var(--text-secondary);">${r.tipo}</div>
+                                        <div style="font-weight:600;color:#FF7043;">${r.quantidade} titulos</div>
+                                        <div style="font-size:0.7rem;color:var(--text-secondary);">${formatarMoedaModal(r.valor)}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <!-- Lista de titulos -->
+                        <table style="width:100%;font-size:0.8rem;">
+                            <thead>
+                                <tr style="background:rgba(255,255,255,0.05);">
+                                    <th style="padding:8px;text-align:left;">Codigo ANBIMA</th>
+                                    <th style="padding:8px;text-align:left;">Emissor</th>
+                                    <th style="padding:8px;text-align:left;">Originador</th>
+                                    <th style="padding:8px;text-align:right;">Valor</th>
+                                    <th style="padding:8px;text-align:right;">Taxa Ind.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                fundo.titulos_anbima_carteira.titulos.slice(0, 10).forEach(tit => {
+                    const tipoColor = tit.tipo_titulo_anbima === 'CRI/CRA' ? '#4CAF50' : '#2196F3';
+                    html += `
+                        <tr>
+                            <td style="padding:6px 8px;">
+                                <span style="background:${tipoColor};color:white;padding:2px 6px;border-radius:6px;font-size:0.65rem;margin-right:5px;">${tit.tipo_titulo_anbima}</span>
+                                <span style="font-family:monospace;">${tit.codigo_anbima || '-'}</span>
+                            </td>
+                            <td style="padding:6px 8px;max-width:150px;overflow:hidden;text-overflow:ellipsis;" title="${tit.emissor_anbima || ''}">${(tit.emissor_anbima || '-').substring(0, 30)}</td>
+                            <td style="padding:6px 8px;max-width:120px;overflow:hidden;text-overflow:ellipsis;" title="${tit.originador || ''}">${(tit.originador || '-').substring(0, 25)}</td>
+                            <td style="padding:6px 8px;text-align:right;color:#FF7043;font-weight:500;">${formatarMoedaModal(tit.valor_mercado)}</td>
+                            <td style="padding:6px 8px;text-align:right;">${tit.taxa_indicativa ? tit.taxa_indicativa.toFixed(2) + '%' : '-'}</td>
+                        </tr>
+                    `;
+                });
+                html += `
+                            </tbody>
+                        </table>
+                        ${fundo.titulos_anbima_carteira.total > 10 ? `
+                            <p style="text-align:center;color:var(--text-secondary);font-size:0.75rem;margin-top:10px;">
+                                Exibindo 10 de ${fundo.titulos_anbima_carteira.total} titulos ANBIMA
                             </p>
                         ` : ''}
                     </div>
