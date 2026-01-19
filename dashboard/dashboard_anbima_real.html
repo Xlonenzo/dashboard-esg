@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radar de Títulos e Fundos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary:#1976D2;--primary-light:#42A5F5;--secondary:#2E7D32;--secondary-light:#66BB6A;--accent:#FF9800;--accent-light:#FFB74D;--danger:#f44336;--success:#4CAF50;--warning:#FFC107;--info:#00BCD4;--purple:#9C27B0;--teal:#009688;--bg-dark:#0a0a1a;--bg-card:#12122a;--bg-card-hover:#1a1a3a;--text-primary:#ffffff;--text-secondary:#a0a0b0;--border-color:#2a2a4a;--sidebar-width:240px; }
@@ -82,6 +84,21 @@
         /* Icone inline para labels e titulos */
         .info-icon { display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:rgba(33,150,243,0.2);border:1px solid rgba(33,150,243,0.4);border-radius:50%;font-size:9px;color:#42A5F5;margin-left:5px;cursor:help;opacity:0.7;transition:all 0.3s;vertical-align:middle; }
         .info-icon:hover { opacity:1;background:rgba(33,150,243,0.4); }
+        /* Simple-DataTables Dark Theme */
+        .datatable-wrapper { background:transparent; }
+        .datatable-container { background:transparent; }
+        .datatable-top, .datatable-bottom { background:transparent;padding:10px 0; }
+        .datatable-top label, .datatable-bottom label { color:var(--text-secondary); }
+        .datatable-selector { background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;padding:5px 10px; }
+        .datatable-input { background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;padding:8px 12px; }
+        .datatable-info { color:var(--text-secondary); }
+        .datatable-pagination .datatable-pagination-list { display:flex;gap:5px; }
+        .datatable-pagination .datatable-pagination-list-item-link { background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;padding:5px 10px;text-decoration:none; }
+        .datatable-pagination .datatable-pagination-list-item-link:hover { background:var(--bg-card-hover); }
+        .datatable-pagination .datatable-pagination-list-item.datatable-active .datatable-pagination-list-item-link { background:var(--primary);border-color:var(--primary); }
+        .datatable-table thead th { cursor:pointer; }
+        .datatable-sorter::before, .datatable-sorter::after { border-color:var(--text-secondary) transparent; }
+        .datatable-filter { background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);border-radius:4px;padding:4px 8px;font-size:0.75rem;width:100%;margin-top:5px; }
     </style>
 </head>
 <body>
@@ -1121,6 +1138,77 @@
         let paginaAtualAPI = 1;
         let totalPaginasAPI = 1;
         let totalFundosAPI = 0;
+        let dataTableFundos = null; // Instância do Simple-DataTables
+
+        // Função para adicionar filtros por coluna
+        function adicionarFiltrosColunas(tableId, dtInstance) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+
+            const thead = table.querySelector('thead');
+            const headerRow = thead.querySelector('tr');
+            const headers = headerRow.querySelectorAll('th');
+
+            // Verificar se já existe linha de filtros
+            if (thead.querySelector('.filter-row')) return;
+
+            // Criar linha de filtros
+            const filterRow = document.createElement('tr');
+            filterRow.className = 'filter-row';
+
+            headers.forEach((th, index) => {
+                const filterTh = document.createElement('th');
+                filterTh.style.padding = '5px';
+
+                // Não adicionar filtro na última coluna (ações)
+                if (index < headers.length - 1) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'datatable-filter';
+                    input.placeholder = 'Filtrar...';
+                    input.addEventListener('input', function() {
+                        filtrarColuna(tableId, index, this.value);
+                    });
+                    filterTh.appendChild(input);
+                }
+                filterRow.appendChild(filterTh);
+            });
+
+            thead.appendChild(filterRow);
+        }
+
+        // Função para filtrar por coluna
+        function filtrarColuna(tableId, colIndex, valor) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+
+            const tbody = table.querySelector('tbody');
+            const rows = tbody.querySelectorAll('tr');
+            const valorLower = valor.toLowerCase();
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length > colIndex) {
+                    const cellText = cells[colIndex].textContent.toLowerCase();
+                    const matchesFilter = cellText.includes(valorLower);
+
+                    // Verificar todos os filtros ativos
+                    const filterInputs = table.querySelectorAll('.filter-row input');
+                    let showRow = true;
+
+                    filterInputs.forEach((input, idx) => {
+                        if (input.value && cells[idx]) {
+                            const cellVal = cells[idx].textContent.toLowerCase();
+                            if (!cellVal.includes(input.value.toLowerCase())) {
+                                showRow = false;
+                            }
+                        }
+                    });
+
+                    row.style.display = showRow ? '' : 'none';
+                }
+            });
+        }
 
         // Carregar dados do Overview automaticamente
         async function carregarOverview() {
@@ -1300,6 +1388,12 @@
             const corpo = document.getElementById('corpoTabelaFundos');
             if (!corpo) return;
 
+            // Destruir instância anterior do DataTable se existir
+            if (dataTableFundos) {
+                dataTableFundos.destroy();
+                dataTableFundos = null;
+            }
+
             if (!fundos || fundos.length === 0) {
                 corpo.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">Nenhum fundo encontrado</td></tr>';
                 return;
@@ -1334,6 +1428,27 @@
                 </tr>`;
             }
             corpo.innerHTML = html;
+
+            // Inicializar Simple-DataTables com filtros por coluna
+            try {
+                dataTableFundos = new simpleDatatables.DataTable("#tabelaFundos", {
+                    searchable: false, // Desabilitado pois já temos busca via API
+                    paging: false, // Desabilitado pois já temos paginação via API
+                    fixedHeight: false,
+                    sortable: true,
+                    columns: [
+                        { select: 5, sortable: false } // Coluna de ações não ordenável
+                    ],
+                    labels: {
+                        noRows: "Nenhum fundo encontrado"
+                    }
+                });
+
+                // Adicionar filtros por coluna manualmente
+                adicionarFiltrosColunas('tabelaFundos', dataTableFundos);
+            } catch (e) {
+                console.warn('Simple-DataTables não inicializado:', e);
+            }
         }
 
         function adicionarFavoritoBtn(btn) {
