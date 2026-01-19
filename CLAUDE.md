@@ -1,10 +1,10 @@
-# CLAUDE.md - ESG Dashboard for Banco Votorantim
+# CLAUDE.md - Dashboard ESG
 
 This document provides comprehensive guidance for AI assistants working with this codebase.
 
 ## Project Overview
 
-This is an **Environmental, Social, and Governance (ESG) Dashboard** for Banco Votorantim (BV) that provides comprehensive analysis and monitoring of sustainable investments and green financing in Brazil. The platform integrates multiple data sources including ANBIMA (Brazilian investment funds association), TSB (Taxonomia Sustentável Brasileira - Brazilian Sustainable Taxonomy), and CVM (Comissão de Valores Mobiliários) corporate data.
+This is an **Environmental, Social, and Governance (ESG) Dashboard** that provides comprehensive analysis and monitoring of sustainable investments and green financing in Brazil. The platform integrates multiple data sources including ANBIMA (Brazilian investment funds association), TSB (Taxonomia Sustentável Brasileira - Brazilian Sustainable Taxonomy), and CVM (Comissão de Valores Mobiliários) corporate data.
 
 ### Key Features
 - Track ESG compliance and sustainable investment portfolios
@@ -315,7 +315,6 @@ The system tracks compliance with multiple ESG frameworks:
 4. **Brazilian Sustainable Taxonomy (TSB)**
 5. **FEBRABAN Green Taxonomy**
 6. **Blue Economy Bonds**
-7. **Banco VB ESG Framework**
 
 ## Business Domains
 
