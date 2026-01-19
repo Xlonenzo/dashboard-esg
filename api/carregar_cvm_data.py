@@ -657,67 +657,88 @@ def criar_view_unificada():
         cur.execute("""
             CREATE OR REPLACE VIEW fundos.fundos_consolidados AS
 
-            -- Fundos que estao na ANBIMA (com ou sem dados CVM)
-            SELECT
-                'ANBIMA' as fonte_principal,
-                a.cnpj_classe as cnpj,
-                a.nome,
-                a.categoria_anbima,
-                a.tipo_anbima,
-                a.fundo_esg,
-                a.gestor as gestor_anbima,
-                a.administrador as administrador_anbima,
-                COALESCE(p.pl_atual, cvm.patrimonio_liquido, i.patrimonio_liquido) as patrimonio_liquido,
-                COALESCE(p.qtd_cotistas, i.numero_cotistas) as numero_cotistas,
-                COALESCE(p.valor_cota, i.valor_cota) as valor_cota,
-                a.foco_atuacao,
-                a.nivel1_categoria,
-                a.nivel2_categoria,
-                cvm.classe as classe_cvm,
-                cvm.situacao as situacao_cvm,
-                cvm.data_registro as data_registro_cvm,
-                i.captacao_dia,
-                i.resgate_dia,
-                CASE WHEN cvm.cnpj IS NOT NULL THEN TRUE ELSE FALSE END as tem_dados_cvm,
-                a.data_carga as data_atualizacao_anbima,
-                i.data_competencia as data_atualizacao_cvm
-            FROM fundos.fundos_anbima a
-            LEFT JOIN fundos.fundos_anbima_periodicos p ON a.cnpj_classe = p.cnpj_classe
-            LEFT JOIN cvm.cadastro_fundos cvm ON a.cnpj_classe = cvm.cnpj
-            LEFT JOIN cvm.informes_diarios i ON a.cnpj_classe = i.cnpj
+            SELECT * FROM (
+                -- Fundos ANBIMA (com dados mais recentes de periodicos e CVM)
+                SELECT DISTINCT ON (a.cnpj_classe)
+                    'ANBIMA' as fonte_principal,
+                    a.cnpj_classe as cnpj,
+                    a.nome,
+                    a.categoria_anbima,
+                    a.tipo_anbima,
+                    a.fundo_esg,
+                    a.gestor as gestor_anbima,
+                    a.administrador as administrador_anbima,
+                    COALESCE(p.pl_atual, cvm.patrimonio_liquido, i.patrimonio_liquido) as patrimonio_liquido,
+                    COALESCE(p.qtd_cotistas, i.numero_cotistas) as numero_cotistas,
+                    COALESCE(p.valor_cota, i.valor_cota) as valor_cota,
+                    a.foco_atuacao,
+                    a.nivel1_categoria,
+                    a.nivel2_categoria,
+                    cvm.classe as classe_cvm,
+                    cvm.situacao as situacao_cvm,
+                    cvm.data_registro as data_registro_cvm,
+                    i.captacao_dia,
+                    i.resgate_dia,
+                    CASE WHEN cvm.cnpj IS NOT NULL THEN TRUE ELSE FALSE END as tem_dados_cvm,
+                    a.data_carga as data_atualizacao_anbima,
+                    i.data_competencia as data_atualizacao_cvm
+                FROM fundos.fundos_anbima a
+                LEFT JOIN LATERAL (
+                    SELECT * FROM fundos.fundos_anbima_periodicos p2
+                    WHERE p2.cnpj_classe = a.cnpj_classe
+                    ORDER BY p2.data_carga DESC NULLS LAST
+                    LIMIT 1
+                ) p ON true
+                LEFT JOIN cvm.cadastro_fundos cvm ON a.cnpj_classe = cvm.cnpj
+                LEFT JOIN LATERAL (
+                    SELECT * FROM cvm.informes_diarios i2
+                    WHERE i2.cnpj = a.cnpj_classe
+                    ORDER BY i2.data_competencia DESC NULLS LAST
+                    LIMIT 1
+                ) i ON true
+                ORDER BY a.cnpj_classe
+            ) anbima
 
             UNION ALL
 
-            -- Fundos que estao APENAS na CVM (nao estao na ANBIMA)
-            SELECT
-                'CVM' as fonte_principal,
-                cvm.cnpj,
-                cvm.nome,
-                cvm.classe as categoria_anbima,
-                NULL as tipo_anbima,
-                FALSE as fundo_esg,
-                cvm.gestor as gestor_anbima,
-                cvm.administrador as administrador_anbima,
-                COALESCE(i.patrimonio_liquido, cvm.patrimonio_liquido) as patrimonio_liquido,
-                i.numero_cotistas,
-                i.valor_cota,
-                NULL as foco_atuacao,
-                NULL as nivel1_categoria,
-                NULL as nivel2_categoria,
-                cvm.classe as classe_cvm,
-                cvm.situacao as situacao_cvm,
-                cvm.data_registro as data_registro_cvm,
-                i.captacao_dia,
-                i.resgate_dia,
-                TRUE as tem_dados_cvm,
-                cvm.data_carga as data_atualizacao_anbima,
-                i.data_competencia as data_atualizacao_cvm
-            FROM cvm.cadastro_fundos cvm
-            LEFT JOIN cvm.informes_diarios i ON cvm.cnpj = i.cnpj
-            WHERE NOT EXISTS (
-                SELECT 1 FROM fundos.fundos_anbima a
-                WHERE a.cnpj_classe = cvm.cnpj
-            )
+            SELECT * FROM (
+                -- Fundos apenas CVM (nao estao na ANBIMA)
+                SELECT DISTINCT ON (cvm.cnpj)
+                    'CVM' as fonte_principal,
+                    cvm.cnpj,
+                    cvm.nome,
+                    cvm.classe as categoria_anbima,
+                    NULL::VARCHAR as tipo_anbima,
+                    FALSE as fundo_esg,
+                    cvm.gestor as gestor_anbima,
+                    cvm.administrador as administrador_anbima,
+                    COALESCE(i.patrimonio_liquido, cvm.patrimonio_liquido) as patrimonio_liquido,
+                    i.numero_cotistas,
+                    i.valor_cota,
+                    NULL::VARCHAR as foco_atuacao,
+                    NULL::VARCHAR as nivel1_categoria,
+                    NULL::VARCHAR as nivel2_categoria,
+                    cvm.classe as classe_cvm,
+                    cvm.situacao as situacao_cvm,
+                    cvm.data_registro as data_registro_cvm,
+                    i.captacao_dia,
+                    i.resgate_dia,
+                    TRUE as tem_dados_cvm,
+                    cvm.data_carga as data_atualizacao_anbima,
+                    i.data_competencia as data_atualizacao_cvm
+                FROM cvm.cadastro_fundos cvm
+                LEFT JOIN LATERAL (
+                    SELECT * FROM cvm.informes_diarios i2
+                    WHERE i2.cnpj = cvm.cnpj
+                    ORDER BY i2.data_competencia DESC NULLS LAST
+                    LIMIT 1
+                ) i ON true
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM fundos.fundos_anbima a
+                    WHERE a.cnpj_classe = cvm.cnpj
+                )
+                ORDER BY cvm.cnpj
+            ) cvm_only
         """)
 
         conn.commit()
