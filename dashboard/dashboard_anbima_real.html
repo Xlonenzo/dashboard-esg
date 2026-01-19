@@ -5034,13 +5034,28 @@
             conteudo.innerHTML = '<div style="text-align:center;padding:40px;"><div style="display:inline-block;width:40px;height:40px;border:3px solid var(--border-color);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;"></div><p style="color:var(--text-secondary);margin-top:15px;">Carregando detalhes...</p></div>';
 
             try {
-                const response = await fetch(`${API_URL}/fundos/${encodeURIComponent(cnpj)}/detalhes`);
-                const result = await response.json();
+                // Buscar detalhes e carteira em paralelo
+                const [detalhesRes, carteiraRes] = await Promise.all([
+                    fetch(`${API_URL}/fundos/${encodeURIComponent(cnpj)}/detalhes`),
+                    fetch(`${API_URL}/fundos/${encodeURIComponent(cnpj)}/carteira`)
+                ]);
 
-                if (result.success) {
-                    renderizarDetalhesFundo(result.data);
+                const detalhes = await detalhesRes.json();
+                const carteira = await carteiraRes.json();
+
+                if (detalhes.success) {
+                    // Adicionar carteira aos dados do fundo
+                    if (carteira.success) {
+                        detalhes.data.carteira = {
+                            total_posicoes: carteira.total_posicoes,
+                            valor_total_mercado: carteira.valor_total_mercado,
+                            resumo_por_tipo: carteira.resumo_por_tipo,
+                            posicoes: carteira.posicoes
+                        };
+                    }
+                    renderizarDetalhesFundo(detalhes.data);
                 } else {
-                    conteudo.innerHTML = `<div style="text-align:center;padding:40px;color:#EF5350;">Erro: ${result.error}</div>`;
+                    conteudo.innerHTML = `<div style="text-align:center;padding:40px;color:#EF5350;">Erro: ${detalhes.error}</div>`;
                 }
             } catch (e) {
                 conteudo.innerHTML = `<div style="text-align:center;padding:40px;color:#EF5350;">Erro ao carregar: ${e.message}</div>`;
@@ -5212,6 +5227,66 @@
                     `;
                 });
                 html += '</tbody></table></div>';
+            }
+
+            // Carteira do Fundo (CVM CDA)
+            if (fundo.carteira && fundo.carteira.total_posicoes > 0) {
+                html += `
+                    <div style="margin-bottom:25px;">
+                        <h3 style="color:#9C27B0;font-size:1rem;margin-bottom:15px;border-bottom:1px solid var(--border-color);padding-bottom:8px;">
+                            Carteira do Fundo (CVM)
+                            <span style="font-weight:normal;font-size:0.8rem;color:var(--text-secondary);margin-left:10px;">
+                                ${fundo.carteira.total_posicoes} posicoes | ${formatarMoedaModal(fundo.carteira.valor_total_mercado)}
+                            </span>
+                        </h3>
+
+                        <!-- Resumo por tipo de ativo -->
+                        ${fundo.carteira.resumo_por_tipo && fundo.carteira.resumo_por_tipo.length > 0 ? `
+                            <div style="margin-bottom:15px;">
+                                <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                                    ${fundo.carteira.resumo_por_tipo.slice(0, 6).map(r => `
+                                        <div style="background:rgba(156,39,176,0.1);padding:8px 12px;border-radius:8px;border:1px solid rgba(156,39,176,0.3);">
+                                            <div style="font-size:0.7rem;color:var(--text-secondary);">${(r.tipo_ativo || 'Outros').substring(0, 25)}</div>
+                                            <div style="font-weight:600;color:#BA68C8;">${formatarMoedaModal(r.valor_total)}</div>
+                                            <div style="font-size:0.65rem;color:var(--text-secondary);">${r.quantidade} ativos</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Top posicoes -->
+                        <table style="width:100%;font-size:0.8rem;">
+                            <thead>
+                                <tr style="background:rgba(255,255,255,0.05);">
+                                    <th style="padding:8px;text-align:left;">Tipo Ativo</th>
+                                    <th style="padding:8px;text-align:left;">Emissor</th>
+                                    <th style="padding:8px;text-align:right;">Valor Mercado</th>
+                                    <th style="padding:8px;text-align:center;">Vencimento</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                fundo.carteira.posicoes.slice(0, 15).forEach(pos => {
+                    html += `
+                        <tr>
+                            <td style="padding:6px 8px;max-width:120px;overflow:hidden;text-overflow:ellipsis;" title="${pos.tipo_ativo || ''}">${(pos.tipo_ativo || '-').substring(0, 30)}</td>
+                            <td style="padding:6px 8px;max-width:180px;overflow:hidden;text-overflow:ellipsis;" title="${pos.emissor || ''}">${(pos.emissor || '-').substring(0, 35)}</td>
+                            <td style="padding:6px 8px;text-align:right;color:#BA68C8;font-weight:500;">${formatarMoedaModal(pos.valor_mercado)}</td>
+                            <td style="padding:6px 8px;text-align:center;">${pos.data_vencimento ? new Date(pos.data_vencimento).toLocaleDateString('pt-BR') : '-'}</td>
+                        </tr>
+                    `;
+                });
+                html += `
+                            </tbody>
+                        </table>
+                        ${fundo.carteira.total_posicoes > 15 ? `
+                            <p style="text-align:center;color:var(--text-secondary);font-size:0.75rem;margin-top:10px;">
+                                Exibindo 15 de ${fundo.carteira.total_posicoes} posicoes (ordenadas por valor)
+                            </p>
+                        ` : ''}
+                    </div>
+                `;
             }
 
             conteudo.innerHTML = html;

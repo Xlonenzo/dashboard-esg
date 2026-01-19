@@ -401,14 +401,244 @@ def carregar_informes_diarios(ano=None, mes=None):
         stats = cur.fetchone()
         print(f"\nEstatisticas {mes:02d}/{ano}:")
         print(f"  Total de fundos: {stats[0]:,}")
-        print(f"  PL Total: R$ {stats[1]/1e12:.2f} Trilhoes" if stats[1] else "  PL Total: N/A")
-        print(f"  Cotistas Total: {stats[2]:,}" if stats[2] else "  Cotistas Total: N/A")
+        print(f"  PL Total: R$ {float(stats[1])/1e12:.2f} Trilhoes" if stats[1] else "  PL Total: N/A")
+        print(f"  Cotistas Total: {int(stats[2]):,}" if stats[2] else "  Cotistas Total: N/A")
 
         return len(values)
 
     except Exception as e:
         conn.rollback()
         print(f"Erro ao carregar informes: {e}")
+        raise
+    finally:
+        cur.close()
+        conn.close()
+
+def carregar_carteira_fundos(ano=None, mes=None):
+    """
+    Carrega carteira de fundos da CVM (CDA - Composicao e Diversificacao das Aplicacoes)
+    Foca no BLC_6 que contem titulos de credito privado (Debentures, CRA, CRI)
+    """
+    if ano is None:
+        ano = datetime.now().year
+    if mes is None:
+        mes = datetime.now().month
+
+    print("\n" + "="*60)
+    print(f"CARREGANDO CARTEIRA CVM (CDA) - {mes:02d}/{ano}")
+    print("="*60)
+
+    # URL do arquivo CDA
+    url = f"{CVM_BASE_URL}/DOC/CDA/DADOS/cda_fi_{ano}{mes:02d}.zip"
+
+    try:
+        print(f"Baixando: {url}")
+        response = requests.get(url, timeout=300)
+        response.raise_for_status()
+    except Exception as e:
+        print(f"Erro ao baixar CDA: {e}")
+        return 0
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        # Criar tabela de carteira
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS cvm.carteira_fundos (
+                id SERIAL PRIMARY KEY,
+                cnpj_fundo VARCHAR(20),
+                nome_fundo VARCHAR(500),
+                tipo_fundo VARCHAR(100),
+                data_competencia DATE,
+                tipo_aplicacao VARCHAR(200),
+                tipo_ativo VARCHAR(200),
+                emissor VARCHAR(500),
+                cnpj_emissor VARCHAR(20),
+                quantidade_posicao NUMERIC,
+                valor_mercado NUMERIC,
+                valor_custo NUMERIC,
+                data_vencimento DATE,
+                indexador VARCHAR(100),
+                taxa_indexador NUMERIC,
+                taxa_prefixada NUMERIC,
+                titulo_cetip VARCHAR(50),
+                ano_mes VARCHAR(7),
+                bloco VARCHAR(10),
+                data_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Criar indice para performance
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS idx_carteira_cnpj_fundo
+            ON cvm.carteira_fundos(cnpj_fundo)
+        """)
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS idx_carteira_tipo_ativo
+            ON cvm.carteira_fundos(tipo_ativo)
+        """)
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS idx_carteira_emissor
+            ON cvm.carteira_fundos(cnpj_emissor)
+        """)
+
+        conn.commit()
+
+        total_registros = 0
+
+        with zipfile.ZipFile(BytesIO(response.content)) as z:
+            arquivos = z.namelist()
+            print(f"Arquivos no ZIP: {len(arquivos)}")
+
+            # Carregar blocos relevantes (BLC_4 a BLC_8 - ativos diversos e credito privado)
+            blocos_interesse = ['BLC_4', 'BLC_5', 'BLC_6', 'BLC_7', 'BLC_8']
+
+            for bloco in blocos_interesse:
+                csv_files = [f for f in arquivos if bloco in f and f.endswith('.csv')]
+
+                for csv_name in csv_files:
+                    print(f"\nProcessando: {csv_name}")
+
+                    try:
+                        with z.open(csv_name) as f:
+                            df = pd.read_csv(f, sep=';', encoding='latin-1')
+
+                        print(f"  Registros: {len(df):,}")
+
+                        if len(df) == 0:
+                            continue
+
+                        # Mapear colunas (variam por bloco)
+                        column_mapping = {
+                            'CNPJ_FUNDO_CLASSE': 'cnpj_fundo',
+                            'CNPJ_FUNDO': 'cnpj_fundo',
+                            'DENOM_SOCIAL': 'nome_fundo',
+                            'TP_FUNDO_CLASSE': 'tipo_fundo',
+                            'DT_COMPTC': 'data_competencia',
+                            'TP_APLIC': 'tipo_aplicacao',
+                            'TP_ATIVO': 'tipo_ativo',
+                            'EMISSOR': 'emissor',
+                            'CPF_CNPJ_EMISSOR': 'cnpj_emissor',
+                            'QT_POS_FINAL': 'quantidade_posicao',
+                            'VL_MERC_POS_FINAL': 'valor_mercado',
+                            'VL_CUSTO_POS_FINAL': 'valor_custo',
+                            'DT_VENC': 'data_vencimento',
+                            'DS_INDEXADOR_POSFX': 'indexador',
+                            'PR_INDEXADOR_POSFX': 'taxa_indexador',
+                            'PR_TAXA_PREFX': 'taxa_prefixada',
+                            'TITULO_CETIP': 'titulo_cetip',
+                            # Colunas alternativas
+                            'DS_ATIVO': 'tipo_ativo_descricao',
+                            'CD_ATIVO': 'codigo_ativo',
+                        }
+
+                        existing_cols = {k: v for k, v in column_mapping.items() if k in df.columns}
+                        df = df.rename(columns=existing_cols)
+
+                        # Verificar se tem cnpj do fundo
+                        if 'cnpj_fundo' not in df.columns:
+                            print(f"  Pulando - sem coluna CNPJ")
+                            continue
+
+                        # Limpar CNPJ
+                        df['cnpj_fundo'] = df['cnpj_fundo'].astype(str).str.replace(r'[^\d]', '', regex=True)
+
+                        if 'cnpj_emissor' in df.columns:
+                            df['cnpj_emissor'] = df['cnpj_emissor'].astype(str).str.replace(r'[^\d]', '', regex=True)
+                            df['cnpj_emissor'] = df['cnpj_emissor'].replace('nan', None)
+
+                        # Converter data
+                        if 'data_competencia' in df.columns:
+                            df['data_competencia'] = pd.to_datetime(df['data_competencia'], errors='coerce')
+                        if 'data_vencimento' in df.columns:
+                            df['data_vencimento'] = pd.to_datetime(df['data_vencimento'], errors='coerce')
+
+                        # Converter numericos
+                        numeric_cols = ['quantidade_posicao', 'valor_mercado', 'valor_custo', 'taxa_indexador', 'taxa_prefixada']
+                        for col in numeric_cols:
+                            if col in df.columns:
+                                df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.'), errors='coerce')
+
+                        # Adicionar metadados
+                        df['ano_mes'] = f"{ano}-{mes:02d}"
+                        df['bloco'] = bloco
+
+                        # Selecionar colunas para inserir
+                        insert_cols = ['cnpj_fundo', 'nome_fundo', 'tipo_fundo', 'data_competencia',
+                                      'tipo_aplicacao', 'tipo_ativo', 'emissor', 'cnpj_emissor',
+                                      'quantidade_posicao', 'valor_mercado', 'valor_custo',
+                                      'data_vencimento', 'indexador', 'taxa_indexador', 'taxa_prefixada',
+                                      'titulo_cetip', 'ano_mes', 'bloco']
+
+                        available_cols = [c for c in insert_cols if c in df.columns]
+
+                        # Preparar valores
+                        values = []
+                        for _, row in df.iterrows():
+                            row_values = []
+                            for col in available_cols:
+                                val = row[col] if col in row else None
+                                if pd.isna(val):
+                                    row_values.append(None)
+                                elif isinstance(val, pd.Timestamp):
+                                    row_values.append(val.date() if not pd.isna(val) else None)
+                                else:
+                                    row_values.append(val)
+                            values.append(tuple(row_values))
+
+                        if values:
+                            # Limpar dados anteriores do mesmo periodo
+                            cur.execute("""
+                                DELETE FROM cvm.carteira_fundos
+                                WHERE ano_mes = %s AND bloco = %s
+                            """, (f"{ano}-{mes:02d}", bloco))
+
+                            # Inserir novos dados
+                            cols_str = ', '.join(available_cols)
+                            placeholders = ', '.join(['%s'] * len(available_cols))
+
+                            execute_values(
+                                cur,
+                                f"INSERT INTO cvm.carteira_fundos ({cols_str}) VALUES %s",
+                                values,
+                                page_size=5000
+                            )
+
+                            total_registros += len(values)
+                            print(f"  Inseridos: {len(values):,}")
+
+                    except Exception as e:
+                        print(f"  Erro no arquivo {csv_name}: {e}")
+                        continue
+
+        conn.commit()
+
+        # Estatisticas finais
+        print(f"\n{'='*40}")
+        print(f"CARTEIRA CVM CARREGADA: {total_registros:,} posicoes")
+
+        cur.execute("""
+            SELECT tipo_ativo, COUNT(*), SUM(valor_mercado)
+            FROM cvm.carteira_fundos
+            WHERE ano_mes = %s
+            GROUP BY tipo_ativo
+            ORDER BY SUM(valor_mercado) DESC NULLS LAST
+            LIMIT 15
+        """, (f"{ano}-{mes:02d}",))
+
+        print(f"\nPrincipais tipos de ativos:")
+        for row in cur.fetchall():
+            tipo = row[0] or 'N/A'
+            count = row[1]
+            valor = float(row[2]) if row[2] else 0
+            print(f"  {tipo[:50]}: {count:,} posicoes (R$ {valor/1e9:.2f} Bi)")
+
+        return total_registros
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Erro ao carregar carteira: {e}")
         raise
     finally:
         cur.close()
@@ -509,7 +739,7 @@ def criar_view_unificada():
             print(f"    Total: {row[1]:,}")
             print(f"    Com dados CVM: {row[2]:,}")
             if row[3]:
-                print(f"    PL Total: R$ {row[3]/1e12:.2f} Trilhoes")
+                print(f"    PL Total: R$ {float(row[3])/1e12:.2f} Trilhoes")
 
         # Total geral
         cur.execute("SELECT COUNT(*) FROM fundos.fundos_consolidados")
@@ -524,7 +754,7 @@ def criar_view_unificada():
         cur.close()
         conn.close()
 
-def main():
+def main(incluir_carteira=False):
     """Executa ETL completo"""
     print("="*60)
     print("ETL CVM - DADOS DE FUNDOS")
@@ -545,7 +775,20 @@ def main():
         except Exception as e:
             print(f"Erro ao carregar {data.month:02d}/{data.year}: {e}")
 
-    # 3. Criar view unificada
+    # 3. Carregar carteira de fundos (CDA) - opcional pois é grande
+    total_carteira = 0
+    if incluir_carteira:
+        # Tenta mes atual, se nao existir tenta mes anterior
+        for tentativa in range(3):
+            data_carteira = hoje - timedelta(days=30*tentativa)
+            try:
+                total_carteira = carregar_carteira_fundos(data_carteira.year, data_carteira.month)
+                if total_carteira > 0:
+                    break
+            except Exception as e:
+                print(f"CDA {data_carteira.month:02d}/{data_carteira.year} nao disponivel: {e}")
+
+    # 4. Criar view unificada
     criar_view_unificada()
 
     print("\n" + "="*60)
@@ -553,7 +796,15 @@ def main():
     print(f"Fim: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Cadastro: {total_cadastro:,} fundos")
     print(f"Informes: {total_informes:,} registros")
+    if incluir_carteira:
+        print(f"Carteira: {total_carteira:,} posicoes")
     print("="*60)
 
 if __name__ == "__main__":
-    main()
+    import sys
+    incluir_carteira = '--carteira' in sys.argv or '-c' in sys.argv
+    if incluir_carteira:
+        print("Modo: ETL completo COM carteira de fundos (CDA)")
+    else:
+        print("Modo: ETL basico (use --carteira ou -c para incluir CDA)")
+    main(incluir_carteira=incluir_carteira)

@@ -2621,6 +2621,214 @@ def get_cvm_stats():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/cvm/carteira')
+def get_cvm_carteira():
+    """Lista carteira de fundos da CVM (CDA)"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 50))
+        cnpj_fundo = request.args.get('cnpj_fundo', '')
+        tipo_ativo = request.args.get('tipo_ativo', '')
+        emissor = request.args.get('emissor', '')
+
+        offset = (page - 1) * per_page
+        where_sql = "1=1"
+        params = []
+
+        if cnpj_fundo:
+            where_sql += " AND cnpj_fundo = %s"
+            params.append(cnpj_fundo.replace('.', '').replace('/', '').replace('-', ''))
+
+        if tipo_ativo:
+            where_sql += " AND tipo_ativo ILIKE %s"
+            params.append(f'%{tipo_ativo}%')
+
+        if emissor:
+            where_sql += " AND (emissor ILIKE %s OR cnpj_emissor ILIKE %s)"
+            params.extend([f'%{emissor}%', f'%{emissor}%'])
+
+        # Total count
+        cursor.execute(f"""
+            SELECT COUNT(*) FROM cvm.carteira_fundos WHERE {where_sql}
+        """, params)
+        total = cursor.fetchone()[0]
+
+        # Data
+        cursor.execute(f"""
+            SELECT cnpj_fundo, nome_fundo, tipo_fundo, data_competencia,
+                   tipo_aplicacao, tipo_ativo, emissor, cnpj_emissor,
+                   quantidade_posicao, valor_mercado, valor_custo,
+                   data_vencimento, indexador, titulo_cetip, bloco
+            FROM cvm.carteira_fundos
+            WHERE {where_sql}
+            ORDER BY valor_mercado DESC NULLS LAST
+            LIMIT %s OFFSET %s
+        """, params + [per_page, offset])
+
+        columns = ['cnpj_fundo', 'nome_fundo', 'tipo_fundo', 'data_competencia',
+                   'tipo_aplicacao', 'tipo_ativo', 'emissor', 'cnpj_emissor',
+                   'quantidade_posicao', 'valor_mercado', 'valor_custo',
+                   'data_vencimento', 'indexador', 'titulo_cetip', 'bloco']
+
+        data = []
+        for row in cursor.fetchall():
+            item = {}
+            for i, col in enumerate(columns):
+                val = row[i]
+                if val is not None:
+                    if hasattr(val, 'isoformat'):
+                        val = val.isoformat()
+                    elif isinstance(val, Decimal):
+                        val = float(val)
+                item[col] = val
+            data.append(item)
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "data": data,
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total,
+                "total_pages": (total + per_page - 1) // per_page
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/fundos/<cnpj>/carteira')
+def get_fundo_carteira(cnpj):
+    """Retorna carteira de um fundo especifico"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Limpar CNPJ
+        cnpj_limpo = cnpj.replace('.', '').replace('/', '').replace('-', '')
+
+        # Buscar posicoes do fundo
+        cursor.execute("""
+            SELECT tipo_ativo, tipo_aplicacao, emissor, cnpj_emissor,
+                   quantidade_posicao, valor_mercado, valor_custo,
+                   data_vencimento, indexador, titulo_cetip, bloco
+            FROM cvm.carteira_fundos
+            WHERE cnpj_fundo = %s
+            ORDER BY valor_mercado DESC NULLS LAST
+            LIMIT 100
+        """, (cnpj_limpo,))
+
+        columns = ['tipo_ativo', 'tipo_aplicacao', 'emissor', 'cnpj_emissor',
+                   'quantidade_posicao', 'valor_mercado', 'valor_custo',
+                   'data_vencimento', 'indexador', 'titulo_cetip', 'bloco']
+
+        posicoes = []
+        total_mercado = 0
+        for row in cursor.fetchall():
+            item = {}
+            for i, col in enumerate(columns):
+                val = row[i]
+                if val is not None:
+                    if hasattr(val, 'isoformat'):
+                        val = val.isoformat()
+                    elif isinstance(val, Decimal):
+                        val = float(val)
+                item[col] = val
+            posicoes.append(item)
+            if item.get('valor_mercado'):
+                total_mercado += item['valor_mercado']
+
+        # Resumo por tipo de ativo
+        cursor.execute("""
+            SELECT tipo_ativo, COUNT(*), SUM(valor_mercado)
+            FROM cvm.carteira_fundos
+            WHERE cnpj_fundo = %s
+            GROUP BY tipo_ativo
+            ORDER BY SUM(valor_mercado) DESC NULLS LAST
+        """, (cnpj_limpo,))
+
+        resumo_ativos = []
+        for row in cursor.fetchall():
+            resumo_ativos.append({
+                'tipo_ativo': row[0],
+                'quantidade': row[1],
+                'valor_total': float(row[2]) if row[2] else 0
+            })
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "cnpj": cnpj,
+            "total_posicoes": len(posicoes),
+            "valor_total_mercado": total_mercado,
+            "resumo_por_tipo": resumo_ativos,
+            "posicoes": posicoes
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/cvm/carteira/stats')
+def get_cvm_carteira_stats():
+    """Estatisticas da carteira de fundos CVM"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        stats = {}
+
+        # Total de posicoes
+        cursor.execute("SELECT COUNT(*) FROM cvm.carteira_fundos")
+        stats['total_posicoes'] = cursor.fetchone()[0]
+
+        # Total de fundos com carteira
+        cursor.execute("SELECT COUNT(DISTINCT cnpj_fundo) FROM cvm.carteira_fundos")
+        stats['total_fundos'] = cursor.fetchone()[0]
+
+        # Valor total de mercado
+        cursor.execute("SELECT SUM(valor_mercado) FROM cvm.carteira_fundos")
+        result = cursor.fetchone()[0]
+        stats['valor_total_mercado'] = float(result) if result else 0
+
+        # Por tipo de ativo (top 15)
+        cursor.execute("""
+            SELECT tipo_ativo, COUNT(*) as qtd, SUM(valor_mercado) as valor
+            FROM cvm.carteira_fundos
+            WHERE tipo_ativo IS NOT NULL
+            GROUP BY tipo_ativo
+            ORDER BY SUM(valor_mercado) DESC NULLS LAST
+            LIMIT 15
+        """)
+        stats['por_tipo_ativo'] = [
+            {'tipo': r[0], 'quantidade': r[1], 'valor': float(r[2]) if r[2] else 0}
+            for r in cursor.fetchall()
+        ]
+
+        # Por bloco
+        cursor.execute("""
+            SELECT bloco, COUNT(*) as qtd, SUM(valor_mercado) as valor
+            FROM cvm.carteira_fundos
+            GROUP BY bloco
+            ORDER BY SUM(valor_mercado) DESC NULLS LAST
+        """)
+        stats['por_bloco'] = [
+            {'bloco': r[0], 'quantidade': r[1], 'valor': float(r[2]) if r[2] else 0}
+            for r in cursor.fetchall()
+        ]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({"success": True, "data": stats})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/api/fundos/consolidados')
 def get_fundos_consolidados():
     """Lista fundos consolidados (ANBIMA + CVM)"""
