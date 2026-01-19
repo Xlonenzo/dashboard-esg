@@ -256,6 +256,33 @@ return jsonify({
 - Variable names: English preferred, but Portuguese acceptable
 - API responses: Portuguese field names (e.g., `nome`, `categoria`)
 
+## UI/Frontend Standards
+
+### Tables
+- **All data tables MUST include column filters** for filtering data directly in each column header
+- Use **Simple-DataTables** library (https://github.com/fiduswriter/Simple-DataTables) for table functionality
+- Required features for all tables:
+  - Column filters (text input or dropdown as appropriate)
+  - Sortable columns
+  - Pagination for large datasets
+  - Responsive design for mobile
+
+### Simple-DataTables Integration
+```html
+<!-- Add to HTML head -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css">
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
+
+<!-- Initialize table -->
+<script>
+const table = new simpleDatatables.DataTable("#myTable", {
+    searchable: true,
+    fixedHeight: true,
+    perPage: 25
+});
+</script>
+```
+
 ## Deployment
 
 ### Render.com Deployment
