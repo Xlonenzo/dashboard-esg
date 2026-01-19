@@ -110,7 +110,7 @@
         </div>
         <div class="nav-section">
             <div class="nav-section-title">Fundos</div>
-            <div class="nav-item" onclick="showTab('explorar',event)" title="Pesquise e filtre entre 40.332 fundos por nome, CNPJ, categoria ou gestora"><span class="icon">🔍</span> Explorar Fundos</div>
+            <div class="nav-item" onclick="showTab('explorar',event)" title="Pesquise e filtre entre 123.732 fundos consolidados (ANBIMA + CVM)"><span class="icon">🔍</span> Explorar Fundos</div>
             <div class="nav-item" onclick="showTab('gestoras',event)" title="Lista de gestoras com seus fundos, classes ANBIMA e distribuicao"><span class="icon">🏛️</span> Gestoras</div>
             <div class="nav-item" onclick="showTab('favoritos',event)" title="Seus fundos favoritos salvos para acompanhamento rapido"><span class="icon">⭐</span> Favoritos</div>
             <div class="nav-item" onclick="showTab('fundos-is',event)" title="Fundos classificados como Investimento Sustentavel (IS) pela ANBIMA"><span class="icon">🌱</span> Fundos IS</div>
@@ -185,7 +185,19 @@
         <div id="explorar" class="tab-content">
             <div class="chart-card has-tooltip" title="Pesquisa avancada em toda a base de fundos ANBIMA e CVM">
                 <h3>🔍 Explorar Fundos</h3>
-                <p style="color:var(--text-secondary);margin-bottom:20px;">Pesquise entre todos os 40.332 fundos da base ANBIMA Data</p>
+                <p style="color:var(--text-secondary);margin-bottom:20px;">Pesquise entre todos os <strong style="color:#4DD0E1;">123.732</strong> fundos consolidados (ANBIMA + CVM)</p>
+
+                <!-- Filtros de Busca -->
+                <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+                    <input type="text" id="searchExplorar" placeholder="Buscar por nome ou CNPJ..."
+                        style="flex:1;min-width:250px;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.95rem;">
+                    <select id="filtroFonteExplorar" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">Todas as Fontes</option>
+                        <option value="ANBIMA">ANBIMA (85.144)</option>
+                        <option value="CVM">CVM (38.588)</option>
+                    </select>
+                    <button onclick="paginaAtualAPI=1;buscarFundosAPI()" style="padding:12px 20px;background:var(--primary);border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;">Buscar</button>
+                </div>
 
                 <!-- Status da API -->
                 <div id="apiStatus" style="margin-bottom:15px;padding:10px 15px;border-radius:8px;font-size:0.85rem;display:none;"></div>
@@ -213,18 +225,19 @@
                     <table id="tabelaFundos">
                         <thead>
                             <tr>
+                                <th title="Fonte dos dados: ANBIMA ou CVM">Fonte</th>
                                 <th title="Nome completo do fundo de investimento">Nome</th>
                                 <th title="CNPJ do fundo">CNPJ</th>
-                                <th title="Categoria ANBIMA do fundo">Categoria</th>
+                                <th title="Categoria ANBIMA ou Classe CVM">Categoria</th>
                                 <th title="Gestora responsavel pelo fundo">Gestora</th>
                                 <th title="Fundo com classificacao ESG">ESG</th>
                                 <th title="Acoes disponiveis: detalhes, favoritar">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="corpoTabelaFundos">
-                            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">
+                            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary);">
                                 Clique em "Buscar" para carregar os fundos<br>
-                                <small>Total: 40.332 fundos (ANBIMA Data)</small>
+                                <small>Total: 123.732 fundos (ANBIMA + CVM)</small>
                             </td></tr>
                         </tbody>
                     </table>
@@ -1966,32 +1979,45 @@
             }
         }
 
-        // Buscar fundos da API (usando dados ANBIMA)
+        // Buscar fundos da API (usando view consolidada ANBIMA + CVM)
         async function buscarFundosAPI() {
             // Mostrar loading
             document.getElementById('loadingFundos').style.display = 'block';
             document.getElementById('tabelaContainer').style.display = 'none';
 
             try {
+                const search = document.getElementById('searchExplorar')?.value || '';
+                const fonte = document.getElementById('filtroFonteExplorar')?.value || '';
+
                 const params = new URLSearchParams({
                     page: paginaAtualAPI,
                     per_page: 50
                 });
 
-                const response = await fetch(`${API_URL}/anbima/fundos?${params}`);
+                if (search) params.append('search', search);
+                if (fonte) params.append('fonte', fonte);
+
+                const response = await fetch(`${API_URL}/fundos?${params}`);
                 const data = await response.json();
 
                 if (data.success) {
                     renderizarTabelaAPI(data.data);
-                    totalFundosAPI = data.total;
-                    totalPaginasAPI = data.pages;
+                    totalFundosAPI = data.pagination.total;
+                    totalPaginasAPI = data.pagination.total_pages;
 
                     // Atualizar estatísticas
                     document.getElementById('totalEncontrados').textContent = totalFundosAPI.toLocaleString();
                     document.getElementById('paginaAtualStat').textContent = `${paginaAtualAPI}/${totalPaginasAPI}`;
                     document.getElementById('infoPagina').textContent = `Página ${paginaAtualAPI} de ${totalPaginasAPI}`;
 
-                    showAPIStatus('success', `✓ ${totalFundosAPI.toLocaleString()} fundos encontrados`);
+                    // Mostrar distribuição por fonte
+                    if (data.stats?.por_fonte) {
+                        const anbimaCount = data.stats.por_fonte['ANBIMA'] || 0;
+                        const cvmCount = data.stats.por_fonte['CVM'] || 0;
+                        showAPIStatus('success', `✓ ${totalFundosAPI.toLocaleString()} fundos (ANBIMA: ${anbimaCount.toLocaleString()} | CVM: ${cvmCount.toLocaleString()})`);
+                    } else {
+                        showAPIStatus('success', `✓ ${totalFundosAPI.toLocaleString()} fundos encontrados`);
+                    }
                 } else {
                     showAPIStatus('error', `✗ Erro: ${data.error}`);
                 }
@@ -2014,7 +2040,7 @@
             }
 
             if (!fundos || fundos.length === 0) {
-                corpo.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">Nenhum fundo encontrado</td></tr>';
+                corpo.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary);">Nenhum fundo encontrado</td></tr>';
                 return;
             }
 
@@ -2027,17 +2053,20 @@
             let html = '';
             for (let i = 0; i < fundos.length; i++) {
                 const f = fundos[i];
+                const fonte = f.fonte || 'ANBIMA';
+                const fonteColor = fonte === 'ANBIMA' ? '#42A5F5' : '#CE93D8';
                 const nome = escapeHtml(f.nome || f.nomecomercial || f.razaosocial);
                 const cnpj = formatarCNPJ(f.cnpj_classe || f.cnpj);
                 const categoria = escapeHtml(f.categoria_anbima || f.categoria);
                 const gestora = escapeHtml(f.gestor || f.gestora);
-                const isESG = f.fundo_esg === true;
+                const isESG = f.fundo_esg === true || f.categoriaesg === 'ESG';
 
                 const esgClass = isESG ? 'rgba(46,125,50,0.2);color:#66BB6A' : 'rgba(100,100,100,0.2);color:#a0a0b0';
                 const esgText = isESG ? 'ESG' : '-';
 
                 html += `<tr>
-                    <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${nome}">${nome}</td>
+                    <td><span style="background:${fonteColor};color:white;padding:2px 8px;border-radius:10px;font-size:0.7rem;">${fonte}</span></td>
+                    <td style="max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${nome}">${nome}</td>
                     <td style="font-family:monospace;font-size:0.75rem;">${cnpj}</td>
                     <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${categoria}">${categoria}</td>
                     <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${gestora}">${gestora}</td>
@@ -2055,7 +2084,7 @@
                     fixedHeight: false,
                     sortable: true,
                     columns: [
-                        { select: 5, sortable: false } // Coluna de ações não ordenável
+                        { select: 6, sortable: false } // Coluna de ações não ordenável
                     ],
                     labels: {
                         noRows: "Nenhum fundo encontrado"
@@ -4959,6 +4988,14 @@
             if (searchAnbimaCRICRA) {
                 searchAnbimaCRICRA.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') carregarAnbimaCRICRA();
+                });
+            }
+
+            // Enter para Explorar Fundos
+            const searchExplorar = document.getElementById('searchExplorar');
+            if (searchExplorar) {
+                searchExplorar.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') { paginaAtualAPI = 1; buscarFundosAPI(); }
                 });
             }
 

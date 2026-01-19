@@ -68,6 +68,7 @@ def health():
 
 @app.route('/api/fundos')
 def get_fundos():
+    """Lista fundos consolidados ANBIMA + CVM (123.732 fundos)"""
     try:
         page = int(request.args.get('page', 1))
         per_page = min(int(request.args.get('per_page', 50)), 100)
@@ -75,122 +76,81 @@ def get_fundos():
         search = request.args.get('search', '').strip()
         categoria = request.args.get('categoria', '').strip()
         tipo = request.args.get('tipo', '').strip()
-        fonte = request.args.get('fonte', '').strip()  # 'todosfundos', 'gestoras' ou vazio para todos
+        fonte = request.args.get('fonte', '').strip()  # 'ANBIMA', 'CVM' ou vazio para todos
+        esg_only = request.args.get('esg_only', '').lower() == 'true'
 
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Query UNION para combinar ambas as tabelas
-        if fonte == 'todosfundos':
-            # Apenas todosfundos
-            where_clauses = ["ativo = true"]
-            params = []
-            if search:
-                where_clauses.append("(nomecomercial ILIKE %s OR cnpj ILIKE %s OR razaosocial ILIKE %s)")
-                params.extend([f"%{search}%", f"%{search}%", f"%{search}%"])
-            if categoria:
-                where_clauses.append("categoria = %s")
-                params.append(categoria)
-            where_sql = " AND ".join(where_clauses)
+        # Usar view consolidada fundos.fundos_consolidados
+        where_clauses = ["1=1"]
+        params = []
 
-            cursor.execute(f"SELECT COUNT(*) FROM fundos.todosfundos WHERE {where_sql}", params)
-            total = cursor.fetchone()[0]
+        if search:
+            where_clauses.append("(nome ILIKE %s OR cnpj ILIKE %s)")
+            params.extend([f"%{search}%", f"%{search}%"])
 
-            cursor.execute(f"""
-                SELECT cnpj, razaosocial, nomecomercial, tipofundo, categoria,
-                       COALESCE(categoriaesg, 'Convencional') as categoriaesg,
-                       COALESCE(focoesg, 'N/A') as focoesg, NULL as gestora, 'ANBIMA' as fonte
-                FROM fundos.todosfundos WHERE {where_sql}
-                ORDER BY nomecomercial LIMIT %s OFFSET %s
-            """, params + [per_page, offset])
-        elif fonte == 'gestoras':
-            # Apenas gestorassimilares
-            where_clauses = ["1=1"]
-            params = []
-            if search:
-                where_clauses.append("(nomecompleto ILIKE %s OR cnpj ILIKE %s OR gestora ILIKE %s)")
-                params.extend([f"%{search}%", f"%{search}%", f"%{search}%"])
-            if categoria:
-                where_clauses.append("classeanbima = %s")
-                params.append(categoria)
-            where_sql = " AND ".join(where_clauses)
+        if categoria:
+            where_clauses.append("(categoria_anbima ILIKE %s OR classe_cvm ILIKE %s)")
+            params.extend([f"%{categoria}%", f"%{categoria}%"])
 
-            cursor.execute(f"SELECT COUNT(*) FROM fundos.gestorassimilares WHERE {where_sql}", params)
-            total = cursor.fetchone()[0]
+        if fonte:
+            where_clauses.append("fonte_principal = %s")
+            params.append(fonte)
 
-            cursor.execute(f"""
-                SELECT cnpj, nomecompleto as razaosocial, nomecompleto as nomecomercial,
-                       tipofundo, classeanbima as categoria, 'Convencional' as categoriaesg,
-                       publicoalvo as focoesg, gestora, 'CVM' as fonte
-                FROM fundos.gestorassimilares WHERE {where_sql}
-                ORDER BY nomecompleto LIMIT %s OFFSET %s
-            """, params + [per_page, offset])
-        else:
-            # UNION de ambas as tabelas
-            search_param = f"%{search}%" if search else None
+        if esg_only:
+            where_clauses.append("fundo_esg = TRUE")
 
-            # Count total
-            count_sql = """
-                SELECT COUNT(*) FROM (
-                    SELECT cnpj FROM fundos.todosfundos WHERE ativo = true
-                    UNION ALL
-                    SELECT cnpj FROM fundos.gestorassimilares
-                ) combined
-            """
-            if search:
-                count_sql = f"""
-                    SELECT COUNT(*) FROM (
-                        SELECT cnpj FROM fundos.todosfundos
-                        WHERE ativo = true AND (nomecomercial ILIKE %s OR cnpj ILIKE %s OR razaosocial ILIKE %s)
-                        UNION ALL
-                        SELECT cnpj FROM fundos.gestorassimilares
-                        WHERE nomecompleto ILIKE %s OR cnpj ILIKE %s OR gestora ILIKE %s
-                    ) combined
-                """
-                cursor.execute(count_sql, [search_param]*6)
-            else:
-                cursor.execute(count_sql)
-            total = cursor.fetchone()[0]
+        where_sql = " AND ".join(where_clauses)
 
-            # Query com UNION
-            if search:
-                cursor.execute("""
-                    SELECT * FROM (
-                        SELECT cnpj, razaosocial, nomecomercial, tipofundo, categoria,
-                               COALESCE(categoriaesg, 'Convencional') as categoriaesg,
-                               COALESCE(focoesg, 'N/A') as focoesg, NULL as gestora, 'ANBIMA' as fonte
-                        FROM fundos.todosfundos
-                        WHERE ativo = true AND (nomecomercial ILIKE %s OR cnpj ILIKE %s OR razaosocial ILIKE %s)
-                        UNION ALL
-                        SELECT cnpj, nomecompleto as razaosocial, nomecompleto as nomecomercial,
-                               tipofundo, classeanbima as categoria, 'Convencional' as categoriaesg,
-                               publicoalvo as focoesg, gestora, 'CVM' as fonte
-                        FROM fundos.gestorassimilares
-                        WHERE nomecompleto ILIKE %s OR cnpj ILIKE %s OR gestora ILIKE %s
-                    ) combined ORDER BY nomecomercial LIMIT %s OFFSET %s
-                """, [search_param]*6 + [per_page, offset])
-            else:
-                cursor.execute("""
-                    SELECT * FROM (
-                        SELECT cnpj, razaosocial, nomecomercial, tipofundo, categoria,
-                               COALESCE(categoriaesg, 'Convencional') as categoriaesg,
-                               COALESCE(focoesg, 'N/A') as focoesg, NULL as gestora, 'ANBIMA' as fonte
-                        FROM fundos.todosfundos WHERE ativo = true
-                        UNION ALL
-                        SELECT cnpj, nomecompleto as razaosocial, nomecompleto as nomecomercial,
-                               tipofundo, classeanbima as categoria, 'Convencional' as categoriaesg,
-                               publicoalvo as focoesg, gestora, 'CVM' as fonte
-                        FROM fundos.gestorassimilares
-                    ) combined ORDER BY nomecomercial LIMIT %s OFFSET %s
-                """, [per_page, offset])
+        # Count total
+        cursor.execute(f"SELECT COUNT(*) FROM fundos.fundos_consolidados WHERE {where_sql}", params)
+        total = cursor.fetchone()[0]
+
+        # Query principal
+        cursor.execute(f"""
+            SELECT
+                cnpj,
+                nome as razaosocial,
+                nome as nomecomercial,
+                tipo_anbima as tipofundo,
+                COALESCE(categoria_anbima, classe_cvm) as categoria,
+                CASE WHEN fundo_esg THEN 'ESG' ELSE 'Convencional' END as categoriaesg,
+                COALESCE(foco_atuacao, 'N/A') as focoesg,
+                gestor_anbima as gestora,
+                fonte_principal as fonte,
+                tem_dados_cvm,
+                patrimonio_liquido,
+                numero_cotistas
+            FROM fundos.fundos_consolidados
+            WHERE {where_sql}
+            ORDER BY nome
+            LIMIT %s OFFSET %s
+        """, params + [per_page, offset])
 
         fundos = query_to_dict(cursor)
+
+        # Estatisticas por fonte
+        cursor.execute("""
+            SELECT fonte_principal, COUNT(*) FROM fundos.fundos_consolidados GROUP BY fonte_principal
+        """)
+        stats_fonte = {r[0]: r[1] for r in cursor.fetchall()}
+
         conn.close()
 
         return jsonify({
             "success": True,
             "data": fundos,
-            "pagination": {"page": page, "per_page": per_page, "total": total, "total_pages": (total + per_page - 1) // per_page}
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total,
+                "total_pages": (total + per_page - 1) // per_page
+            },
+            "stats": {
+                "total": total,
+                "por_fonte": stats_fonte
+            }
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
