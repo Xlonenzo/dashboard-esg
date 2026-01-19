@@ -190,10 +190,6 @@
                         <span style="color:var(--text-secondary);font-size:0.75rem;">TOTAL ENCONTRADOS</span>
                         <div id="totalEncontrados" style="font-size:1.5rem;font-weight:700;color:var(--primary-light);">...</div>
                     </div>
-                    <div style="background:rgba(46,125,50,0.15);padding:10px 20px;border-radius:8px;border:1px solid rgba(46,125,50,0.3);" title="Total de fundos na base de dados (ANBIMA + CVM)">
-                        <span style="color:var(--text-secondary);font-size:0.75rem;">TOTAL GERAL</span>
-                        <div id="totalGeral" style="font-size:1.5rem;font-weight:700;color:var(--secondary-light);">...</div>
-                    </div>
                     <div style="background:rgba(255,152,0,0.15);padding:10px 20px;border-radius:8px;border:1px solid rgba(255,152,0,0.3);" title="Pagina atual da listagem (50 fundos por pagina)">
                         <span style="color:var(--text-secondary);font-size:0.75rem;">PÁGINA</span>
                         <div id="paginaAtualStat" style="font-size:1.5rem;font-weight:700;color:var(--accent-light);">...</div>
@@ -1730,13 +1726,6 @@
                             select.appendChild(opt);
                         });
                     }
-                }
-
-                // Carregar estatísticas gerais
-                const statsResponse = await fetch(`${API_URL}/fundos/stats`);
-                const statsData = await statsResponse.json();
-                if (statsData.success) {
-                    document.getElementById('totalGeral').textContent = statsData.data.total.toLocaleString();
                 }
 
                 // Carregar fundos automaticamente
