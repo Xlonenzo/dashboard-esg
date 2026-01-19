@@ -2279,6 +2279,418 @@ def get_anbima_resumo():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+# ============================================
+# ENDPOINTS CVM - Dados da Comissao de Valores Mobiliarios
+# ============================================
+
+@app.route('/api/cvm/cadastro')
+def get_cvm_cadastro():
+    """Lista fundos do cadastro CVM com filtros"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 50))
+        search = request.args.get('search', '')
+        situacao = request.args.get('situacao', '')
+        classe = request.args.get('classe', '')
+
+        offset = (page - 1) * per_page
+        where_sql = "1=1"
+        params = []
+
+        if search:
+            where_sql += " AND (nome ILIKE %s OR cnpj ILIKE %s)"
+            params.extend([f'%{search}%', f'%{search}%'])
+
+        if situacao:
+            where_sql += " AND situacao = %s"
+            params.append(situacao)
+
+        if classe:
+            where_sql += " AND classe = %s"
+            params.append(classe)
+
+        # Contar total
+        cursor.execute(f"SELECT COUNT(*) FROM cvm.cadastro_fundos WHERE {where_sql}", params)
+        total = cursor.fetchone()[0]
+
+        # Buscar dados
+        cursor.execute(f"""
+            SELECT cnpj, nome, situacao, classe, data_registro,
+                   administrador, gestor, patrimonio_liquido,
+                   fundo_cotas, fundo_exclusivo, investidor_qualificado
+            FROM cvm.cadastro_fundos
+            WHERE {where_sql}
+            ORDER BY nome
+            LIMIT %s OFFSET %s
+        """, params + [per_page, offset])
+
+        data = query_to_dict(cursor)
+
+        # Filtros disponiveis
+        cursor.execute("SELECT DISTINCT situacao FROM cvm.cadastro_fundos WHERE situacao IS NOT NULL ORDER BY situacao")
+        situacoes = [r[0] for r in cursor.fetchall()]
+
+        cursor.execute("SELECT DISTINCT classe FROM cvm.cadastro_fundos WHERE classe IS NOT NULL ORDER BY classe")
+        classes = [r[0] for r in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "data": data,
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "pages": (total + per_page - 1) // per_page,
+            "filtros": {
+                "situacoes": situacoes,
+                "classes": classes
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/cvm/informes')
+def get_cvm_informes():
+    """Lista informes diarios da CVM"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 50))
+        search = request.args.get('search', '')
+        ano_mes = request.args.get('ano_mes', '')
+
+        offset = (page - 1) * per_page
+        where_sql = "1=1"
+        params = []
+
+        if search:
+            where_sql += " AND cnpj ILIKE %s"
+            params.append(f'%{search}%')
+
+        if ano_mes:
+            where_sql += " AND ano_mes = %s"
+            params.append(ano_mes)
+
+        # Contar total
+        cursor.execute(f"SELECT COUNT(*) FROM cvm.informes_diarios WHERE {where_sql}", params)
+        total = cursor.fetchone()[0]
+
+        # Buscar dados
+        cursor.execute(f"""
+            SELECT cnpj, data_competencia, valor_total, valor_cota,
+                   patrimonio_liquido, captacao_dia, resgate_dia, numero_cotistas, ano_mes
+            FROM cvm.informes_diarios
+            WHERE {where_sql}
+            ORDER BY patrimonio_liquido DESC NULLS LAST
+            LIMIT %s OFFSET %s
+        """, params + [per_page, offset])
+
+        data = query_to_dict(cursor)
+
+        # Estatisticas
+        cursor.execute("""
+            SELECT
+                COUNT(*) as total_registros,
+                COUNT(DISTINCT cnpj) as fundos_unicos,
+                SUM(patrimonio_liquido) as pl_total,
+                SUM(numero_cotistas) as cotistas_total,
+                SUM(captacao_dia) as captacao_total,
+                SUM(resgate_dia) as resgate_total
+            FROM cvm.informes_diarios
+        """)
+        row = cursor.fetchone()
+        stats = {
+            'total_registros': row[0],
+            'fundos_unicos': row[1],
+            'pl_total': float(row[2]) if row[2] else 0,
+            'cotistas_total': int(row[3]) if row[3] else 0,
+            'captacao_total': float(row[4]) if row[4] else 0,
+            'resgate_total': float(row[5]) if row[5] else 0
+        }
+
+        # Periodos disponiveis
+        cursor.execute("SELECT DISTINCT ano_mes FROM cvm.informes_diarios ORDER BY ano_mes DESC")
+        periodos = [r[0] for r in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "data": data,
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "pages": (total + per_page - 1) // per_page,
+            "stats": stats,
+            "periodos": periodos
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/cvm/stats')
+def get_cvm_stats():
+    """Estatisticas gerais dos dados CVM"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        stats = {}
+
+        # Cadastro
+        cursor.execute("SELECT COUNT(*) FROM cvm.cadastro_fundos")
+        stats['total_cadastro'] = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM cvm.cadastro_fundos WHERE situacao = 'EM FUNCIONAMENTO NORMAL'")
+        stats['fundos_ativos'] = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(DISTINCT classe) FROM cvm.cadastro_fundos")
+        stats['classes_distintas'] = cursor.fetchone()[0]
+
+        # Informes
+        cursor.execute("SELECT COUNT(*) FROM cvm.informes_diarios")
+        stats['total_informes'] = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(DISTINCT cnpj) FROM cvm.informes_diarios")
+        stats['fundos_com_informes'] = cursor.fetchone()[0]
+
+        cursor.execute("SELECT SUM(patrimonio_liquido) FROM cvm.informes_diarios")
+        pl = cursor.fetchone()[0]
+        stats['pl_total_informes'] = float(pl) if pl else 0
+
+        # Top classes
+        cursor.execute("""
+            SELECT classe, COUNT(*) as total
+            FROM cvm.cadastro_fundos
+            WHERE classe IS NOT NULL
+            GROUP BY classe
+            ORDER BY total DESC
+            LIMIT 10
+        """)
+        stats['top_classes'] = [{'classe': r[0], 'total': r[1]} for r in cursor.fetchall()]
+
+        # Por situacao
+        cursor.execute("""
+            SELECT situacao, COUNT(*) as total
+            FROM cvm.cadastro_fundos
+            WHERE situacao IS NOT NULL
+            GROUP BY situacao
+            ORDER BY total DESC
+        """)
+        stats['por_situacao'] = [{'situacao': r[0], 'total': r[1]} for r in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({"success": True, "data": stats})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/fundos/consolidados')
+def get_fundos_consolidados():
+    """Lista fundos consolidados (ANBIMA + CVM)"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 50))
+        search = request.args.get('search', '')
+        fonte = request.args.get('fonte', '')
+        categoria = request.args.get('categoria', '')
+        classe_cvm = request.args.get('classe_cvm', '')
+        esg_only = request.args.get('esg_only', '').lower() == 'true'
+        com_cvm = request.args.get('com_cvm', '').lower() == 'true'
+
+        offset = (page - 1) * per_page
+        where_sql = "1=1"
+        params = []
+
+        if search:
+            where_sql += " AND (nome ILIKE %s OR cnpj ILIKE %s)"
+            params.extend([f'%{search}%', f'%{search}%'])
+
+        if fonte:
+            where_sql += " AND fonte_principal = %s"
+            params.append(fonte)
+
+        if categoria:
+            where_sql += " AND categoria_anbima ILIKE %s"
+            params.append(f'%{categoria}%')
+
+        if classe_cvm:
+            where_sql += " AND classe_cvm = %s"
+            params.append(classe_cvm)
+
+        if esg_only:
+            where_sql += " AND fundo_esg = TRUE"
+
+        if com_cvm:
+            where_sql += " AND tem_dados_cvm = TRUE"
+
+        # Contar total
+        cursor.execute(f"SELECT COUNT(*) FROM fundos.fundos_consolidados WHERE {where_sql}", params)
+        total = cursor.fetchone()[0]
+
+        # Buscar dados
+        cursor.execute(f"""
+            SELECT fonte_principal, cnpj, nome, categoria_anbima, tipo_anbima,
+                   fundo_esg, gestor_anbima, administrador_anbima,
+                   patrimonio_liquido, numero_cotistas, valor_cota,
+                   foco_atuacao, nivel1_categoria, nivel2_categoria,
+                   classe_cvm, situacao_cvm, tem_dados_cvm,
+                   captacao_dia, resgate_dia
+            FROM fundos.fundos_consolidados
+            WHERE {where_sql}
+            ORDER BY patrimonio_liquido DESC NULLS LAST
+            LIMIT %s OFFSET %s
+        """, params + [per_page, offset])
+
+        data = query_to_dict(cursor)
+
+        # Estatisticas
+        cursor.execute("""
+            SELECT
+                COUNT(*) as total,
+                COUNT(CASE WHEN fonte_principal = 'ANBIMA' THEN 1 END) as anbima,
+                COUNT(CASE WHEN fonte_principal = 'CVM' THEN 1 END) as cvm,
+                COUNT(CASE WHEN tem_dados_cvm = TRUE THEN 1 END) as com_dados_cvm,
+                COUNT(CASE WHEN fundo_esg = TRUE THEN 1 END) as esg,
+                SUM(patrimonio_liquido) as pl_total,
+                SUM(numero_cotistas) as cotistas_total
+            FROM fundos.fundos_consolidados
+        """)
+        row = cursor.fetchone()
+        stats = {
+            'total': row[0],
+            'anbima': row[1],
+            'cvm': row[2],
+            'com_dados_cvm': row[3],
+            'esg': row[4],
+            'pl_total': float(row[5]) if row[5] else 0,
+            'cotistas_total': int(row[6]) if row[6] else 0
+        }
+
+        # Filtros disponiveis
+        cursor.execute("SELECT DISTINCT fonte_principal FROM fundos.fundos_consolidados ORDER BY fonte_principal")
+        fontes = [r[0] for r in cursor.fetchall()]
+
+        cursor.execute("""
+            SELECT DISTINCT categoria_anbima FROM fundos.fundos_consolidados
+            WHERE categoria_anbima IS NOT NULL ORDER BY categoria_anbima LIMIT 50
+        """)
+        categorias = [r[0] for r in cursor.fetchall()]
+
+        cursor.execute("""
+            SELECT DISTINCT classe_cvm FROM fundos.fundos_consolidados
+            WHERE classe_cvm IS NOT NULL ORDER BY classe_cvm
+        """)
+        classes = [r[0] for r in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "data": data,
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "pages": (total + per_page - 1) // per_page,
+            "stats": stats,
+            "filtros": {
+                "fontes": fontes,
+                "categorias": categorias,
+                "classes_cvm": classes
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/fundos/consolidados/stats')
+def get_fundos_consolidados_stats():
+    """Estatisticas dos fundos consolidados"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        stats = {}
+
+        # Totais por fonte
+        cursor.execute("""
+            SELECT fonte_principal, COUNT(*), SUM(patrimonio_liquido), SUM(numero_cotistas)
+            FROM fundos.fundos_consolidados
+            GROUP BY fonte_principal
+        """)
+        stats['por_fonte'] = []
+        for row in cursor.fetchall():
+            stats['por_fonte'].append({
+                'fonte': row[0],
+                'total': row[1],
+                'pl_total': float(row[2]) if row[2] else 0,
+                'cotistas': int(row[3]) if row[3] else 0
+            })
+
+        # Top 10 por PL
+        cursor.execute("""
+            SELECT fonte_principal, cnpj, nome, patrimonio_liquido, numero_cotistas,
+                   categoria_anbima, classe_cvm
+            FROM fundos.fundos_consolidados
+            WHERE patrimonio_liquido > 0
+            ORDER BY patrimonio_liquido DESC
+            LIMIT 10
+        """)
+        stats['top_pl'] = query_to_dict(cursor)
+
+        # Cruzamento ANBIMA x CVM
+        cursor.execute("""
+            SELECT
+                COUNT(*) FILTER (WHERE fonte_principal = 'ANBIMA' AND tem_dados_cvm = TRUE) as anbima_com_cvm,
+                COUNT(*) FILTER (WHERE fonte_principal = 'ANBIMA' AND tem_dados_cvm = FALSE) as anbima_sem_cvm,
+                COUNT(*) FILTER (WHERE fonte_principal = 'CVM') as apenas_cvm
+            FROM fundos.fundos_consolidados
+        """)
+        row = cursor.fetchone()
+        stats['cruzamento'] = {
+            'anbima_com_cvm': row[0],
+            'anbima_sem_cvm': row[1],
+            'apenas_cvm': row[2]
+        }
+
+        # ESG
+        cursor.execute("""
+            SELECT fonte_principal, COUNT(*)
+            FROM fundos.fundos_consolidados
+            WHERE fundo_esg = TRUE
+            GROUP BY fonte_principal
+        """)
+        stats['esg_por_fonte'] = [{'fonte': r[0], 'total': r[1]} for r in cursor.fetchall()]
+
+        # Top classes CVM
+        cursor.execute("""
+            SELECT classe_cvm, COUNT(*) as total
+            FROM fundos.fundos_consolidados
+            WHERE classe_cvm IS NOT NULL
+            GROUP BY classe_cvm
+            ORDER BY total DESC
+            LIMIT 10
+        """)
+        stats['top_classes_cvm'] = [{'classe': r[0], 'total': r[1]} for r in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({"success": True, "data": stats})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == '__main__':
     print("=" * 60)
     print("SERVIDOR DASHBOARD + API (PostgreSQL)")

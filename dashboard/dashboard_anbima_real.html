@@ -148,6 +148,12 @@
             <div class="nav-item" onclick="showTab('emissores',event)" title="Cadastro de emissores TSB com classificacao, scores e titulos vinculados"><span class="icon">🏢</span> Emissores</div>
         </div>
         <div class="nav-section">
+            <div class="nav-section-title">CVM Data</div>
+            <div class="nav-item" onclick="showTab('cvm-consolidado',event)" title="123.732 fundos consolidados ANBIMA + CVM com cruzamento de dados"><span class="icon">🔗</span> Fundos Consolidados</div>
+            <div class="nav-item" onclick="showTab('cvm-cadastro',event)" title="41.121 fundos do cadastro oficial CVM com situacao e classe"><span class="icon">📋</span> Cadastro CVM</div>
+            <div class="nav-item" onclick="showTab('cvm-informes',event)" title="Informes diarios CVM: PL, cotistas, captacao e resgates"><span class="icon">📊</span> Informes Diarios</div>
+        </div>
+        <div class="nav-section">
             <div class="nav-section-title">Inteligencia Artificial</div>
             <div class="nav-item" onclick="showTab('ai-consulta',event)" title="Consulte dados do portfolio usando linguagem natural com IA"><span class="icon">🤖</span> Consulta IA</div>
         </div>
@@ -885,6 +891,231 @@
                     <h3>🌿 Classificacao TSB</h3>
                     <div class="chart-container" style="height:300px;"><canvas id="chartEmissoresClass"></canvas></div>
                 </div>
+            </div>
+        </div>
+
+        <!-- TAB: CVM Consolidado -->
+        <div id="cvm-consolidado" class="tab-content">
+            <div class="chart-card has-tooltip" style="background:linear-gradient(135deg,rgba(0,188,212,0.15) 0%,rgba(156,39,176,0.15) 100%);border-color:rgba(0,188,212,0.3);margin-bottom:20px;" title="Fundos consolidados de ANBIMA e CVM">
+                <div style="display:flex;align-items:center;gap:20px;">
+                    <div style="font-size:3rem;">🔗</div>
+                    <div>
+                        <h2 style="color:#4DD0E1;margin:0;">Fundos Consolidados ANBIMA + CVM</h2>
+                        <p style="color:#80DEEA;margin-top:8px;">Dados cruzados de 123.732 fundos unificando ANBIMA Data e CVM</p>
+                        <span id="cvmConsolidadoBadge" class="badge" style="background:#00BCD4;">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatisticas -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-bottom:20px;">
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(0,188,212,0.2),rgba(0,188,212,0.05));" title="Total de fundos consolidados de ambas as fontes">
+                    <div style="font-size:2rem;font-weight:700;color:#4DD0E1;" id="statConsolidadoTotal">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Total Consolidado</div>
+                </div>
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(25,118,210,0.2),rgba(25,118,210,0.05));" title="Fundos vindos da ANBIMA Data">
+                    <div style="font-size:2rem;font-weight:700;color:#42A5F5;" id="statConsolidadoAnbima">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Fonte ANBIMA</div>
+                </div>
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(156,39,176,0.2),rgba(156,39,176,0.05));" title="Fundos exclusivos da CVM (nao estao na ANBIMA)">
+                    <div style="font-size:2rem;font-weight:700;color:#CE93D8;" id="statConsolidadoCVM">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Exclusivos CVM</div>
+                </div>
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(76,175,80,0.2),rgba(76,175,80,0.05));" title="Fundos ANBIMA que possuem dados cruzados com CVM">
+                    <div style="font-size:2rem;font-weight:700;color:#66BB6A;" id="statConsolidadoCruzado">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Cruzamento</div>
+                </div>
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(255,152,0,0.2),rgba(255,152,0,0.05));" title="Fundos com classificacao ESG">
+                    <div style="font-size:2rem;font-weight:700;color:#FFB74D;" id="statConsolidadoESG">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Fundos ESG</div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="chart-card has-tooltip" style="margin-bottom:20px;" title="Filtros para busca de fundos consolidados">
+                <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:center;">
+                    <input type="text" id="searchConsolidado" placeholder="Buscar por nome ou CNPJ..."
+                        style="flex:1;min-width:200px;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.95rem;">
+                    <select id="filtroFonteConsolidado" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">Todas as Fontes</option>
+                        <option value="ANBIMA">ANBIMA</option>
+                        <option value="CVM">CVM</option>
+                    </select>
+                    <select id="filtroClasseCVMConsolidado" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">Todas as Classes CVM</option>
+                    </select>
+                    <label style="display:flex;align-items:center;gap:5px;color:var(--text-secondary);font-size:0.85rem;">
+                        <input type="checkbox" id="filtroESGConsolidado"> Apenas ESG
+                    </label>
+                    <label style="display:flex;align-items:center;gap:5px;color:var(--text-secondary);font-size:0.85rem;">
+                        <input type="checkbox" id="filtroCruzadoConsolidado"> Com dados CVM
+                    </label>
+                    <button onclick="carregarConsolidado()" style="padding:12px 20px;background:#00BCD4;border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;">Buscar</button>
+                </div>
+            </div>
+
+            <!-- Tabela -->
+            <div class="chart-card has-tooltip" title="Lista de fundos consolidados">
+                <h3 style="margin-bottom:15px;">📋 Fundos Consolidados</h3>
+                <div style="overflow-x:auto;">
+                    <table id="tabelaConsolidado" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>Fonte</th>
+                                <th>Nome</th>
+                                <th>CNPJ</th>
+                                <th>Categoria</th>
+                                <th>Classe CVM</th>
+                                <th>PL</th>
+                                <th>Cotistas</th>
+                                <th>ESG</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoTabelaConsolidado">
+                            <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-secondary);">Carregando fundos consolidados...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="paginacaoConsolidado" style="display:flex;justify-content:center;gap:10px;margin-top:15px;"></div>
+            </div>
+        </div>
+
+        <!-- TAB: CVM Cadastro -->
+        <div id="cvm-cadastro" class="tab-content">
+            <div class="chart-card has-tooltip" style="background:linear-gradient(135deg,rgba(103,58,183,0.15) 0%,rgba(33,150,243,0.15) 100%);border-color:rgba(103,58,183,0.3);margin-bottom:20px;" title="Cadastro oficial de fundos da CVM">
+                <div style="display:flex;align-items:center;gap:20px;">
+                    <div style="font-size:3rem;">📋</div>
+                    <div>
+                        <h2 style="color:#B39DDB;margin:0;">Cadastro de Fundos CVM</h2>
+                        <p style="color:#9575CD;margin-top:8px;">41.121 fundos registrados na Comissao de Valores Mobiliarios</p>
+                        <span id="cvmCadastroBadge" class="badge" style="background:#673AB7;">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatisticas -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-bottom:20px;">
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(103,58,183,0.2),rgba(103,58,183,0.05));" title="Total de fundos cadastrados na CVM">
+                    <div style="font-size:2rem;font-weight:700;color:#B39DDB;" id="statCadastroTotal">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Total Cadastro</div>
+                </div>
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(76,175,80,0.2),rgba(76,175,80,0.05));" title="Fundos em funcionamento normal">
+                    <div style="font-size:2rem;font-weight:700;color:#66BB6A;" id="statCadastroAtivos">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Em Funcionamento</div>
+                </div>
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(33,150,243,0.2),rgba(33,150,243,0.05));" title="Numero de classes distintas">
+                    <div style="font-size:2rem;font-weight:700;color:#42A5F5;" id="statCadastroClasses">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Classes Distintas</div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="chart-card has-tooltip" style="margin-bottom:20px;" title="Filtros para busca de fundos no cadastro CVM">
+                <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:center;">
+                    <input type="text" id="searchCadastro" placeholder="Buscar por nome ou CNPJ..."
+                        style="flex:1;min-width:200px;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.95rem;">
+                    <select id="filtroSituacaoCadastro" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">Todas as Situacoes</option>
+                    </select>
+                    <select id="filtroClasseCadastro" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">Todas as Classes</option>
+                    </select>
+                    <button onclick="carregarCadastroCVM()" style="padding:12px 20px;background:#673AB7;border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;">Buscar</button>
+                </div>
+            </div>
+
+            <!-- Tabela -->
+            <div class="chart-card has-tooltip" title="Lista de fundos do cadastro CVM">
+                <h3 style="margin-bottom:15px;">📋 Cadastro de Fundos</h3>
+                <div style="overflow-x:auto;">
+                    <table id="tabelaCadastroCVM" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>CNPJ</th>
+                                <th>Situacao</th>
+                                <th>Classe</th>
+                                <th>Data Registro</th>
+                                <th>Administrador</th>
+                                <th>Gestor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoTabelaCadastroCVM">
+                            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary);">Carregando cadastro CVM...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="paginacaoCadastro" style="display:flex;justify-content:center;gap:10px;margin-top:15px;"></div>
+            </div>
+        </div>
+
+        <!-- TAB: CVM Informes -->
+        <div id="cvm-informes" class="tab-content">
+            <div class="chart-card has-tooltip" style="background:linear-gradient(135deg,rgba(255,87,34,0.15) 0%,rgba(255,152,0,0.15) 100%);border-color:rgba(255,87,34,0.3);margin-bottom:20px;" title="Informes diarios de fundos da CVM">
+                <div style="display:flex;align-items:center;gap:20px;">
+                    <div style="font-size:3rem;">📊</div>
+                    <div>
+                        <h2 style="color:#FFAB91;margin:0;">Informes Diarios CVM</h2>
+                        <p style="color:#FF8A65;margin-top:8px;">Patrimonio liquido, cotistas, captacao e resgates diarios</p>
+                        <span id="cvmInformesBadge" class="badge" style="background:#FF5722;">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatisticas -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-bottom:20px;">
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(255,87,34,0.2),rgba(255,87,34,0.05));" title="Total de registros de informes">
+                    <div style="font-size:2rem;font-weight:700;color:#FFAB91;" id="statInformesTotal">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Total Registros</div>
+                </div>
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(76,175,80,0.2),rgba(76,175,80,0.05));" title="Fundos unicos com informes">
+                    <div style="font-size:2rem;font-weight:700;color:#66BB6A;" id="statInformesFundos">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Fundos Unicos</div>
+                </div>
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(33,150,243,0.2),rgba(33,150,243,0.05));" title="Patrimonio liquido total">
+                    <div style="font-size:1.6rem;font-weight:700;color:#42A5F5;" id="statInformesPL">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">PL Total</div>
+                </div>
+                <div class="stat-card has-tooltip" style="background:linear-gradient(135deg,rgba(255,152,0,0.2),rgba(255,152,0,0.05));" title="Total de cotistas">
+                    <div style="font-size:1.6rem;font-weight:700;color:#FFB74D;" id="statInformesCotistas">--</div>
+                    <div style="color:#a0a0b0;font-size:0.85rem;">Cotistas Total</div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="chart-card has-tooltip" style="margin-bottom:20px;" title="Filtros para busca de informes diarios">
+                <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:center;">
+                    <input type="text" id="searchInformes" placeholder="Buscar por CNPJ..."
+                        style="flex:1;min-width:200px;padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.95rem;">
+                    <select id="filtroPeriodoInformes" style="padding:12px 15px;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);">
+                        <option value="">Todos os Periodos</option>
+                    </select>
+                    <button onclick="carregarInformesCVM()" style="padding:12px 20px;background:#FF5722;border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;">Buscar</button>
+                </div>
+            </div>
+
+            <!-- Tabela -->
+            <div class="chart-card has-tooltip" title="Lista de informes diarios">
+                <h3 style="margin-bottom:15px;">📋 Informes Diarios</h3>
+                <div style="overflow-x:auto;">
+                    <table id="tabelaInformesCVM" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>CNPJ</th>
+                                <th>Data</th>
+                                <th>PL</th>
+                                <th>Valor Cota</th>
+                                <th>Cotistas</th>
+                                <th>Captacao</th>
+                                <th>Resgate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoTabelaInformesCVM">
+                            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary);">Carregando informes CVM...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="paginacaoInformes" style="display:flex;justify-content:center;gap:10px;margin-top:15px;"></div>
             </div>
         </div>
 
@@ -4430,8 +4661,291 @@
                 carregarAnbimaCRICRA();
             } else if (tabId === 'anbima-titulos' && !anbimaTitulosDataTable) {
                 carregarAnbimaTitulos();
+            } else if (tabId === 'cvm-consolidado' && !cvmConsolidadoCarregado) {
+                carregarConsolidado();
+            } else if (tabId === 'cvm-cadastro' && !cvmCadastroCarregado) {
+                carregarCadastroCVM();
+            } else if (tabId === 'cvm-informes' && !cvmInformesCarregado) {
+                carregarInformesCVM();
             }
         };
+
+        // ============================================
+        // FUNCOES CVM DATA
+        // ============================================
+        let cvmConsolidadoCarregado = false;
+        let cvmCadastroCarregado = false;
+        let cvmInformesCarregado = false;
+        let paginaAtualConsolidado = 1;
+        let paginaAtualCadastro = 1;
+        let paginaAtualInformes = 1;
+
+        function formatarMoeda(valor) {
+            if (!valor || isNaN(valor)) return '-';
+            if (valor >= 1e12) return `R$ ${(valor/1e12).toFixed(2)} Tri`;
+            if (valor >= 1e9) return `R$ ${(valor/1e9).toFixed(2)} Bi`;
+            if (valor >= 1e6) return `R$ ${(valor/1e6).toFixed(2)} Mi`;
+            return `R$ ${valor.toLocaleString('pt-BR')}`;
+        }
+
+        function formatarNumero(valor) {
+            if (!valor || isNaN(valor)) return '-';
+            return valor.toLocaleString('pt-BR');
+        }
+
+        async function carregarConsolidado(page = 1) {
+            paginaAtualConsolidado = page;
+            try {
+                const search = document.getElementById('searchConsolidado')?.value || '';
+                const fonte = document.getElementById('filtroFonteConsolidado')?.value || '';
+                const classeCVM = document.getElementById('filtroClasseCVMConsolidado')?.value || '';
+                const esgOnly = document.getElementById('filtroESGConsolidado')?.checked || false;
+                const comCVM = document.getElementById('filtroCruzadoConsolidado')?.checked || false;
+
+                let url = `${API_URL}/fundos/consolidados?page=${page}&per_page=50`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (fonte) url += `&fonte=${encodeURIComponent(fonte)}`;
+                if (classeCVM) url += `&classe_cvm=${encodeURIComponent(classeCVM)}`;
+                if (esgOnly) url += `&esg_only=true`;
+                if (comCVM) url += `&com_cvm=true`;
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    // Atualizar estatisticas
+                    document.getElementById('statConsolidadoTotal').textContent = formatarNumero(result.stats.total);
+                    document.getElementById('statConsolidadoAnbima').textContent = formatarNumero(result.stats.anbima);
+                    document.getElementById('statConsolidadoCVM').textContent = formatarNumero(result.stats.cvm);
+                    document.getElementById('statConsolidadoCruzado').textContent = formatarNumero(result.stats.com_dados_cvm);
+                    document.getElementById('statConsolidadoESG').textContent = formatarNumero(result.stats.esg);
+                    document.getElementById('cvmConsolidadoBadge').textContent = `${formatarNumero(result.stats.total)} fundos consolidados`;
+
+                    // Preencher filtro de classes CVM se vazio
+                    const selectClasse = document.getElementById('filtroClasseCVMConsolidado');
+                    if (selectClasse.options.length <= 1 && result.filtros?.classes_cvm) {
+                        result.filtros.classes_cvm.forEach(c => {
+                            selectClasse.add(new Option(c, c));
+                        });
+                    }
+
+                    // Renderizar tabela
+                    const tbody = document.getElementById('corpoTabelaConsolidado');
+                    if (result.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-secondary);">Nenhum fundo encontrado</td></tr>';
+                    } else {
+                        let html = '';
+                        result.data.forEach(f => {
+                            const fonteColor = f.fonte_principal === 'ANBIMA' ? '#42A5F5' : '#CE93D8';
+                            const esgBadge = f.fundo_esg ? '<span style="background:#4CAF50;color:white;padding:2px 8px;border-radius:10px;font-size:0.7rem;">ESG</span>' : '-';
+
+                            html += `<tr>
+                                <td><span style="background:${fonteColor};color:white;padding:2px 10px;border-radius:12px;font-size:0.75rem;">${f.fonte_principal}</span></td>
+                                <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${f.nome || ''}">${f.nome || '-'}</td>
+                                <td style="font-family:monospace;font-size:0.8rem;">${f.cnpj || '-'}</td>
+                                <td style="font-size:0.8rem;">${f.categoria_anbima || '-'}</td>
+                                <td style="font-size:0.8rem;">${f.classe_cvm || '-'}</td>
+                                <td style="font-weight:600;color:#66BB6A;">${formatarMoeda(f.patrimonio_liquido)}</td>
+                                <td>${formatarNumero(f.numero_cotistas)}</td>
+                                <td>${esgBadge}</td>
+                            </tr>`;
+                        });
+                        tbody.innerHTML = html;
+                    }
+
+                    // Paginacao
+                    renderizarPaginacao('paginacaoConsolidado', result.page, result.pages, carregarConsolidado);
+                    cvmConsolidadoCarregado = true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar consolidado:', e);
+                document.getElementById('corpoTabelaConsolidado').innerHTML =
+                    '<tr><td colspan="8" style="text-align:center;padding:40px;color:#EF5350;">Erro ao carregar. Verifique a API.</td></tr>';
+            }
+        }
+
+        async function carregarCadastroCVM(page = 1) {
+            paginaAtualCadastro = page;
+            try {
+                const search = document.getElementById('searchCadastro')?.value || '';
+                const situacao = document.getElementById('filtroSituacaoCadastro')?.value || '';
+                const classe = document.getElementById('filtroClasseCadastro')?.value || '';
+
+                let url = `${API_URL}/cvm/cadastro?page=${page}&per_page=50`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (situacao) url += `&situacao=${encodeURIComponent(situacao)}`;
+                if (classe) url += `&classe=${encodeURIComponent(classe)}`;
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('statCadastroTotal').textContent = formatarNumero(result.total);
+                    document.getElementById('cvmCadastroBadge').textContent = `${formatarNumero(result.total)} fundos`;
+
+                    // Buscar stats adicionais
+                    const statsResp = await fetch(`${API_URL}/cvm/stats`);
+                    const statsResult = await statsResp.json();
+                    if (statsResult.success) {
+                        document.getElementById('statCadastroAtivos').textContent = formatarNumero(statsResult.data.fundos_ativos);
+                        document.getElementById('statCadastroClasses').textContent = formatarNumero(statsResult.data.classes_distintas);
+                    }
+
+                    // Preencher filtros
+                    const selectSituacao = document.getElementById('filtroSituacaoCadastro');
+                    if (selectSituacao.options.length <= 1 && result.filtros?.situacoes) {
+                        result.filtros.situacoes.forEach(s => {
+                            selectSituacao.add(new Option(s, s));
+                        });
+                    }
+
+                    const selectClasse = document.getElementById('filtroClasseCadastro');
+                    if (selectClasse.options.length <= 1 && result.filtros?.classes) {
+                        result.filtros.classes.forEach(c => {
+                            selectClasse.add(new Option(c, c));
+                        });
+                    }
+
+                    // Renderizar tabela
+                    const tbody = document.getElementById('corpoTabelaCadastroCVM');
+                    if (result.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary);">Nenhum fundo encontrado</td></tr>';
+                    } else {
+                        let html = '';
+                        result.data.forEach(f => {
+                            const sitColor = f.situacao === 'EM FUNCIONAMENTO NORMAL' ? '#4CAF50' :
+                                           f.situacao === 'CANCELADA' ? '#EF5350' : '#FF9800';
+                            const dataReg = f.data_registro ? new Date(f.data_registro).toLocaleDateString('pt-BR') : '-';
+
+                            html += `<tr>
+                                <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${f.nome || ''}">${f.nome || '-'}</td>
+                                <td style="font-family:monospace;font-size:0.8rem;">${f.cnpj || '-'}</td>
+                                <td><span style="background:${sitColor};color:white;padding:2px 8px;border-radius:10px;font-size:0.7rem;">${f.situacao || '-'}</span></td>
+                                <td style="font-size:0.85rem;">${f.classe || '-'}</td>
+                                <td>${dataReg}</td>
+                                <td style="font-size:0.8rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;" title="${f.administrador || ''}">${f.administrador || '-'}</td>
+                                <td style="font-size:0.8rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;" title="${f.gestor || ''}">${f.gestor || '-'}</td>
+                            </tr>`;
+                        });
+                        tbody.innerHTML = html;
+                    }
+
+                    renderizarPaginacao('paginacaoCadastro', result.page, result.pages, carregarCadastroCVM);
+                    cvmCadastroCarregado = true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar cadastro CVM:', e);
+                document.getElementById('corpoTabelaCadastroCVM').innerHTML =
+                    '<tr><td colspan="7" style="text-align:center;padding:40px;color:#EF5350;">Erro ao carregar. Verifique a API.</td></tr>';
+            }
+        }
+
+        async function carregarInformesCVM(page = 1) {
+            paginaAtualInformes = page;
+            try {
+                const search = document.getElementById('searchInformes')?.value || '';
+                const periodo = document.getElementById('filtroPeriodoInformes')?.value || '';
+
+                let url = `${API_URL}/cvm/informes?page=${page}&per_page=50`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (periodo) url += `&ano_mes=${encodeURIComponent(periodo)}`;
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    // Estatisticas
+                    document.getElementById('statInformesTotal').textContent = formatarNumero(result.stats.total_registros);
+                    document.getElementById('statInformesFundos').textContent = formatarNumero(result.stats.fundos_unicos);
+                    document.getElementById('statInformesPL').textContent = formatarMoeda(result.stats.pl_total);
+                    document.getElementById('statInformesCotistas').textContent = formatarNumero(result.stats.cotistas_total);
+                    document.getElementById('cvmInformesBadge').textContent = `${formatarNumero(result.stats.fundos_unicos)} fundos`;
+
+                    // Preencher filtro de periodos
+                    const selectPeriodo = document.getElementById('filtroPeriodoInformes');
+                    if (selectPeriodo.options.length <= 1 && result.periodos) {
+                        result.periodos.forEach(p => {
+                            selectPeriodo.add(new Option(p, p));
+                        });
+                    }
+
+                    // Renderizar tabela
+                    const tbody = document.getElementById('corpoTabelaInformesCVM');
+                    if (result.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary);">Nenhum informe encontrado</td></tr>';
+                    } else {
+                        let html = '';
+                        result.data.forEach(f => {
+                            const dataComp = f.data_competencia ? new Date(f.data_competencia).toLocaleDateString('pt-BR') : '-';
+                            const captColor = f.captacao_dia > 0 ? '#4CAF50' : '#a0a0b0';
+                            const resgColor = f.resgate_dia > 0 ? '#EF5350' : '#a0a0b0';
+
+                            html += `<tr>
+                                <td style="font-family:monospace;font-size:0.8rem;">${f.cnpj || '-'}</td>
+                                <td>${dataComp}</td>
+                                <td style="font-weight:600;color:#66BB6A;">${formatarMoeda(f.patrimonio_liquido)}</td>
+                                <td style="font-weight:500;">${f.valor_cota ? `R$ ${parseFloat(f.valor_cota).toFixed(6)}` : '-'}</td>
+                                <td>${formatarNumero(f.numero_cotistas)}</td>
+                                <td style="color:${captColor};">${formatarMoeda(f.captacao_dia)}</td>
+                                <td style="color:${resgColor};">${formatarMoeda(f.resgate_dia)}</td>
+                            </tr>`;
+                        });
+                        tbody.innerHTML = html;
+                    }
+
+                    renderizarPaginacao('paginacaoInformes', result.page, result.pages, carregarInformesCVM);
+                    cvmInformesCarregado = true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar informes CVM:', e);
+                document.getElementById('corpoTabelaInformesCVM').innerHTML =
+                    '<tr><td colspan="7" style="text-align:center;padding:40px;color:#EF5350;">Erro ao carregar. Verifique a API.</td></tr>';
+            }
+        }
+
+        function renderizarPaginacao(containerId, paginaAtual, totalPaginas, funcaoCarregar) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            let html = '';
+            const maxBotoes = 7;
+            let inicio = Math.max(1, paginaAtual - 3);
+            let fim = Math.min(totalPaginas, inicio + maxBotoes - 1);
+
+            if (fim - inicio < maxBotoes - 1) {
+                inicio = Math.max(1, fim - maxBotoes + 1);
+            }
+
+            // Botao anterior
+            if (paginaAtual > 1) {
+                html += `<button onclick="${funcaoCarregar.name}(${paginaAtual - 1})" style="padding:8px 12px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;">‹</button>`;
+            }
+
+            // Primeira pagina
+            if (inicio > 1) {
+                html += `<button onclick="${funcaoCarregar.name}(1)" style="padding:8px 12px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;">1</button>`;
+                if (inicio > 2) html += `<span style="color:var(--text-secondary);padding:0 5px;">...</span>`;
+            }
+
+            // Paginas do meio
+            for (let i = inicio; i <= fim; i++) {
+                const isActive = i === paginaAtual;
+                html += `<button onclick="${funcaoCarregar.name}(${i})" style="padding:8px 12px;background:${isActive ? 'var(--primary)' : 'var(--bg-card)'};border:1px solid ${isActive ? 'var(--primary)' : 'var(--border-color)'};border-radius:6px;color:${isActive ? 'white' : 'var(--text-primary)'};cursor:pointer;font-weight:${isActive ? '700' : '400'};">${i}</button>`;
+            }
+
+            // Ultima pagina
+            if (fim < totalPaginas) {
+                if (fim < totalPaginas - 1) html += `<span style="color:var(--text-secondary);padding:0 5px;">...</span>`;
+                html += `<button onclick="${funcaoCarregar.name}(${totalPaginas})" style="padding:8px 12px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;">${totalPaginas}</button>`;
+            }
+
+            // Botao proximo
+            if (paginaAtual < totalPaginas) {
+                html += `<button onclick="${funcaoCarregar.name}(${paginaAtual + 1})" style="padding:8px 12px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);cursor:pointer;">›</button>`;
+            }
+
+            container.innerHTML = html;
+        }
 
         // Enter para buscar nos inputs ANBIMA
         document.addEventListener('DOMContentLoaded', function() {
@@ -4445,6 +4959,26 @@
             if (searchAnbimaCRICRA) {
                 searchAnbimaCRICRA.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') carregarAnbimaCRICRA();
+                });
+            }
+
+            // Enter para inputs CVM
+            const searchConsolidado = document.getElementById('searchConsolidado');
+            if (searchConsolidado) {
+                searchConsolidado.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') carregarConsolidado();
+                });
+            }
+            const searchCadastro = document.getElementById('searchCadastro');
+            if (searchCadastro) {
+                searchCadastro.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') carregarCadastroCVM();
+                });
+            }
+            const searchInformes = document.getElementById('searchInformes');
+            if (searchInformes) {
+                searchInformes.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') carregarInformesCVM();
                 });
             }
         });
